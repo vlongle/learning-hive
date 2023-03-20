@@ -20,7 +20,8 @@ SRC_DIR = os.path.join('src', 'shell')
 
 class SplitDataset():
     def __init__(self, num_tasks, num_classes, num_classes_per_task, with_replacement=False,
-                 normalize=True, num_train=-1, num_val=-1, remap_labels=False):
+                 normalize=True, num_train_per_task=-1, num_val_per_task=-1, remap_labels=False):
+        self.num_classes = num_classes
         if not with_replacement:
             assert num_tasks <= num_classes // num_classes_per_task, 'Dataset does not support more than {} tasks'.format(
                 num_classes // num_classes_per_task)
@@ -49,22 +50,16 @@ class SplitDataset():
             Xb_train_t, yb_train_t, Xb_val_t, yb_val_t, Xb_test_t, yb_test_t = \
                 self.split_data(X_train, y_train, X_val, y_val, X_test, y_test, labels[np.arange(
                     task_id*num_classes_per_task, (task_id+1)*num_classes_per_task)], remap_labels=remap_labels)
-            if num_train != -1:
-                Xb_train_t = Xb_train_t[:num_train]
-                yb_train_t = yb_train_t[:num_train]
-            if num_val != -1:
-                Xb_val_t = Xb_val_t[:num_val]
-                yb_val_t = yb_val_t[:num_val]
+            if num_train_per_task != -1:
+                Xb_train_t = Xb_train_t[:num_train_per_task]
+                yb_train_t = yb_train_t[:num_train_per_task]
+            if num_val_per_task != -1:
+                Xb_val_t = Xb_val_t[:num_val_per_task]
+                yb_val_t = yb_val_t[:num_val_per_task]
             logging.debug(Xb_train_t.shape)
-            if num_classes_per_task == 2:
-                yb_train_t = torch.from_numpy(
-                    yb_train_t).float().reshape(-1, 1)
-                yb_val_t = torch.from_numpy(yb_val_t).float().reshape(-1, 1)
-                yb_test_t = torch.from_numpy(yb_test_t).float().reshape(-1, 1)
-            else:
-                yb_train_t = torch.from_numpy(yb_train_t).long().squeeze()
-                yb_val_t = torch.from_numpy(yb_val_t).long().squeeze()
-                yb_test_t = torch.from_numpy(yb_test_t).long().squeeze()
+            yb_train_t = torch.from_numpy(yb_train_t).long().squeeze()
+            yb_val_t = torch.from_numpy(yb_val_t).long().squeeze()
+            yb_test_t = torch.from_numpy(yb_test_t).long().squeeze()
 
             Xb_train_t = torch.from_numpy(Xb_train_t).float()
             Xb_val_t = torch.from_numpy(Xb_val_t).float()
@@ -76,7 +71,8 @@ class SplitDataset():
             self.features.append(Xb_train_t.shape[2])
 
         self.max_batch_size = 128
-        self.num_classes = num_classes_per_task
+        if remap_labels:
+            self.num_classes = num_classes_per_task
 
     def split_data(self, X_train, y_train, X_val, y_val, X_test, y_test, labels, remap_labels=True):
         Xb_train = X_train[np.isin(y_train, labels)]
@@ -110,7 +106,7 @@ class MNIST(SplitDataset):
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
                  num_train=-1, num_val=-1, remap_labels=False):
         super().__init__(num_tasks, num_classes=10, num_classes_per_task=num_classes_per_task,
-                         with_replacement=with_replacement, num_train=num_train, num_val=num_val, remap_labels=remap_labels)
+                         with_replacement=with_replacement, num_train_per_task=num_train, num_val_per_task=num_val, remap_labels=remap_labels)
         self.name = 'mnist'
 
     def load_data(self):
@@ -233,7 +229,7 @@ class CIFAR100(SplitDataset):
     def __init__(self, num_tasks=20, num_classes_per_task=5, with_replacement=False,
                  num_train=-1, num_val=-1, remap_labels=False):
         super().__init__(num_tasks, num_classes=100, num_classes_per_task=num_classes_per_task,
-                         with_replacement=with_replacement, num_train=num_train, num_val=num_val, remap_labels=remap_labels)
+                         with_replacement=with_replacement, num_train_per_task=num_train, num_val_per_task=num_val, remap_labels=remap_labels)
         self.name = 'cifar100'
 
     def load_data(self):

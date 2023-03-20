@@ -1,0 +1,5 @@
+**/__pycache__
+**.egg-info
+.vscode/
+**results/
+src/shell/datasets/*/

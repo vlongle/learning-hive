@@ -15,7 +15,7 @@ from shell.models.base_net_classes import SoftOrderingNet
 class MLPSoftLLDynamic(SoftOrderingNet):
     def __init__(self,
                  i_size,
-                 size,
+                 layer_size,
                  depth,
                  num_classes,
                  num_tasks,
@@ -23,7 +23,8 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                  max_components=-1,
                  init_ordering_mode='one_module_per_task',
                  device='cuda',
-                 freeze_encoder=False):
+                 freeze_encoder=False,
+                 dropout=0.5):
         super().__init__(i_size,
                          depth,
                          num_classes,
@@ -31,14 +32,14 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                          num_init_tasks=num_init_tasks,
                          init_ordering_mode=init_ordering_mode,
                          device=device)
-        self.size = size
+        self.size = layer_size
         self.max_components = max_components if max_components != -1 else np.inf
         self.num_components = self.depth
         self.freeze_encoder = freeze_encoder
 
         self.encoder = nn.ModuleList()
         for t in range(self.num_tasks):
-            encoder_t = nn.Linear(self.i_size[t], self.size)
+            encoder_t = nn.Linear(self.i_size[t] * self.i_size[t], self.size)
             if freeze_encoder:
                 for param in encoder_t.parameters():
                     param.requires_grad = False
@@ -46,7 +47,7 @@ class MLPSoftLLDynamic(SoftOrderingNet):
 
         self.components = nn.ModuleList()
         self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(dropout)
 
         for i in range(self.depth):
             fc = nn.Linear(self.size, self.size)
@@ -82,6 +83,9 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.num_components = len(self.components)
 
     def encode(self, X, task_id):
+        # if X shape is (b, c, h, w) then flatten to (b, c*h*w)
+        if len(X.shape) > 2:
+            X = X.view(X.shape[0], -1)
         s = self.softmax(self.structure[task_id][:self.num_components, :])
         X = self.encoder[task_id](X)
         for k in range(self.depth):

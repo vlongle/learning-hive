@@ -56,7 +56,7 @@ class SplitDataset():
             if num_val_per_task != -1:
                 Xb_val_t = Xb_val_t[:num_val_per_task]
                 yb_val_t = yb_val_t[:num_val_per_task]
-            logging.debug(Xb_train_t.shape)
+            logging.info(Xb_train_t.shape)
             yb_train_t = torch.from_numpy(yb_train_t).long().squeeze()
             yb_val_t = torch.from_numpy(yb_val_t).long().squeeze()
             yb_test_t = torch.from_numpy(yb_test_t).long().squeeze()
@@ -104,9 +104,9 @@ class SplitDataset():
 
 class MNIST(SplitDataset):
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
-                 num_train=-1, num_val=-1, remap_labels=False):
+                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False):
         super().__init__(num_tasks, num_classes=10, num_classes_per_task=num_classes_per_task,
-                         with_replacement=with_replacement, num_train_per_task=num_train, num_val_per_task=num_val, remap_labels=remap_labels)
+                         with_replacement=with_replacement, num_train_per_task=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels)
         self.name = 'mnist'
 
     def load_data(self):
@@ -191,9 +191,9 @@ class FashionMNIST(MNIST):
 
 class KMNIST(MNIST):
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
-                 num_train=-1, num_val=-1, remap_labels=False):
+                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False):
         super().__init__(num_tasks, num_classes_per_task=num_classes_per_task,
-                         with_replacement=with_replacement, num_train=num_train, num_val=num_val, remap_labels=remap_labels)
+                         with_replacement=with_replacement, num_train=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels)
         self.name = 'kmnist'
 
     def load_data(self):
@@ -227,9 +227,9 @@ class KMNIST(MNIST):
 
 class CIFAR100(SplitDataset):
     def __init__(self, num_tasks=20, num_classes_per_task=5, with_replacement=False,
-                 num_train=-1, num_val=-1, remap_labels=False):
+                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False):
         super().__init__(num_tasks, num_classes=100, num_classes_per_task=num_classes_per_task,
-                         with_replacement=with_replacement, num_train_per_task=num_train, num_val_per_task=num_val, remap_labels=remap_labels)
+                         with_replacement=with_replacement, num_train_per_task=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels)
         self.name = 'cifar100'
 
     def load_data(self):
@@ -243,7 +243,6 @@ class CIFAR100(SplitDataset):
             data_dict = pickle.load(f, encoding='bytes')
         y_test = np.array(data_dict[b'fine_labels'])
         X_test = data_dict[b'data'].reshape(-1, 3, 32, 32)
-        s = X_test.shape
 
         idx_shuffle = np.random.permutation(len(y_train))
         num_train = int(len(y_train) * .8)
@@ -252,3 +251,18 @@ class CIFAR100(SplitDataset):
         X_train = X_train[idx_shuffle[:num_train]]
         y_train = y_train[idx_shuffle[:num_train]]
         return X_train, y_train, X_val, y_val, X_test, y_test
+
+
+def get_dataset(**kwargs):
+    dataset_name = kwargs.get('dataset_name', 'mnist')
+    kwargs.pop('dataset_name', None)
+    if dataset_name == 'mnist':
+        return MNIST(**kwargs)
+    elif dataset_name == 'fashion':
+        return FashionMNIST(**kwargs)
+    elif dataset_name == 'kmnist':
+        return KMNIST(**kwargs)
+    elif dataset_name == 'cifar100':
+        return CIFAR100(**kwargs)
+    else:
+        raise ValueError('Unknown dataset: {}'.format(dataset_name))

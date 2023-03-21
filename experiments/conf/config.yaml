@@ -1,0 +1,21 @@
+seed: 0
+algo: monolithic
+job_name: fun
+num_agents: 1
+root_save_dir: results
+
+agent:
+  save_dir: ${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}
+  batch_size: 64
+  memory_size: 64
+  improvement_threshold: 0.05
+
+defaults:
+  - train: monolithic
+  - dataset: mnist
+  - net: mlp
+  - sharing_strategy: no_sharing
+
+hydra:
+  run:
+    dir: ${agent.save_dir}/hydra_out

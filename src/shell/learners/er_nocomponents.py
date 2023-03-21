@@ -12,17 +12,17 @@ import os
 from torch.utils.data.dataset import ConcatDataset
 import copy
 from shell.utils.replay_buffers import ReplayBufferReservoir
-from shell.learners.base_learning_classes import NoComponentsLearner
+from shell.learners.base_learning_classes import Learner
 
 
-class NoComponentsER(NoComponentsLearner):
-    def __init__(self, net, memory_size, results_dir='./tmp/results/'):
-        super().__init__(net, results_dir)
+class NoComponentsER(Learner):
+    def __init__(self, net, memory_size, save_dir='./tmp/results/',  improvement_threshold=0.05):
+        super().__init__(net, save_dir,  improvement_threshold=improvement_threshold)
         self.replay_buffers = {}
         self.memory_loaders = {}
         self.memory_size = memory_size
 
-    def train(self, trainloader, task_id, component_update_freq=100, num_epochs=100, save_freq=1, testloaders=None):
+    def train(self, trainloader, task_id, component_update_freq=100, num_epochs=100, save_freq=1, testloaders=None, valloader=None):
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
@@ -32,7 +32,6 @@ class NoComponentsER(NoComponentsLearner):
             self.init_train(trainloader, task_id, num_epochs,
                             save_freq, testloaders)
         else:
-            iter_cnt = 0
             prev_reduction = self.loss.reduction
             self.loss.reduction = 'sum'     # make sure the loss is summed over instances
 

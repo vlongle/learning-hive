@@ -27,7 +27,8 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                  num_init_tasks=None,
                  max_components=-1,
                  init_ordering_mode='one_module_per_task',
-                 device='cuda'
+                 device='cuda',
+                 dropout=0.5,
                  ):
         super().__init__(i_size,
                          depth,
@@ -46,7 +47,7 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         self.components = nn.ModuleList()
         self.relu = nn.ReLU()
         self.maxpool = nn.MaxPool2d(maxpool_kernel)
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(dropout)
 
         out_h = self.i_size[0]
         for i in range(self.depth):

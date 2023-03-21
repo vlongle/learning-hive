@@ -17,13 +17,15 @@ import logging
 
 
 class Learner():
-    def __init__(self, net, results_dir='./tmp/results/'):
+    def __init__(self, net, save_dir='./tmp/results/', improvement_threshold=0.05):
         self.net = net
         self.loss = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.net.parameters())
+        self.improvement_threshold = improvement_threshold
         self.T = 0
         self.observed_tasks = set()
-        self.results_dir = create_dir_if_not_exist(results_dir)
+
+        self.save_dir = create_dir_if_not_exist(save_dir)
         self.record = Record(os.path.join(self.save_dir, "record.csv"))
         self.writer = SummaryWriter(
             log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
@@ -54,6 +56,9 @@ class Learner():
                            testloaders, final_save=True)
             for task, loader in self.init_trainloaders.items():
                 self.update_multitask_cost(loader, task)
+        else:
+            self.save_data(0, task_id,
+                           testloaders, final_save=True)
 
     def evaluate(self, testloaders):
         was_training = self.net.training
@@ -90,8 +95,38 @@ class Learner():
     def save_data(self, epoch, task_id, testloaders, final_save=False):
         self.evaluate(testloaders)
         task_results_dir = os.path.join(
-            self.results_dir, 'task_{}'.format(task_id))
+            self.save_dir, 'task_{}'.format(task_id))
         os.makedirs(task_results_dir, exist_ok=True)
+        line = 'epochs: {}, training task: {}'.format(epoch, task_id)
+        logging.info(line)
+        for task in self.test_loss:
+            # if self.test_acc[task] is a tuple, take the max
+            if isinstance(self.test_acc[task], tuple):
+                self.test_acc[task] = max(self.test_acc[task])
+            if isinstance(self.test_loss[task], tuple):
+                self.test_loss[task] = max(self.test_loss[task])
+
+        if "avg" not in self.test_acc:
+            self.test_acc["avg"] = sum(
+                self.test_acc.values()) / len(self.test_acc)
+        if "avg" not in self.test_loss:
+            self.test_loss["avg"] = sum(
+                self.test_loss.values()) / len(self.test_loss)
+
+        for task in self.test_loss:
+            line = '\ttask: {}\tloss: {:.3f}\tacc: {:.3f}'.format(
+                task, self.test_loss[task], self.test_acc[task])
+            logging.info(line)
+            self.record.write(
+                {
+                    'train_task': task_id,
+                    'test_task': task,
+                    'test_acc': self.test_acc[task],
+                    'test_loss': self.test_loss[task],
+                    'epoch': epoch,
+                }
+            )
+
         if final_save:
             path = os.path.join(
                 task_results_dir, 'checkpoint.pt'.format(epoch))
@@ -101,13 +136,7 @@ class Learner():
                 'optimizer_state_dict': self.optimizer.state_dict(),
                 'observed_tasks': self.observed_tasks,
             }, path)
-
-        line = 'epochs: {}, training task: {}'.format(epoch, task_id)
-        logging.info(line)
-        for task in self.test_loss:
-            line = '\ttask: {}\tloss: {}\tacc: {}'.format(
-                task, self.test_loss[task], self.test_acc[task])
-            logging.info(line)
+            self.record.save()
 
     def update_multitask_cost(self, loader, task_id):
         raise NotImplementedError(
@@ -211,7 +240,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
         update_acc, no_update_acc = self.test_acc[task_id]
         logging.info(
             'W/update: {}, WO/update: {}'.format(update_acc, no_update_acc))
-        if no_update_acc == 0 or (update_acc - no_update_acc) / no_update_acc > .05:
+        if no_update_acc == 0 or (update_acc - no_update_acc) / no_update_acc > self.improvement_threshold:
             logging.info('Keeping new module. Total: {}'.format(
                 self.net.num_components))
         else:

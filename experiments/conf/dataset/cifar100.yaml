@@ -1,0 +1,7 @@
+dataset_name: cifar100
+num_tasks: 20
+num_classes_per_task: 5
+with_replacement: false
+num_trains_per_class: 256
+num_vals_per_class: 100
+remap_labels: false

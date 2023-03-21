@@ -21,7 +21,8 @@ class CNN(nn.Module):
                  conv_kernel=3,
                  maxpool_kernel=2,
                  padding=0,
-                 device='cuda'
+                 device='cuda',
+                 dropout=0.5,
                  ):
         super().__init__()
         self.device = device
@@ -39,7 +40,7 @@ class CNN(nn.Module):
         self.components = nn.ModuleList()
         self.relu = nn.ReLU()
         self.maxpool = nn.MaxPool2d(maxpool_kernel)
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(dropout)
 
         out_h = i_size[0]
         for i in range(self.depth):

@@ -29,13 +29,17 @@ class Metric:
     - test_acc: test accuracy of the test task (numeric)
     """
 
-    def __init__(self, save_dir):
+    def __init__(self, save_dir, num_init_tasks=None):
         self.save_dir = save_dir
         self.file_path = os.path.join(save_dir, 'record.csv')
         if os.path.exists(self.file_path):
             self.df = pd.read_csv(self.file_path)
         else:
             logging.critical(f"File {self.file_path} does not exist")
+
+        if num_init_tasks is not None:
+            # throw away all the data before num_init_tasks
+            self.df = self.df[self.df['train_task'] >= num_init_tasks]
 
         self.max_epoch = self.df['epoch'].max()
         # 'test_task' column is string, we need to convert train_task to string as well
@@ -91,10 +95,6 @@ class Metric:
         # or "test_task" == "train_task"
         backward_transfer = backward_transfer[(backward_transfer['test_task'] != 'avg') & (
             backward_transfer['test_task'] != backward_transfer['train_task'])]
-        if num_init_tasks is not None:
-            # discount the initialization phase
-            backward_transfer = backward_transfer[backward_transfer['train_task'].astype(
-                int) >= num_init_tasks]
         if reduce == 'mean':
             backward_transfer = backward_transfer['backward_transfer'].mean()
         return backward_transfer

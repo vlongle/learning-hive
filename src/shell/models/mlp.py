@@ -13,17 +13,18 @@ import torch.nn as nn
 class MLP(nn.Module):
     def __init__(self,
                  i_size,
-                 size,
+                 layer_size,
                  depth,
                  num_classes,
                  num_tasks,
                  num_init_tasks,
                  device='cuda',
                  freeze_encoder=False,
+                 dropout=0.5,
                  ):
         super().__init__()
         self.device = device
-        self.size = size
+        self.size = layer_size
         self.depth = depth
         self.num_tasks = num_tasks
         self.num_init_tasks = num_init_tasks
@@ -35,14 +36,14 @@ class MLP(nn.Module):
             i_size = [i_size] * num_tasks
         self.encoder = nn.ModuleList()
         for t in range(self.num_tasks):
-            encoder_t = nn.Linear(i_size[t], self.size)
+            encoder_t = nn.Linear(i_size[t] * i_size[t], self.size)
             for param in encoder_t.parameters():
                 param.requires_grad = not freeze_encoder
             self.encoder.append(encoder_t)
 
         self.components = nn.ModuleList()
         self.relu = nn.ReLU()
-        self.dropout = nn.Dropout(0.5)
+        self.dropout = nn.Dropout(dropout)
 
         for i in range(self.depth):
             fc = nn.Linear(self.size, self.size)
@@ -57,6 +58,9 @@ class MLP(nn.Module):
         self.to(self.device)
 
     def encode(self, X, task_id):
+        # if X shape is (b, c, h, w) then flatten to (b, c*h*w)
+        if len(X.shape) > 2:
+            X = X.view(X.shape[0], -1)
         X = self.encoder[task_id](X)
         for fc in self.components:
             X = self.dropout(self.relu(fc(X)))

@@ -17,8 +17,8 @@ from shell.learners.base_learning_classes import CompositionalDynamicLearner
 
 
 class CompositionalDynamicER(CompositionalDynamicLearner):
-    def __init__(self, net, memory_size, results_dir='./tmp/results/'):
-        super().__init__(net, results_dir)
+    def __init__(self, net, memory_size, save_dir='./tmp/results/',  improvement_threshold=0.05):
+        super().__init__(net, save_dir,  improvement_threshold=improvement_threshold)
         self.replay_buffers = {}
         self.memory_loaders = {}
         self.memory_size = memory_size

@@ -1,0 +1,3 @@
+component_update_freq: 50
+num_epochs: 50
+save_freq: 1

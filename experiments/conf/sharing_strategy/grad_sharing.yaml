@@ -1,0 +1,4 @@
+name: gradient
+num_coms_per_round: 5
+retrain:
+  num_epochs: 10

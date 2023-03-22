@@ -39,16 +39,19 @@ class TopologyGenerator:
                 G.remove_edge(edge[0], edge[1])
         return G
 
-    def save_graph(self, G: nx.Graph, filename: str):
+    @classmethod
+    def save_graph(G: nx.Graph, filename: str):
         with open(filename, "wb") as f:
             pickle.dump(G, f)
 
-    def load_graph(self, filename: str):
+    @classmethod
+    def load_graph(filename: str):
         with open(filename, "rb") as f:
             G = pickle.load(f)
         return G
 
-    def plot_graph(self, G: nx.Graph,
+    @classmethod
+    def plot_graph(G: nx.Graph,
                    node_color="#1f78b4", edge_color="#bfbfbf",
                    node_size=500, font_size=16,
                    font_family="sans-serif", edge_width=1,

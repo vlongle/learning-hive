@@ -20,6 +20,7 @@ class Learner():
     def __init__(self, net, save_dir='./tmp/results/', improvement_threshold=0.05):
         self.net = net
         self.loss = nn.CrossEntropyLoss()
+        # self.loss = nn.BCEWithLogitsLoss() if net.binary else nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.net.parameters())
         self.improvement_threshold = improvement_threshold
         self.T = 0
@@ -78,6 +79,9 @@ class Learner():
                     Y_hat = self.net(X, task)
                     l += self.loss(Y_hat, Y).item()
                     a += (Y_hat.argmax(dim=1) == Y).sum().item()
+                    # a += ((Y_hat > 0) == (Y == 1)
+                    #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
+
                 self.test_loss[task] = l / n
                 self.test_acc[task] = a / n
 
@@ -269,6 +273,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
                     Y_hat = self.net(X, task)
                     l += self.loss(Y_hat, Y).item()
                     a += (Y_hat.argmax(dim=1) == Y).sum().item()
+                    # a += ((Y_hat > 0) == (Y == 1)
+                    #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
                 if eval_no_update and task == self.T - 1 and self.T > self.net.num_init_tasks:
                     self.net.hide_tmp_module()
                     l1 = 0.
@@ -279,6 +285,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         Y_hat = self.net(X, task)
                         l1 += self.loss(Y_hat, Y).item()
                         a1 += (Y_hat.argmax(dim=1) == Y).sum().item()
+                        # a1 += ((Y_hat > 0) == (Y == 1)
+                        #        if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
                     self.test_loss[task] = (l / n, l1 / n)
                     self.test_acc[task] = (a / n, a1 / n)
                     self.net.recover_hidden_module()

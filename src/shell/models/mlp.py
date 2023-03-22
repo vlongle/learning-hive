@@ -50,9 +50,14 @@ class MLP(nn.Module):
             self.components.append(fc)
 
         self.decoder = nn.ModuleList()
+        # self.binary = False
         for t in range(self.num_tasks):
+            # if num_classes[t] == 2:
+            #     self.binary = True
             decoder_t = nn.Linear(
                 self.size, num_classes[t])
+            # decoder_t = nn.Linear(
+            #     self.size, num_classes[t] if num_classes[t] != 2 else 1)
             self.decoder.append(decoder_t)
 
         self.to(self.device)

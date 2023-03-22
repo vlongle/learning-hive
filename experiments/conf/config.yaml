@@ -3,6 +3,7 @@ algo: monolithic
 job_name: fun
 num_agents: 1
 root_save_dir: results
+parallel: true
 
 agent:
   save_dir: ${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}

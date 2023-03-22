@@ -45,6 +45,9 @@ class SplitDataset():
             labels = np.array([np.random.choice(
                 num_classes, num_classes_per_task, replace=False) for t in range(self.num_tasks)])
             labels = labels.reshape(-1)
+
+        self.class_sequence = labels
+        logging.info(f"Class sequence: {self.class_sequence}")
         for task_id in range(self.num_tasks):
 
             Xb_train_t, yb_train_t, Xb_val_t, yb_val_t, Xb_test_t, yb_test_t = \
@@ -57,9 +60,20 @@ class SplitDataset():
                 Xb_val_t = Xb_val_t[:num_val_per_task]
                 yb_val_t = yb_val_t[:num_val_per_task]
             logging.info(Xb_train_t.shape)
+
             yb_train_t = torch.from_numpy(yb_train_t).long().squeeze()
             yb_val_t = torch.from_numpy(yb_val_t).long().squeeze()
             yb_test_t = torch.from_numpy(yb_test_t).long().squeeze()
+
+            # if num_classes_per_task == 2:
+            #     yb_train_t = torch.from_numpy(
+            #         yb_train_t).float().reshape(-1, 1)
+            #     yb_val_t = torch.from_numpy(yb_val_t).float().reshape(-1, 1)
+            #     yb_test_t = torch.from_numpy(yb_test_t).float().reshape(-1, 1)
+            # else:
+            #     yb_train_t = torch.from_numpy(yb_train_t).long().squeeze()
+            #     yb_val_t = torch.from_numpy(yb_val_t).long().squeeze()
+            #     yb_test_t = torch.from_numpy(yb_test_t).long().squeeze()
 
             Xb_train_t = torch.from_numpy(Xb_train_t).float()
             Xb_val_t = torch.from_numpy(Xb_val_t).float()

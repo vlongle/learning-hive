@@ -3,3 +3,4 @@
 .vscode/
 **results/
 src/shell/datasets/*/
+**checkpoints/

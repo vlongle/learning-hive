@@ -91,32 +91,83 @@ class Agent:
 
 
 @ray.remote
-class VanillaAgent(Agent):
+class ParallelAgent(Agent):
     pass
 
 
 class Fleet:
-    def __init__(self, graph: nx.Graph, seed, datasets, num_coms_per_round, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
+    def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
+        self.graph = graph
+        num_agents = len(graph.nodes)
+        self.sharing_strategy = sharing_strategy
+        self.num_coms_per_round = self.sharing_strategy.num_coms_per_round
+
+        self.create_agents(seed, datasets, AgentCls, NetCls, LearnerCls,
+                           net_kwargs, agent_kwargs, train_kwargs)
+        self.add_neighbors()
+        logging.info("Fleet initialized")
+
+    def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
+        self.agents = [
+            AgentCls(node_id, seed, datasets[node_id], NetCls,
+                     LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
+            for node_id in self.graph.nodes
+        ]
+        logging.info(f"Created fleet with {len(self.agents)} agents")
+
+    def add_neighbors(self):
+        logging.info("Adding neighbors...")
+        # adding neighbors
+        for agent in self.agents:
+            agent_id = agent.get_node_id()
+            neighbors = [self.agents[neighbor_id]
+                         for neighbor_id in self.graph.neighbors(agent_id)]
+            agent.add_neighbors(neighbors)
+
+    def train(self, task_id):
+        for agent in self.agents:
+            agent.train(task_id)
+
+    def communicate(self, task_id):
+        for communication_round in range(self.num_coms_per_round):
+            for agent in self.agents:
+                agent.communicate(task_id, communication_round)
+            for agent in self.agents:
+                agent.process_communicate(task_id, communication_round)
+
+
+class ParallelFleet:
+    def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
         self.graph = graph
         num_agents = len(graph.nodes)
         num_total_gpus = torch.cuda.device_count()
-        num_gpus_per_agent = num_total_gpus / num_agents
-        logging.info(f"No. gpus per agent: {num_gpus_per_agent}")
+        self.num_gpus_per_agent = num_total_gpus / num_agents
+        logging.info(f"No. gpus per agent: {self.num_gpus_per_agent}")
+        self.sharing_strategy = sharing_strategy
+        self.num_coms_per_round = self.sharing_strategy.num_coms_per_round
+
+        self.create_agents(seed, datasets, AgentCls, NetCls, LearnerCls,
+                           net_kwargs, agent_kwargs, train_kwargs)
+        self.add_neighbors()
+
+        logging.info("Fleet initialized")
+
+    def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
         self.agents = [
-            AgentCls.options(num_gpus=num_gpus_per_agent).remote(node_id, seed, datasets[node_id], NetCls,
-                                                                 LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
-            for node_id in graph.nodes
+            AgentCls.options(num_gpus=self.num_gpus_per_agent).remote(node_id, seed, datasets[node_id], NetCls,
+                                                                      LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
+            for node_id in self.graph.nodes
         ]
-        self.num_coms_per_round = num_coms_per_round
         logging.info(f"Created fleet with {len(self.agents)} agents")
+
+    def add_neighbors(self):
         logging.info("Adding neighbors...")
         # adding neighbors
         for agent in self.agents:
             agent_id = ray.get(agent.get_node_id.remote())
             neighbors = [self.agents[neighbor_id]
-                         for neighbor_id in graph.neighbors(agent_id)]
+                         for neighbor_id in self.graph.neighbors(agent_id)]
             agent.add_neighbors.remote(neighbors)
-        logging.info("Fleet initialized")
 
     def train(self, task_id):
         # parallelize training

@@ -100,4 +100,42 @@ class Metric:
         return backward_transfer
 
 
+def task_similarity(classes_sequence_list, num_tasks, num_classes_per_task):
+    """
+    Create a dataframe with the following columns:
+        - task_id: task id
+        - agent_1_id: agent id
+        - agent_2_id: agent id
+        - similarity: number of classes in common between agent_1 and agent_2 at task_id
+        - running_similarity: running similarity between agent_1 and agent_2 up to task_id
+    """
+    for classes_sequence in classes_sequence_list:
+        assert len(classes_sequence) == num_tasks * num_classes_per_task
+
+    num_agents = len(classes_sequence_list)
+    df = pd.DataFrame(columns=['task_id', 'agent_1_id', 'agent_2_id', 'similarity',
+                               'running_similarity'])
+    for task in range(num_tasks):
+        for agent_1 in range(num_agents):
+            for agent_2 in range(agent_1 + 1, num_agents):
+                classes_1 = classes_sequence_list[agent_1][
+                    task * num_classes_per_task:(task + 1) * num_classes_per_task]
+                classes_2 = classes_sequence_list[agent_2][
+                    task * num_classes_per_task:(task + 1) * num_classes_per_task]
+                similarity = len(set(classes_1) & set(classes_2))
+                if task == 0:
+                    running_similarity = 0
+                else:
+                    running_similarity = df[(df['task_id'] == task - 1) & (
+                        df['agent_1_id'] == agent_1) & (df['agent_2_id'] == agent_2)]['running_similarity'].item()
+                row = {
+                    'task_id': task,
+                    'agent_1_id': agent_1,
+                    'agent_2_id': agent_2,
+                    'similarity': similarity,
+                    'running_similarity': running_similarity + similarity
+                }
+                df = pd.concat([df, pd.DataFrame(row, index=[0])])
+    return df
+
 # TODO: monitor metric related to data sharing accuracy, modules proning accuracy, federated learning stuff ect...

@@ -17,13 +17,15 @@ from shell.learners.base_learning_classes import CompositionalDynamicLearner
 
 
 class CompositionalDynamicER(CompositionalDynamicLearner):
-    def __init__(self, net, memory_size, save_dir='./tmp/results/',  improvement_threshold=0.05):
-        super().__init__(net, save_dir,  improvement_threshold=improvement_threshold)
+    def __init__(self, net, memory_size, save_dir='./tmp/results/',
+                 improvement_threshold=0.05, use_contrastive=False):
+        super().__init__(net, save_dir,  improvement_threshold=improvement_threshold,
+                         use_contrastive=use_contrastive)
         self.replay_buffers = {}
         self.memory_loaders = {}
         self.memory_size = memory_size
 
-    def update_modules(self, trainloader, task_id):
+    def update_modules(self, trainloader, task_id, train_mode=None):
         self.net.unfreeze_modules()
         # self.net.freeze_structure(freeze=True)
         self.net.freeze_structure()
@@ -55,7 +57,8 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                 # Y_hat = self.net(X[t == task_id_tmp], task_id=task_id_tmp)
                 # l += self.loss(Y_hat, Y[t == task_id_tmp])
                 l += self.compute_loss(X[t == task_id_tmp],
-                                       Y[t == task_id_tmp], task_id_tmp)
+                                       Y[t == task_id_tmp], task_id_tmp,
+                                       mode=train_mode)
                 n += X.shape[0]
             l /= n
             self.optimizer.zero_grad()
@@ -69,7 +72,8 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                 # Y_hat = self.net(X[t == task_id_tmp], task_id=task_id_tmp)
                 # l += self.loss(Y_hat, Y[t == task_id_tmp])
                 l += self.compute_loss(X[t == task_id_tmp],
-                                       Y[t == task_id_tmp], task_id_tmp)
+                                       Y[t == task_id_tmp], task_id_tmp,
+                                       mode=train_mode)
                 n += X.shape[0]
             l /= n
             self.optimizer.zero_grad()

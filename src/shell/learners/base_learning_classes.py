@@ -19,19 +19,40 @@ import torchvision.transforms as transforms
 
 
 class Learner():
-    def __init__(self, net, save_dir='./tmp/results/', improvement_threshold=0.05):
+    def __init__(self, net, save_dir='./tmp/results/', improvement_threshold=0.05,
+                 use_contrastive=False):
         self.net = net
         self.ce_loss = nn.CrossEntropyLoss()
-        self.sup_loss = SupConLoss()
-        self.train_transform = transforms.Compose([
-            transforms.RandomResizedCrop(
-                size=self.net.i_size[0], scale=(0.2, 1.), antialias=True),
-            transforms.RandomHorizontalFlip(),
-            transforms.RandomApply([
-                transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
-            ], p=0.8),
-            transforms.RandomGrayscale(p=0.2),
-        ])
+        self.use_contrastive = use_contrastive
+        if use_contrastive:
+            self.sup_loss = SupConLoss()
+
+            # cifar100 augmentation
+            # self.train_transform = transforms.Compose([
+            #     transforms.RandomResizedCrop(
+            #         size=self.net.i_size[0], scale=(0.2, 1.), antialias=True),
+            #     transforms.RandomHorizontalFlip(),
+            #     transforms.RandomApply([
+            #         transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
+            #     ], p=0.8),
+            #     transforms.RandomGrayscale(p=0.2),
+            # ])
+
+            self.train_transform = transforms.Compose([
+                # transforms.RandomAffine(
+                # transforms.RandomResizedCrop(
+                #     size=self.net.i_size[0], scale=(0.5, 1.), antialias=True),
+                transforms.RandomAffine(
+                    degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1),
+                    shear=0.1),
+                # transforms.RandomApply([
+                #                        transforms.ColorJitter(
+                #                            brightness=0.2, contrast=0.2),
+                #                        ], p=0.8),
+                transforms.GaussianBlur(
+                    kernel_size=3, sigma=(0.1, 2.0)),
+
+            ])
         # self.loss = nn.BCEWithLogitsLoss() if net.binary else nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.net.parameters())
         self.improvement_threshold = improvement_threshold
@@ -40,36 +61,27 @@ class Learner():
 
         self.save_dir = create_dir_if_not_exist(save_dir)
         self.record = Record(os.path.join(self.save_dir, "record.csv"))
+        self.dynamic_record = Record(os.path.join(
+            self.save_dir, "add_modules_record.csv"))
         self.writer = SummaryWriter(
             log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
         self.init_trainloaders = None
 
+        self.mode = "ce"
+        if self.use_contrastive:
+            self.mode = "both"
+
     def get_loss_reduction(self):
-        assert self.ce_loss.reduction == self.sup_loss.reduction
+        if self.use_contrastive:
+            assert self.ce_loss.reduction == self.sup_loss.reduction
         return self.ce_loss.reduction
 
     def set_loss_reduction(self, reduction):
         self.ce_loss.reduction = reduction
-        self.sup_loss.reduction = reduction
+        if self.use_contrastive:
+            self.sup_loss.reduction = reduction
 
-    def compute_loss(self, X, Y, task_id):
-        """
-        Compute cross_entropy + supcon loss. Make sure that 
-        cross_entropy does not propagate gradients back
-        to the representation learner.
-        """
-        # detach to make sure that
-
-        # =============================
-        # Cross entropy loss
-        # NOTE: detach so that cross_entropy does not propagate gradients back to the representation learner
-        X_encode = self.net.encode(X, task_id).detach()
-        # X_encode = self.net.encode(X, task_id)
-        Y_hat = self.net.decoder[task_id](X_encode)
-        ce = self.ce_loss(Y_hat, Y)
-        # ce = 0.0
-        # =============================
-        # Contrastive loss
+    def compute_contrastive_loss(self, X, Y, task_id):
         encoded_X = self.net.contrastive_embedding(X, task_id)
         encoded_transformed_X = self.net.contrastive_embedding(
             self.train_transform(X), task_id)  # (N_samples, N_features)
@@ -81,11 +93,45 @@ class Learner():
         if torch.isnan(cl):
             logging.error("Contrastive loss is nan")
             exit(1)
-        # cl = 0.0
-        # =============================
+        return cl
 
-        scale = 1.0
-        return ce + scale * cl
+    def compute_cross_entropy_loss(self, X, Y, task_id, detach=True):
+        # =============================
+        # Cross entropy loss
+        # NOTE: detach so that cross_entropy does not propagate gradients back to the representation learner
+        X_encode = self.net.encode(X, task_id)
+        if detach:
+            X_encode = X_encode.detach()
+        Y_hat = self.net.decoder[task_id](X_encode)
+        ce = self.ce_loss(Y_hat, Y)
+        return ce
+
+    def compute_loss(self, X, Y, task_id, mode=None):
+        """
+        Compute cross_entropy + supcon loss. Make sure that 
+        cross_entropy does not propagate gradients back
+        to the representation learner.
+        """
+        if mode is None:
+            mode = self.mode
+
+        if mode == "both":
+            # jointly train ce and supcon loss
+            ce = self.compute_cross_entropy_loss(X, Y, task_id, detach=True)
+            cl = self.compute_contrastive_loss(X, Y, task_id)
+            scale = 1.0
+            return ce + scale * cl
+        elif mode == "ce":
+            # only train ce (backpropage through the entire model)
+            return self.compute_cross_entropy_loss(X, Y, task_id, detach=False)
+        elif mode == "finetune_ce":
+            # train ce to only finetune the last layer
+            return self.compute_cross_entropy_loss(X, Y, task_id, detach=True)
+        elif mode == "cl":
+            # only train supcon loss
+            return self.compute_contrastive_loss(X, Y, task_id)
+        else:
+            raise NotImplementedError(f"Mode {mode} not implemented")
 
     def train(self, *args, **kwargs):
         raise NotImplementedError('Training loop is algorithm specific')
@@ -116,7 +162,7 @@ class Learner():
             self.save_data(0, task_id,
                            testloaders, final_save=True)
 
-    def evaluate(self, testloaders):
+    def evaluate(self, testloaders, mode=None):
         was_training = self.net.training
         # prev_reduction = self.loss.reduction
         prev_reduction = self.get_loss_reduction()
@@ -135,7 +181,7 @@ class Learner():
                     X = X.to(self.net.device, non_blocking=True)
                     Y = Y.to(self.net.device, non_blocking=True)
                     Y_hat = self.net(X, task)
-                    l += self.compute_loss(X, Y, task).item()
+                    l += self.compute_loss(X, Y, task, mode=mode).item()
                     a += (Y_hat.argmax(dim=1) == Y).sum().item()
                     # a += ((Y_hat > 0) == (Y == 1)
                     #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
@@ -148,17 +194,17 @@ class Learner():
         if was_training:
             self.net.train()
 
-    def gradient_step(self, X, Y, task_id):
+    def gradient_step(self, X, Y, task_id, train_mode=None):
         # Y_hat = self.net(X, task_id=task_id)
         X = X.to(self.net.device, non_blocking=True)
         Y = Y.to(self.net.device, non_blocking=True)
-        l = self.compute_loss(X, Y, task_id)
+        l = self.compute_loss(X, Y, task_id, mode=train_mode)
         self.optimizer.zero_grad()
         l.backward()
         self.optimizer.step()
 
-    def save_data(self, epoch, task_id, testloaders, final_save=False):
-        self.evaluate(testloaders)
+    def save_data(self, epoch, task_id, testloaders, final_save=False, mode=None):
+        self.evaluate(testloaders, mode=mode)
         task_results_dir = os.path.join(
             self.save_dir, 'task_{}'.format(task_id))
         os.makedirs(task_results_dir, exist_ok=True)
@@ -242,21 +288,22 @@ class CompositionalLearner(Learner):
                            testloaders, final_save=True)
             self.update_multitask_cost(trainloader, task_id)
 
-    def update_structure(self, X, Y, task_id):
+    def update_structure(self, X, Y, task_id, train_mode=None):
         # assume shared parameters are frozen and just take a gradient step on the structure
-        self.gradient_step(X, Y, task_id)
+        self.gradient_step(X, Y, task_id, train_mode=train_mode)
 
     def update_modules(self, *args, **kwargs):
         raise NotImplementedError('Update modules is algorithm specific')
 
 
 class CompositionalDynamicLearner(CompositionalLearner):
-    def train(self, trainloader, task_id, valloader, component_update_freq=100, num_epochs=100, save_freq=1, testloaders=None):
+    def train(self, trainloader, task_id, valloader,
+              component_update_freq=100, num_epochs=100, save_freq=1, testloaders=None,
+              train_mode=None):
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
-        eval_bool = testloaders is not None
-        self.save_data(0, task_id, testloaders)
+        self.save_data(0, task_id, testloaders, mode=train_mode)
         if self.T <= self.net.num_init_tasks:
             # NOTE: doesn't need to freeze_structure because one_hot structure
             # will be fixed anyway. We need the decoder to change for
@@ -288,22 +335,26 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
             for i in range(num_epochs):
                 if (i + 1) % component_update_freq == 0:
-                    self.update_modules(trainloader, task_id)
+                    self.update_modules(
+                        trainloader, task_id, train_mode=train_mode)
                 else:
                     for X, Y in trainloader:
                         X_cpu, Y_cpu = X, Y
                         X = X.to(self.net.device, non_blocking=True)
                         Y = Y.to(self.net.device, non_blocking=True)
-                        self.update_structure(X, Y, task_id)
+                        self.update_structure(
+                            X, Y, task_id, train_mode=train_mode)
                         self.net.hide_tmp_module()
-                        self.update_structure(X, Y, task_id)
+                        self.update_structure(
+                            X, Y, task_id, train_mode=train_mode)
                         self.net.recover_hidden_module()
                         iter_cnt += 1
                 if i % save_freq == 0 or i == num_epochs - 1:
-                    self.save_data(i + 1, task_id, testloaders)
+                    self.save_data(i + 1, task_id, testloaders,
+                                   mode=train_mode)
             self.conditionally_add_module(valloader, task_id)
             self.save_data(num_epochs + 1, task_id,
-                           testloaders, final_save=True)
+                           testloaders, final_save=True, mode=train_mode)
             self.update_multitask_cost(trainloader, task_id)
 
     def conditionally_add_module(self, valloader, task_id):
@@ -316,13 +367,25 @@ class CompositionalDynamicLearner(CompositionalLearner):
         logging.info(
             'W/update: {}, WO/update: {}'.format(update_acc, no_update_acc))
         if no_update_acc == 0 or (update_acc - no_update_acc) / no_update_acc > self.improvement_threshold:
+            add_new_module = True
             logging.info('Keeping new module. Total: {}'.format(
                 self.net.num_components))
         else:
+            add_new_module = False
             self.net.remove_tmp_module()
             logging.info('Not keeping new module. Total: {}'.format(
                 self.net.num_components))
 
+        self.dynamic_record.write(
+            {
+                'task_id': task_id,
+                'update_acc': update_acc,
+                'no_update_acc': no_update_acc,
+                'num_components': self.net.num_components,
+                'add_new_module': add_new_module,
+            }
+        )
+        self.dynamic_record.save()
         self.test_loss = test_loss
         self.test_acc = test_acc
 

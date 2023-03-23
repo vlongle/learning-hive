@@ -117,7 +117,16 @@ def eval_net(net, testloaders):
     return test_acc
 
 
-def get_all_combinations(config):
+def check_valid_config(cfg):
+    # check that 0.8 * datasets.num_trains_per_class is "close" to datasets.num_vals_per_class
+    check = 0.8 * cfg["dataset.num_trains_per_class"] - \
+        cfg["dataset.num_vals_per_class"]
+    # close depends on the magnitude of dataset.num_vals_per_class
+    check = check / cfg["dataset.num_vals_per_class"]
+    return (abs(check) < 0.1) or (cfg["dataset.num_vals_per_class"] == -1 and cfg["dataset.num_trains_per_class"] == -1)
+
+
+def get_all_combinations(config, strict=True):
     """
     Config is a dictionary where keys are string,
     and values are either a single value or a list of values.
@@ -140,6 +149,9 @@ def get_all_combinations(config):
                 new_combs.append(combs[j].copy())
                 new_combs[-1][keys[i]] = values[i][k]
         combs = new_combs
+    if strict:
+        # filter out invalid configs
+        combs = [c for c in combs if check_valid_config(c)]
     return combs
 
 
@@ -150,8 +162,9 @@ def run_experiment(config):
     """
     script_path = os.path.join("experiments", "run.py")
 
+    print(config)
     combs = get_all_combinations(config)
-    print(len(combs))
+    print("No. of experiments:", len(combs))
 
     for cfg in combs:
         dataset = cfg["dataset"]
@@ -160,6 +173,9 @@ def run_experiment(config):
             "python",
             script_path,
         ] + [f"{k}={v}" for k, v in cfg.items()]
-        job_name = f"{dataset}_{algo}"
+        num_trains_per_class = cfg["dataset.num_trains_per_class"]
+        job_name = f"{dataset}_{algo}_numtrain_{num_trains_per_class}"
+        job_name += "" if cfg["agent.use_contrastive"] == False else "_contrastive"
         cmd += [f"train={algo}", f"job_name={job_name}"]
+        # print(" ".join(cmd), "\n\n")
         subprocess.run(cmd)

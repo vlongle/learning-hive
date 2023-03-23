@@ -54,19 +54,19 @@ class Agent:
             torch.utils.data.DataLoader(self.dataset.trainset[task_id],
                                         batch_size=self.batch_size,
                                         shuffle=True,
-                                        num_workers=0,
+                                        num_workers=4,
                                         pin_memory=True,
                                         ))
         testloaders = {task: torch.utils.data.DataLoader(testset,
                                                          batch_size=128,
                                                          shuffle=False,
-                                                         num_workers=0,
+                                                         num_workers=4,
                                                          pin_memory=True,
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
         valloader = torch.utils.data.DataLoader(self.dataset.valset[task_id],
                                                 batch_size=128,
                                                 shuffle=False,
-                                                num_workers=0,
+                                                num_workers=4,
                                                 pin_memory=True,
                                                 )
         self.agent.train(trainloader, task_id, testloaders=testloaders,

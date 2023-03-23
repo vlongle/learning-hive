@@ -1,0 +1,98 @@
+'''
+File: /data_fleet.py
+Project: fleet
+Created Date: Thursday March 23rd 2023
+Author: Long Le (vlongle@seas.upenn.edu)
+
+Copyright (c) 2023 Long Le
+'''
+
+
+import torch
+import ray
+from shell.fleet.fleet import Agent
+
+"""
+Receiver-first procedure.
+"""
+
+
+class ReceiverFirstDataAgent(Agent):
+    """
+    Have two rounds of communications.
+    1. send query to neighbors
+    2. send data to neighbors
+    """
+
+    def compute_query(self, task_id):
+        # get all valdataset from task=0 to task=task_id
+        valdataset = torch.utils.data.ConcatDataset(
+            self.dataset.valsets[:task_id+1])
+        X_val, y_val = valdataset.tensors[0], valdataset.tensors[1]
+        with torch.inference_mode():
+            logits = self.net(X_val)
+        if self.query_method == "unsupervised":
+            scores = self.scorer(logits)
+        elif self.query_method == "supervised":
+            scores = self.scorer(logits, y_val)
+        else:
+            raise ValueError("Invalid query method")
+        rank = torch.argsort(scores, descending=True)
+        top_k = rank[:self.cfg.receiver_first.num_queries]
+        top_k = top_k[scores[top_k] >
+                      self.query_score_threshold]
+        return X_val[top_k].cpu(), y_val[top_k].cpu()
+
+    def communicate(self, task_id, communication_round):
+        # https://rise.cs.berkeley.edu/blog/ray-tips-for-first-time-users/
+        # storing query to the (node) object store so that other
+        # processes can access it faster
+        if communication_round == 0:
+            self.send_query()
+        elif communication_round == 1:
+            self.provide_data()
+        else:
+            raise ValueError("Invalid round number")
+
+    def send_query(self):
+        query = ray.put(self.compute_query())
+        for neighbor in self.neighbors:
+            neighbor.receive.remote(self.node_id, query, "query")
+
+    def provide_data(self):
+        # send data to neighbors in object store
+        for requester, query in self.buffer_query.items():
+            data = ray.put(self.compute_data(query))
+            requester.receive.remote(self.node_id, data, "data")
+
+    def process_communicate(self, task_id, communication_round):
+        if communication_round == 0:
+            self.compute_data()
+        elif communication_round == 1:
+            self.learn_from_buffer()
+        else:
+            raise ValueError("Invalid round number")
+
+    def receive(self, sender_id, data, data_type):
+        if data_type == "query":
+            # add query to buffer
+            self.buffer_query[sender_id] = data
+        elif data_type == "data":
+            # add data to buffer
+            self.buffer_data[sender_id] = data
+        else:
+            raise ValueError("Invalid data type")
+
+    def remove_outliers(self):
+        """
+        TODO: 
+        """
+        pass
+
+    def compute_data(self, query):
+        # Get relevant data for the query
+        pass
+
+    def learn_from_buffer(self):
+        # get the data and now learn from it
+        pass

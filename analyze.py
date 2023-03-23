@@ -16,11 +16,15 @@ Copyright (c) 2023 Long Le
 '''
 
 
-from shell.utils.metric import Metric
-from shell.utils.record import Record
 import os
+from shell.utils.record import Record
+from shell.utils.metric import Metric
+import re
 result_dir = "results"
+result_dir = "vanilla_mnist_results"
 record = Record("experiment_results.csv")
+
+pattern = r".*64.*"
 
 num_init_tasks = 4
 
@@ -34,6 +38,11 @@ for job_name in os.listdir(result_dir):
                         continue
                     save_dir = os.path.join(
                         result_dir, job_name, dataset_name, algo, seed, agent_id)
+                    # if the pattern doesn't match, continue
+                    if not re.search(pattern, save_dir):
+                        continue
+                    print(save_dir)
+
                     m = Metric(save_dir, num_init_tasks)
                     record.write(
                         {

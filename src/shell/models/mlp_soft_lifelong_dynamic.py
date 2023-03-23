@@ -9,6 +9,7 @@ Copyright (c) 2023 Long Le
 import torch
 import torch.nn as nn
 import numpy as np
+import copy
 from shell.models.base_net_classes import SoftOrderingNet
 
 
@@ -23,8 +24,9 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                  max_components=-1,
                  init_ordering_mode='one_module_per_task',
                  device='cuda',
-                 freeze_encoder=False,
-                 dropout=0.5):
+                 freeze_encoder=True,
+                 dropout=0.5,
+                 project_dim=32):
         super().__init__(i_size,
                          depth,
                          num_classes,
@@ -83,17 +85,26 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.num_components = len(self.components)
 
     def encode(self, X, task_id):
-        # if X shape is (b, c, h, w) then flatten to (b, c*h*w)
         if len(X.shape) > 2:
             X = X.view(X.shape[0], -1)
+        n = X.shape[0]
         s = self.softmax(self.structure[task_id][:self.num_components, :])
-        X = self.encoder[task_id](X)
+        # X = self.encoder[task_id](X)
+        # NOTE: always use the first (fixed) encoder
+        X = self.encoder[0](X)
         for k in range(self.depth):
             X_tmp = torch.zeros_like(X)
             for j in range(self.num_components):
                 fc = self.components[j]
                 X_tmp += s[j, k] * self.dropout(self.relu(fc(X)))
             X = X_tmp
+        return X
+
+    def contrastive_embedding(self, X, task_id):
+        """
+        NOTE: not currently using any projector!
+        """
+        X = self.encode(X, task_id)
         return X
 
     def forward(self, X, task_id):

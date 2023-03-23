@@ -24,10 +24,13 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         self.memory_size = memory_size
 
     def update_modules(self, trainloader, task_id):
-        self.net.freeze_modules(freeze=False)
-        self.net.freeze_structure(freeze=True)
-        prev_reduction = self.loss.reduction
-        self.loss.reduction = 'sum'     # make sure the loss is summed over instances
+        self.net.unfreeze_modules()
+        # self.net.freeze_structure(freeze=True)
+        self.net.freeze_structure()
+        # prev_reduction = self.loss.reduction
+        # self.loss.reduction = 'sum'     # make sure the loss is summed over instances
+        prev_reduction = self.get_loss_reduction()
+        self.set_loss_reduction('sum')
 
         tmp_dataset = copy.copy(trainloader.dataset)
         tmp_dataset.tensors = tmp_dataset.tensors + \
@@ -49,8 +52,10 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
             n = 0
             all_t = torch.unique(t)
             for task_id_tmp in all_t:
-                Y_hat = self.net(X[t == task_id_tmp], task_id=task_id_tmp)
-                l += self.loss(Y_hat, Y[t == task_id_tmp])
+                # Y_hat = self.net(X[t == task_id_tmp], task_id=task_id_tmp)
+                # l += self.loss(Y_hat, Y[t == task_id_tmp])
+                l += self.compute_loss(X[t == task_id_tmp],
+                                       Y[t == task_id_tmp], task_id_tmp)
                 n += X.shape[0]
             l /= n
             self.optimizer.zero_grad()
@@ -61,8 +66,10 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
             n = 0
             self.net.hide_tmp_module()
             for task_id_tmp in all_t:
-                Y_hat = self.net(X[t == task_id_tmp], task_id=task_id_tmp)
-                l += self.loss(Y_hat, Y[t == task_id_tmp])
+                # Y_hat = self.net(X[t == task_id_tmp], task_id=task_id_tmp)
+                # l += self.loss(Y_hat, Y[t == task_id_tmp])
+                l += self.compute_loss(X[t == task_id_tmp],
+                                       Y[t == task_id_tmp], task_id_tmp)
                 n += X.shape[0]
             l /= n
             self.optimizer.zero_grad()
@@ -70,10 +77,12 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
             self.optimizer.step()
             self.net.recover_hidden_module()
 
-        self.loss.reduction = prev_reduction
-        self.net.freeze_modules(freeze=True)
+        # self.loss.reduction = prev_reduction
+        self.set_loss_reduction(prev_reduction)
+        self.net.freeze_modules()
         # unfreeze only current task's structure
-        self.net.freeze_structure(freeze=False, task_id=task_id)
+        # self.net.freeze_structure(freeze=False, task_id=task_id)
+        self.net.unfreeze_structure(task_id)
 
     def update_multitask_cost(self, trainloader, task_id):
         self.replay_buffers[task_id] = ReplayBufferReservoir(

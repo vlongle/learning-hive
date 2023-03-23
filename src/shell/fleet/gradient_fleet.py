@@ -13,22 +13,53 @@ import torch
 from torch.utils.data.dataset import ConcatDataset
 
 
+"""
+NOTE: BUG: we should probably not share the task-specific parameters i.e. encoder/decoder (maybe projector)
+"""
+
+
 class ModelSyncAgent(Agent):
-    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs):
+    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs)
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
         self.models = {}
         # key: (task_id, communication_round, neighbor_id)
         self.bytes_sent = {}
         self.num_init_tasks = net_kwargs.get("num_init_tasks", 1)
+        self.excluded_params = set(
+            ["encoder", "decoder", "projector", "structure"])
 
     def compute_model_size(self, state_dict):
         return sum(p.numel() for p in state_dict.values())
 
+    def prepare_model(self):
+        # return self.net.state_dict()
+        # without the task-specific parameters named in self.excluded_params
+        model = self.net.state_dict()
+
+        def is_in(string, exclude_set):
+            """
+            return true if the string partially matches any keyword in exclude_set
+            e.g. string = "encoder.0.weight", exclude_set = ["encoder"] => True
+            """
+            for exclude in exclude_set:
+                if exclude in string:
+                    return True
+            return False
+
+        # remove the task-specific parameters
+        to_excludes = [name for name in model.keys(
+        ) if is_in(name, self.excluded_params)]
+
+        # remove to_excludes from model
+        for name in to_excludes:
+            model.pop(name)
+        return model
+
     def communicate(self, task_id, communication_round):
         if task_id < self.num_init_tasks - 1:
             return
-        model = self.net.state_dict()
+        model = self.prepare_model()
         # send model to neighbors
         for neighbor in self.neighbors:
             neighbor.receive(self.node_id, deepcopy(model), "model")
@@ -43,7 +74,8 @@ class ModelSyncAgent(Agent):
     def aggregate_models(self):
         # get model from neighbors
         # average all the models together!
-        print(self.models.keys())
+        # print("node_id:", self.node_id)
+        # print(self.models.keys())
         # average all the models together!
         for model in self.models.values():
             for name, param in model.items():
@@ -52,6 +84,10 @@ class ModelSyncAgent(Agent):
         for name, param in self.net.state_dict().items():
             # +1 because it includes the current model
             param.data /= len(self.models) + 1
+
+        # print("AFTER (encoder):", self.net.state_dict()["encoder.0.bias"])
+        # print("AFTER (components):",
+        #       self.net.state_dict()["components.0.bias"])
 
     def retrain(self, num_epochs, task_id, testloaders, save_freq=1, eval_bool=True):
         """
@@ -65,7 +101,7 @@ class ModelSyncAgent(Agent):
                                                   num_workers=0,
                                                   pin_memory=True
                                                   )
-        self.agent._train(mega_loader, num_epochs, str(task_id) + '_retrain',
+        self.agent._train(mega_loader, num_epochs, task_id,
                           testloaders, save_freq, eval_bool)
 
     def process_communicate(self, task_id, communication_round):
@@ -80,34 +116,30 @@ class ModelSyncAgent(Agent):
                                                          pin_memory=True,
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
 
+        task_id_retrain = f"{task_id}_retrain_round_{communication_round}"
         # NOTE: all the saving here might be a bit problematic!
-        self.retrain(
-            self.sharing_strategy.retrain.num_epochs, task_id, testloaders, save_freq=1, eval_bool=True)
 
-        self.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id,
-                       testloaders, final_save=True)  # final eval
+        # self.net.freeze_structure(freeze=True)
+
+        # retrain only the modules and not task specific parameters!
+        self.retrain(
+            self.sharing_strategy.retrain.num_epochs, task_id_retrain, testloaders, save_freq=1, eval_bool=True)
+
+        self.agent.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id_retrain,
+                             testloaders, final_save=True)  # final eval
+
+        # self.net.freeze_structure(freeze=False, task_id=task_id)
 
 
 @ray.remote
-class ParallelModelSyncAgent(Agent):
-    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs):
-        super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs)
-        self.models = {}
-
+class ParallelModelSyncAgent(ModelSyncAgent):
     def communicate(self, task_id, communication_round):
+        # TODO: Should we do deepcopy???
         # put model on object store
-        model = ray.put(self.net.state_dict())
+        state_dict = self.net.state_dict()
+        model = ray.put(state_dict)
         # send model to neighbors
         for neighbor in self.neighbors:
             neighbor.receive.remote(self.node_id, model, "model")
-
-    def receive(self, node_id, model, msg_type):
-        # get model from neighbors
-        # average all the models together!
-        self.models[node_id] = ray.get(model)
-
-    def process_communicate(self, task_id):
-        # get model from neighbors
-        # average all the models together!
-        print(self.models)
+            self.bytes_sent[(task_id, communication_round,
+                             neighbor.get_node_id())] = self.compute_model_size(state_dict)

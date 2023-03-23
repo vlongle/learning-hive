@@ -1,6 +1,5 @@
 name: cnn
 depth: 4
-num_init_tasks: 4
 channels: 50
 conv_kernel: 3
 maxpool_kernel: 2

@@ -47,11 +47,14 @@ class CompositionalNet(nn.Module):
     grad is not None)
     '''
 
-    def freeze_modules(self, freeze=True):
+    def freeze_modules(self):
         for param in self.components.parameters():
-            param.requires_grad = not freeze
-            if freeze:
-                param.grad = None
+            param.requires_grad = False
+            param.grad = None
+
+    def unfreeze_modules(self):
+        for param in self.components.parameters():
+            param.requires_grad = True
 
     def freeze_structure(self, freeze=True):
         raise NotImplementedError(
@@ -110,38 +113,76 @@ class SoftOrderingNet(CompositionalNet):
             raise ValueError('{} is not a valid ordering initialization mode'.format(
                 self.init_ordering_mode))
 
-    def freeze_structure(self, freeze=True, task_id=None):
-        '''
-        Since we are using Adam optimizer, it is important to
-        set requires_grad = False for every parameter that is 
-        not currently being optimized. Otherwise, even if they
-        are untouched by computations, their gradient is all-
-        zeros and not None, and Adam counts it as an update.
-        '''
-        if task_id is None:
-            for param in self.structure:
-                param.requires_grad = not freeze
-                if freeze:
-                    param.grad = None
-            for param in self.decoder.parameters():
-                param.requires_grad = not freeze
-                if freeze:
-                    param.grad = None
-            if not self.freeze_encoder:
-                for param in self.encoder.parameters():
-                    param.requires_grad = not freeze
-                    if freeze:
-                        param.grad = None
-        else:
-            self.structure[task_id].requires_grad = not freeze
-            if freeze:
-                self.structure[task_id].grad = None
-            for param in self.decoder[task_id].parameters():
-                param.requires_grad = not freeze
-                if freeze:
-                    param.grad = None
-            if not self.freeze_encoder:
-                for param in self.encoder[task_id].parameters():
-                    param.requires_grad = not freeze
-                    if freeze:
-                        param.grad = None
+    # def freeze_structure(self, freeze=True, task_id=None):
+    #     '''
+    #     Since we are using Adam optimizer, it is important to
+    #     set requires_grad = False for every parameter that is
+    #     not currently being optimized. Otherwise, even if they
+    #     are untouched by computations, their gradient is all-
+    #     zeros and not None, and Adam counts it as an update.
+    #     '''
+    #     if task_id is None:
+    #         for param in self.structure:
+    #             param.requires_grad = not freeze
+    #             if freeze:
+    #                 param.grad = None
+    #         for param in self.decoder.parameters():
+    #             param.requires_grad = not freeze
+    #             if freeze:
+    #                 param.grad = None
+    #         if not self.freeze_encoder:
+    #             for param in self.encoder.parameters():
+    #                 param.requires_grad = not freeze
+    #                 if freeze:
+    #                     param.grad = None
+    #     else:
+    #         self.structure[task_id].requires_grad = not freeze
+    #         if freeze:
+    #             self.structure[task_id].grad = None
+    #         for param in self.decoder[task_id].parameters():
+    #             param.requires_grad = not freeze
+    #             if freeze:
+    #                 param.grad = None
+    #         if not self.freeze_encoder:
+    #             for param in self.encoder[task_id].parameters():
+    #                 param.requires_grad = not freeze
+    #                 if freeze:
+    #                     param.grad = None
+
+    def freeze_structure(self):
+        self.freeze_linear_weights()
+        self.freeze_decoder()
+        if self.freeze_encoder:
+            self.freeze_encoder_fn()
+
+    def unfreeze_structure(self, task_id):
+        self.unfreeze_linear_weights(task_id)
+        self.unfreeze_decoder(task_id)
+        if not self.freeze_encoder:
+            self.unfreeze_encoder(task_id)
+
+    def freeze_linear_weights(self):
+        for param in self.structure:
+            param.requires_grad = False
+            param.grad = None
+
+    def unfreeze_linear_weights(self, task_id):
+        self.structure[task_id].requires_grad = True
+
+    def freeze_encoder_fn(self):
+        for param in self.encoder.parameters():
+            param.requires_grad = False
+            param.grad = None
+
+    def unfreeze_encoder(self, task_id):
+        for param in self.encoder[task_id].parameters():
+            param.requires_grad = True
+
+    def freeze_decoder(self):
+        for param in self.decoder.parameters():
+            param.requires_grad = False
+            param.grad = None
+
+    def unfreeze_decoder(self, task_id):
+        for param in self.decoder[task_id].parameters():
+            param.requires_grad = True

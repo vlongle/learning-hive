@@ -21,7 +21,7 @@ SRC_DIR = os.path.join('src', 'shell')
 class SplitDataset():
     def __init__(self, num_tasks, num_classes, num_classes_per_task, with_replacement=False,
                  normalize=True, num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
-                 num_init_tasks=None):
+                 num_init_tasks=None, labels=None):
         self.num_classes = num_classes
         if not with_replacement:
             assert num_tasks <= num_classes // num_classes_per_task, 'Dataset does not support more than {} tasks'.format(
@@ -40,12 +40,13 @@ class SplitDataset():
         self.features = []
 
         self.max_batch_size = 0
-        if not with_replacement:
-            labels = np.random.permutation(num_classes)
-        else:
-            labels = np.array([np.random.choice(
-                num_classes, num_classes_per_task, replace=False) for t in range(self.num_tasks)])
-            labels = labels.reshape(-1)
+        if labels is None:
+            if not with_replacement:
+                labels = np.random.permutation(num_classes)
+            else:
+                labels = np.array([np.random.choice(
+                    num_classes, num_classes_per_task, replace=False) for t in range(self.num_tasks)])
+                labels = labels.reshape(-1)
 
         if num_init_tasks is not None:
             # make sure that the first num_init_tasks * num_classes_per_task classes are ALL DISTINCT!
@@ -124,10 +125,12 @@ class SplitDataset():
 
 class MNIST(SplitDataset):
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
-                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False, num_init_tasks=None):
+                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False, num_init_tasks=None,
+                 labels=None):
         super().__init__(num_tasks, num_classes=10, num_classes_per_task=num_classes_per_task,
                          with_replacement=with_replacement, num_train_per_task=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels,
-                         num_init_tasks=num_init_tasks)
+                         num_init_tasks=num_init_tasks,
+                         labels=labels)
         self.name = 'mnist'
 
     def load_data(self):
@@ -171,10 +174,12 @@ class FashionMNIST(MNIST):
     '''
 
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
-                 num_train=-1, num_val=-1, remap_labels=False, num_init_tasks=None):
+                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
+                 num_init_tasks=None, labels=None):
         super().__init__(num_tasks, num_classes_per_task=num_classes_per_task,
-                         with_replacement=with_replacement, num_train=num_train, num_val=num_val, remap_labels=remap_labels,
-                         num_init_tasks=num_init_tasks)
+                         with_replacement=with_replacement, num_train_per_task=num_train_per_task,
+                         num_val_per_task=num_val_per_task, remap_labels=remap_labels,
+                         num_init_tasks=num_init_tasks, labels=labels)
         self.name = 'fashion_mnist'
 
     def load_data(self):
@@ -213,10 +218,12 @@ class FashionMNIST(MNIST):
 
 class KMNIST(MNIST):
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
-                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False, num_init_tasks=None):
+                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
+                 num_init_tasks=None, labels=None):
         super().__init__(num_tasks, num_classes_per_task=num_classes_per_task,
-                         with_replacement=with_replacement, num_train=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels,
-                         num_init_tasks=num_init_tasks)
+                         with_replacement=with_replacement, num_train_per_task=num_train_per_task,
+                         num_val_per_task=num_val_per_task, remap_labels=remap_labels,
+                         num_init_tasks=num_init_tasks, labels=labels)
         self.name = 'kmnist'
 
     def load_data(self):
@@ -250,10 +257,12 @@ class KMNIST(MNIST):
 
 class CIFAR100(SplitDataset):
     def __init__(self, num_tasks=20, num_classes_per_task=5, with_replacement=False,
-                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False, num_init_tasks=None):
+                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
+                 num_init_tasks=None, labels=None):
         super().__init__(num_tasks, num_classes=100, num_classes_per_task=num_classes_per_task,
-                         with_replacement=with_replacement, num_train_per_task=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels,
-                         num_init_tasks=num_init_tasks)
+                         with_replacement=with_replacement, num_train_per_task=num_train_per_task,
+                         num_val_per_task=num_val_per_task, remap_labels=remap_labels,
+                         num_init_tasks=num_init_tasks, labels=labels)
         self.name = 'cifar100'
 
     def load_data(self):
@@ -282,7 +291,7 @@ def get_dataset(**kwargs):
     kwargs.pop('dataset_name', None)
     if dataset_name == 'mnist':
         return MNIST(**kwargs)
-    elif dataset_name == 'fashion':
+    elif dataset_name == 'fashionmnist':
         return FashionMNIST(**kwargs)
     elif dataset_name == 'kmnist':
         return KMNIST(**kwargs)

@@ -26,6 +26,7 @@ In longer-sequence Hard-Data, task distribution can overlap still, which create 
 - [] Keep the encoder fixed during the retrainining stuff. Use one encoder for everything!
 - [] might even keep the decoder fixed?
 - [] check ray.put to see if we need deepcopy
+- [] use fixed projections across all agents but still random across tasks?
 
 Using contrastive loss primarily and does not allow cross entropy gradients to flow
 back through the encoding.
@@ -70,3 +71,57 @@ Still running into the pairwise contrastive bias problem...
 
 The random structures across tasks might be problematic for aligning these representations.
 - TODO: pick all ones and keep them fixed.
+
+
+How are we not losing info. by just using some random linear transformation like this? MNIST are mostly black and white so it's a hail-mary judgement?
+
+
+## Experiments Logs
+Comparing modular vs monolithic vs contrastive.
+on full and reduced datasets.
+
+
+
+
+No flipping
+
+
+tensor([1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0,
+        1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1,
+        1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0,r
+        0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0,
+        1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0,
+        1, 1, 1, 1, 1, 1, 0, 1], device='cuda:0')
+
+X[0, :, :5, :]
+tensor([[[0.0000, 0.3804, 0.1373, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+          0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+          0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
+          0.0000, 0.0000, 0.0000, 0.0000],
+         [0.0000, 0.1333, 0.5608, 0.0196, 0.0000, 0.0000, 0.0000, 0.0000,
+          0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0980,
+          0.0784, 0.0000, 0.0000, 0.0000, 0.1176, 0.4980, 0.4588, 0.1333,
+          0.0000, 0.0000, 0.0000, 0.0000],
+         [0.0000, 0.0000, 0.1922, 0.3490, 0.0000, 0.0000, 0.0000, 0.0000,
+          0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.3020, 0.9333,
+          0.9216, 0.1529, 0.0784, 0.5216, 0.7098, 0.6471, 0.8235, 0.9529,
+          0.3216, 0.0000, 0.0000, 0.0000],
+         [0.0000, 0.0000, 0.0000, 0.5255, 0.0000, 0.0000, 0.0000, 0.0000,
+          0.0000, 0.0000, 0.0000, 0.0000, 0.0078, 0.4941, 0.5686, 0.8902,
+          1.0000, 0.9216, 0.9333, 0.5412, 0.0314, 0.0000, 0.0627, 0.9255,
+          0.6784, 0.0000, 0.0000, 0.0000],
+         [0.0000, 0.0000, 0.0000, 0.6784, 0.0196, 0.0000, 0.0000, 0.0000,
+          0.0000, 0.0000, 0.0000, 0.0000, 0.5216, 0.3686, 0.0078, 0.8118,
+          1.0000, 1.0000, 0.6745, 0.0000, 0.0078, 0.0314, 0.0000, 0.6745,
+          0.7059, 0.0000, 0.0000, 0.0000]]], device='cuda:0')
+
+Flipping
+
+
+Bug somewhere. Flipping labels should NOT change the contrastive learning.
+
+
+Recommendation stuff: contrastive objectives might be a bit terrible.
+
+
+

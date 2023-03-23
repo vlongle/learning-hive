@@ -19,7 +19,7 @@ class MLP(nn.Module):
                  num_tasks,
                  num_init_tasks,
                  device='cuda',
-                 freeze_encoder=False,
+                 freeze_encoder=True,
                  dropout=0.5,
                  ):
         super().__init__()

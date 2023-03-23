@@ -11,6 +11,7 @@ agent:
   batch_size: 64
   memory_size: 64
   improvement_threshold: 0.05
+  use_contrastive: true
 
 defaults:
   - train: monolithic

@@ -14,12 +14,24 @@ from shell.utils.utils import create_dir_if_not_exist
 from shell.utils.record import Record
 from torch.utils.tensorboard import SummaryWriter
 import logging
+from shell.utils.supcontrast import SupConLoss
+import torchvision.transforms as transforms
 
 
 class Learner():
     def __init__(self, net, save_dir='./tmp/results/', improvement_threshold=0.05):
         self.net = net
-        self.loss = nn.CrossEntropyLoss()
+        self.ce_loss = nn.CrossEntropyLoss()
+        self.sup_loss = SupConLoss()
+        self.train_transform = transforms.Compose([
+            transforms.RandomResizedCrop(
+                size=self.net.i_size[0], scale=(0.2, 1.), antialias=True),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomApply([
+                transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
+            ], p=0.8),
+            transforms.RandomGrayscale(p=0.2),
+        ])
         # self.loss = nn.BCEWithLogitsLoss() if net.binary else nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.net.parameters())
         self.improvement_threshold = improvement_threshold
@@ -31,6 +43,49 @@ class Learner():
         self.writer = SummaryWriter(
             log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
         self.init_trainloaders = None
+
+    def get_loss_reduction(self):
+        assert self.ce_loss.reduction == self.sup_loss.reduction
+        return self.ce_loss.reduction
+
+    def set_loss_reduction(self, reduction):
+        self.ce_loss.reduction = reduction
+        self.sup_loss.reduction = reduction
+
+    def compute_loss(self, X, Y, task_id):
+        """
+        Compute cross_entropy + supcon loss. Make sure that 
+        cross_entropy does not propagate gradients back
+        to the representation learner.
+        """
+        # detach to make sure that
+
+        # =============================
+        # Cross entropy loss
+        # NOTE: detach so that cross_entropy does not propagate gradients back to the representation learner
+        X_encode = self.net.encode(X, task_id).detach()
+        # X_encode = self.net.encode(X, task_id)
+        Y_hat = self.net.decoder[task_id](X_encode)
+        ce = self.ce_loss(Y_hat, Y)
+        # ce = 0.0
+        # =============================
+        # Contrastive loss
+        encoded_X = self.net.contrastive_embedding(X, task_id)
+        encoded_transformed_X = self.net.contrastive_embedding(
+            self.train_transform(X), task_id)  # (N_samples, N_features)
+        # features.shape = (N_samples, N_views=2, N_features)
+        features = torch.cat(
+            [encoded_transformed_X.unsqueeze(1), encoded_X.unsqueeze(1)], dim=1)
+        cl = self.sup_loss(features, labels=Y)
+        # if cl is nan, then exit
+        if torch.isnan(cl):
+            logging.error("Contrastive loss is nan")
+            exit(1)
+        # cl = 0.0
+        # =============================
+
+        scale = 1.0
+        return ce + scale * cl
 
     def train(self, *args, **kwargs):
         raise NotImplementedError('Training loop is algorithm specific')
@@ -63,8 +118,11 @@ class Learner():
 
     def evaluate(self, testloaders):
         was_training = self.net.training
-        prev_reduction = self.loss.reduction
-        self.loss.reduction = 'sum'     # make sure the loss is summed over instances
+        # prev_reduction = self.loss.reduction
+        prev_reduction = self.get_loss_reduction()
+        # self.loss.reduction = 'sum'     # make sure the loss is summed over instances
+        # make sure the loss is summed over instances
+        self.set_loss_reduction('sum')
         self.net.eval()
         with torch.no_grad():
             self.test_loss = {}
@@ -77,7 +135,7 @@ class Learner():
                     X = X.to(self.net.device, non_blocking=True)
                     Y = Y.to(self.net.device, non_blocking=True)
                     Y_hat = self.net(X, task)
-                    l += self.loss(Y_hat, Y).item()
+                    l += self.compute_loss(X, Y, task).item()
                     a += (Y_hat.argmax(dim=1) == Y).sum().item()
                     # a += ((Y_hat > 0) == (Y == 1)
                     #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
@@ -85,13 +143,16 @@ class Learner():
                 self.test_loss[task] = l / n
                 self.test_acc[task] = a / n
 
-        self.loss.reduction = prev_reduction
+        # self.loss.reduction = prev_reduction
+        self.set_loss_reduction(prev_reduction)
         if was_training:
             self.net.train()
 
     def gradient_step(self, X, Y, task_id):
-        Y_hat = self.net(X, task_id=task_id)
-        l = self.loss(Y_hat, Y)
+        # Y_hat = self.net(X, task_id=task_id)
+        X = X.to(self.net.device, non_blocking=True)
+        Y = Y.to(self.net.device, non_blocking=True)
+        l = self.compute_loss(X, Y, task_id)
         self.optimizer.zero_grad()
         l.backward()
         self.optimizer.step()
@@ -160,8 +221,9 @@ class CompositionalLearner(Learner):
         else:
             self.net.freeze_modules()
             self.net.freeze_structure()     # freeze structure for all tasks
-            self.net.freeze_structure(
-                freeze=False, task_id=task_id)    # except current one
+            # self.net.freeze_structure(
+            #     freeze=False, task_id=task_id)    # except current one
+            self.net.unfreeze_structure(task_id=task_id)
             iter_cnt = 0
             for i in range(num_epochs):
                 if (i + 1) % component_update_freq == 0:
@@ -196,7 +258,15 @@ class CompositionalDynamicLearner(CompositionalLearner):
         eval_bool = testloaders is not None
         self.save_data(0, task_id, testloaders)
         if self.T <= self.net.num_init_tasks:
-            self.net.freeze_structure()
+            # NOTE: doesn't need to freeze_structure because one_hot structure
+            # will be fixed anyway. We need the decoder to change for
+            # the new contrastive learning paradigm.
+            # self.net.freeze_structure()
+            # NOTE: we're keeping the decoder unfrozen!
+            # and freeze structure just in case we're using one-hot same structure
+            # for all the tasks!
+            self.net.freeze_encoder_fn()
+            self.net.freeze_linear_weights()
             self.init_train(trainloader, task_id, num_epochs,
                             save_freq, testloaders)
         else:
@@ -212,7 +282,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 self.preconditioner.add_module(self.net.components[-1])
 
             # unfreeze (new) structure for current task
-            self.net.freeze_structure(freeze=False, task_id=task_id)
+            # self.net.freeze_structure(freeze=False, task_id=task_id)
+            self.net.unfreeze_structure(task_id=task_id)
             iter_cnt = 0
 
             for i in range(num_epochs):
@@ -257,8 +328,10 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
     def evaluate(self, testloaders, eval_no_update=True):
         was_training = self.net.training
-        prev_reduction = self.loss.reduction
-        self.loss.reduction = 'sum'     # make sure the loss is summed over instances
+        # prev_reduction = self.loss.reduction
+        prev_reduction = self.get_loss_reduction()
+        # self.loss.reduction = 'sum'     # make sure the loss is summed over instances
+        self.set_loss_reduction('sum')
         self.net.eval()
         with torch.no_grad():
             self.test_loss = {}
@@ -271,7 +344,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                     X = X.to(self.net.device, non_blocking=True)
                     Y = Y.to(self.net.device, non_blocking=True)
                     Y_hat = self.net(X, task)
-                    l += self.loss(Y_hat, Y).item()
+                    l += self.compute_loss(X, Y, task).item()
                     a += (Y_hat.argmax(dim=1) == Y).sum().item()
                     # a += ((Y_hat > 0) == (Y == 1)
                     #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
@@ -283,18 +356,23 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         X = X.to(self.net.device, non_blocking=True)
                         Y = Y.to(self.net.device, non_blocking=True)
                         Y_hat = self.net(X, task)
-                        l1 += self.loss(Y_hat, Y).item()
+                        l1 += self.compute_loss(X, Y, task).item()
                         a1 += (Y_hat.argmax(dim=1) == Y).sum().item()
                         # a1 += ((Y_hat > 0) == (Y == 1)
                         #        if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
                     self.test_loss[task] = (l / n, l1 / n)
                     self.test_acc[task] = (a / n, a1 / n)
                     self.net.recover_hidden_module()
+                    # print(
+                    #     f"dropout test_acc {self.test_acc[task]}, structure {self.net.structure[task]}")
+                    # print(
+                    #     f"new components {self.net.components[-1].weight[:5]}")
                 else:
                     self.test_loss[task] = l / n
                     self.test_acc[task] = a / n
 
-        self.loss.reduction = prev_reduction
+        # self.loss.reduction = prev_reduction
+        self.set_loss_reduction(prev_reduction)
         if was_training:
             self.net.train()
 

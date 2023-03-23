@@ -19,7 +19,7 @@ SEED_SCALE = 1000
 
 
 class Agent:
-    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs):
+    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
 
         self.save_dir = os.path.join(
             agent_kwargs["save_dir"], f"agent_{str(node_id)}")
@@ -40,6 +40,8 @@ class Agent:
         agent_kwargs["save_dir"] = self.save_dir
         self.agent = AgentCls(self.net, **agent_kwargs)
         self.train_kwargs = train_kwargs
+
+        self.sharing_strategy = sharing_strategy
 
     def get_node_id(self):
         return self.node_id
@@ -98,7 +100,6 @@ class ParallelAgent(Agent):
 class Fleet:
     def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
         self.graph = graph
-        num_agents = len(graph.nodes)
         self.sharing_strategy = sharing_strategy
         self.num_coms_per_round = self.sharing_strategy.num_coms_per_round
 
@@ -110,7 +111,7 @@ class Fleet:
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
         self.agents = [
             AgentCls(node_id, seed, datasets[node_id], NetCls,
-                     LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
+                     LearnerCls, net_kwargs, agent_kwargs, train_kwargs, self.sharing_strategy)
             for node_id in self.graph.nodes
         ]
         logging.info(f"Created fleet with {len(self.agents)} agents")
@@ -155,7 +156,7 @@ class ParallelFleet:
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
         self.agents = [
             AgentCls.options(num_gpus=self.num_gpus_per_agent).remote(node_id, seed, datasets[node_id], NetCls,
-                                                                      LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
+                                                                      LearnerCls, net_kwargs, agent_kwargs, train_kwargs, self.sharing_strategy)
             for node_id in self.graph.nodes
         ]
         logging.info(f"Created fleet with {len(self.agents)} agents")

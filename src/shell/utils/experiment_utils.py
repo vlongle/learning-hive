@@ -31,6 +31,7 @@ def setup_experiment(cfg: DictConfig):
     pprint(cfg)
     seed_everything(cfg.seed)
     dataset_cfg = dict(cfg.dataset)
+    dataset_cfg |= {"num_init_tasks": cfg.num_init_tasks}
     dataset_cfg["num_train_per_task"] = dataset_cfg["num_trains_per_class"] * \
         dataset_cfg["num_classes_per_task"]
     del dataset_cfg["num_trains_per_class"]
@@ -50,7 +51,8 @@ def setup_experiment(cfg: DictConfig):
     print("num_classes", num_classes)
 
     net_cfg |= {"i_size": i_size,
-                "num_classes": num_classes, "num_tasks": cfg.dataset.num_tasks}
+                "num_classes": num_classes, "num_tasks": cfg.dataset.num_tasks,
+                "num_init_tasks": cfg.num_init_tasks}
     print("net_cfg", net_cfg)
     tg = TopologyGenerator(num_nodes=cfg.num_agents)
     graph = tg.generate_random()
@@ -78,10 +80,17 @@ def setup_experiment(cfg: DictConfig):
     return graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg
 
 
-def load_net(cfg, NetCls, net_cfg, agent_id, task_id):
+def load_net(cfg, NetCls, net_cfg, agent_id, task_id, num_added_components=None):
     save_dir = os.path.join(cfg['agent']['save_dir'],
                             f'agent_{agent_id}', f'task_{task_id}')
     net = NetCls(**net_cfg)
+    # TODO: how to know how many components to add?
+    if num_added_components is not None:
+        for _ in range(num_added_components):
+            # TODO: this is buggy. We need to log the number of new components added
+            # over time into a record.csv and use that
+            net.add_tmp_module(len(net.components)+1)
+
     checkpoint = torch.load(os.path.join(save_dir, "checkpoint.pt"))
     net.load_state_dict(checkpoint["model_state_dict"])
     return net

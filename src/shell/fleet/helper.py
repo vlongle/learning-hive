@@ -15,7 +15,7 @@ def get_fleet(parallel=True):
 
 
 def get_agent_cls(sharing_strategy, parallel=True):
-    if sharing_strategy.name == "vanilla":
+    if sharing_strategy.name == "no_sharing":
         if parallel:
             return ParallelAgent
         else:
@@ -26,4 +26,5 @@ def get_agent_cls(sharing_strategy, parallel=True):
         else:
             return ModelSyncAgent
     else:
-        raise NotImplementedError
+        raise NotImplementedError(
+            f"sharing strategy {sharing_strategy.name} not implemented")

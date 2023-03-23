@@ -18,3 +18,55 @@ For longer-sequence Hard-Data, the local flexibility of ModularGrad allows us to
 
 ## Sharing Modules
 In longer-sequence Hard-Data, task distribution can overlap still, which create opportunities for sharing modules.
+
+
+## TODO:
+- [x] Only FedAvg on modules (and not task-specific structures)
+- [] implement FedAvg with momentum (see Flower module)
+- [] Keep the encoder fixed during the retrainining stuff. Use one encoder for everything!
+- [] might even keep the decoder fixed?
+- [] check ray.put to see if we need deepcopy
+
+Using contrastive loss primarily and does not allow cross entropy gradients to flow
+back through the encoding.
+
+## Notes
+For remap_labels=True, modular will not work if we train with a lot of init_tasks because during assimilation
+we don't change the components, and these components already learn to map labels to some previous labels. Encountering
+new labels without changing the modules (but only re-restructuring as in modular as opposed to monolithic) means that 
+the model will just not learn.
+Solutions:
+1. Either do remap_labels=False as before in the original paper (this might limit transfer across tasks though).
+2. Reduce the number of init_tasks and original modules to limit overfitting. It doesn't really solve the root of the problem.
+][root][INFO] -         task: 3 loss: 0.18648204755543465       acc: 0.9266331658291457
+[2023-03-22 16:36:53,891][root][INFO] -         task: 4 loss: 0.17842456090797498       acc: 0.9373786407766991
+[2023-03-22 16:36:53,892][root][INFO] -         task: 5 loss: 0.3132778021653727        acc: 0.8885616102110947
+[2023-03-22 16:36:53,892][root][INFO] -         task: 6 loss: 0.09932567352207437       acc: 0.9765886287625418
+[2023-03-22 16:36:53,893][root][INFO] -         task: 7 loss: 0.46160813278435825       acc: 0.8252134605725766
+[2023-03-22 16:36:53,893][root][INFO] -         task: 8 loss: 0.4760802147345016        acc: 0.8140407288317256
+[2023-03-22 16:36:53,894][root][INFO] -         task: 9 loss: 0.10803565069026523       acc: 0.9919697685403873
+[2023-03-22 16:36:53,895][root][INFO] -         task: avg       loss: 0.21408524074298851       acc: 0.9248043895895405
+[2023-03-22 16:36:53,904][root][INFO] - W/update: 0.99, WO/update: 0.99
+[2023-03-22 16:36:53,904][root][INFO] - Not keeping new module. Total: 8
+[2023-03-22 16:36:54,594][root][INFO] - epochs: 201, training task: 9
+[2023-03-22 16:36:54,594][root][INFO] -         task: 0 loss: 0.11923505289038432       acc: 0.9567010309278351
+[2023-03-22 16:36:54,595][root][INFO] -         task: 1 loss: 0.027654294873049757      acc: 0.9914974019839395
+[2023-03-22 16:36:54,596][root][INFO] -         task: 2 loss: 0.17072897730646908       acc: 0.9394594594594594
+[2023-03-22 16:36:54,596][root][INFO] -         task: 3 loss: 0.18648204755543465       acc: 0.9266331658291457
+[2023-03-22 16:36:54,597][root][INFO] -         task: 4 loss: 0.17842456090797498       acc: 0.9373786407766991
+[2023-03-22 16:36:54,598][root][INFO] -         task: 5 loss: 0.3132778021653727        acc: 0.8885616102110947
+[2023-03-22 16:36:54,598][root][INFO] -         task: 6 loss: 0.09932567352207437       acc: 0.9765886287625418
+[2023-03-22 16:36:54,599][root][INFO] -         task: 7 loss: 0.46160813278435825       acc: 0.8252134605725766
+[2023-03-22 16:36:54,600][root][INFO] -         task: 8 loss: 0.4760802147345016        acc: 0.8140407288317256
+[2023-03-22 16:36:54,600][root][INFO] -         task: 9 loss: 0.10803565069026523       acc: 0.9891355692017005
+[2023-03-22 16:36:54,601][root][INFO] -         task: avg       loss: 0.21408524074298851       acc: 0.9245209696556718
+[2023-03-22 16:36:54,642][root][INFO] - final components: 8
+Results saved in less_overfit_results/ Also typically for remap_labels=True, we have to train much longer like 200 epochs.
+3. Train representation learning through supcontrast (completely label-agnostic) and do prototype classifier downstream, or prevent
+gradient from the entropy to affect the representation!
+NOTE: this is currently NOT working for some reasons, maybe need the projector??
+Still running into the pairwise contrastive bias problem...
+
+
+The random structures across tasks might be problematic for aligning these representations.
+- TODO: pick all ones and keep them fixed.

@@ -4,6 +4,7 @@ job_name: fun
 num_agents: 1
 root_save_dir: results
 parallel: true
+num_init_tasks: 4
 
 agent:
   save_dir: ${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}

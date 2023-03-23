@@ -51,8 +51,10 @@ class NoComponentsER(Learner):
             self.update_multitask_cost(trainloader, task_id)
 
     def _train(self, mega_loader, num_epochs, task_id, testloaders, save_freq=1, eval_bool=True):
-        prev_reduction = self.loss.reduction
-        self.loss.reduction = 'sum'     # make sure the loss is summed over instances
+        # prev_reduction = self.loss.reduction
+        # self.loss.reduction = 'sum'     # make sure the loss is summed over instances
+        prev_reduction = self.get_loss_reduction()
+        self.set_loss_reduction('sum')
         for i in range(num_epochs):
             for X, Y, t in mega_loader:
                 X = X.to(self.net.device, non_blocking=True)
@@ -61,9 +63,12 @@ class NoComponentsER(Learner):
                 n = 0
                 all_t = torch.unique(t)
                 for task_id_tmp in all_t:
-                    Y_hat = self.net(X[t == task_id_tmp],
-                                     task_id=task_id_tmp)
-                    l += self.loss(Y_hat, Y[t == task_id_tmp])
+                    # Y_hat = self.net(X[t == task_id_tmp],
+                    #                  task_id=task_id_tmp)
+                    # l += self.loss(Y_hat, Y[t == task_id_tmp])
+                    l += self.compute_loss(X[t == task_id_tmp],
+                                           Y[t == task_id_tmp],
+                                           task_id_tmp)
                     n += X.shape[0]
                 l /= n
                 self.optimizer.zero_grad()
@@ -73,7 +78,8 @@ class NoComponentsER(Learner):
                 if eval_bool:
                     self.evaluate(testloaders)
                 self.save_data(i + 1, task_id, testloaders)
-        self.loss.reduction = prev_reduction
+        # self.loss.reduction = prev_reduction
+        self.set_loss_reduction(prev_reduction)
 
     def update_multitask_cost(self, trainloader, task_id):
         self.replay_buffers[task_id] = ReplayBufferReservoir(

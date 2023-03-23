@@ -20,7 +20,8 @@ SRC_DIR = os.path.join('src', 'shell')
 
 class SplitDataset():
     def __init__(self, num_tasks, num_classes, num_classes_per_task, with_replacement=False,
-                 normalize=True, num_train_per_task=-1, num_val_per_task=-1, remap_labels=False):
+                 normalize=True, num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
+                 num_init_tasks=None):
         self.num_classes = num_classes
         if not with_replacement:
             assert num_tasks <= num_classes // num_classes_per_task, 'Dataset does not support more than {} tasks'.format(
@@ -45,6 +46,11 @@ class SplitDataset():
             labels = np.array([np.random.choice(
                 num_classes, num_classes_per_task, replace=False) for t in range(self.num_tasks)])
             labels = labels.reshape(-1)
+
+        if num_init_tasks is not None:
+            # make sure that the first num_init_tasks * num_classes_per_task classes are ALL DISTINCT!
+            labels[:num_init_tasks*num_classes_per_task] = np.random.choice(
+                num_classes, num_init_tasks*num_classes_per_task, replace=False)
 
         self.class_sequence = labels
         logging.info(f"Class sequence: {self.class_sequence}")
@@ -118,9 +124,10 @@ class SplitDataset():
 
 class MNIST(SplitDataset):
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
-                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False):
+                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False, num_init_tasks=None):
         super().__init__(num_tasks, num_classes=10, num_classes_per_task=num_classes_per_task,
-                         with_replacement=with_replacement, num_train_per_task=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels)
+                         with_replacement=with_replacement, num_train_per_task=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels,
+                         num_init_tasks=num_init_tasks)
         self.name = 'mnist'
 
     def load_data(self):
@@ -164,9 +171,10 @@ class FashionMNIST(MNIST):
     '''
 
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
-                 num_train=-1, num_val=-1, remap_labels=False):
+                 num_train=-1, num_val=-1, remap_labels=False, num_init_tasks=None):
         super().__init__(num_tasks, num_classes_per_task=num_classes_per_task,
-                         with_replacement=with_replacement, num_train=num_train, num_val=num_val, remap_labels=remap_labels)
+                         with_replacement=with_replacement, num_train=num_train, num_val=num_val, remap_labels=remap_labels,
+                         num_init_tasks=num_init_tasks)
         self.name = 'fashion_mnist'
 
     def load_data(self):
@@ -205,9 +213,10 @@ class FashionMNIST(MNIST):
 
 class KMNIST(MNIST):
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
-                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False):
+                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False, num_init_tasks=None):
         super().__init__(num_tasks, num_classes_per_task=num_classes_per_task,
-                         with_replacement=with_replacement, num_train=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels)
+                         with_replacement=with_replacement, num_train=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels,
+                         num_init_tasks=num_init_tasks)
         self.name = 'kmnist'
 
     def load_data(self):
@@ -241,9 +250,10 @@ class KMNIST(MNIST):
 
 class CIFAR100(SplitDataset):
     def __init__(self, num_tasks=20, num_classes_per_task=5, with_replacement=False,
-                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False):
+                 num_train_per_task=-1, num_val_per_task=-1, remap_labels=False, num_init_tasks=None):
         super().__init__(num_tasks, num_classes=100, num_classes_per_task=num_classes_per_task,
-                         with_replacement=with_replacement, num_train_per_task=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels)
+                         with_replacement=with_replacement, num_train_per_task=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels,
+                         num_init_tasks=num_init_tasks)
         self.name = 'cifar100'
 
     def load_data(self):

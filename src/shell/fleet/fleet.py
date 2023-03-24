@@ -91,6 +91,12 @@ class Agent:
         """
         pass
 
+    def get_net(self):
+        return self.net
+
+    def load_and_freeze_random_linear_projection(self, state_dict):
+        self.net.load_and_freeze_random_linear_projection(state_dict)
+
 
 @ray.remote
 class ParallelAgent(Agent):
@@ -114,6 +120,13 @@ class Fleet:
                      LearnerCls, net_kwargs, agent_kwargs, train_kwargs, self.sharing_strategy)
             for node_id in self.graph.nodes
         ]
+        # make sure that all agents share the same (random) preprocessing parameters in MNIST variants
+        # check that self.agents[0].net has "random_linear_projection" layer, if yes, then share it
+        # among all other agents
+        if hasattr(self.agents[0].net, "random_linear_projection"):
+            for agent in self.agents[1:]:
+                agent.load_and_freeze_random_linear_projection(
+                    self.agents[0].net.random_linear_projection.state_dict())
         logging.info(f"Created fleet with {len(self.agents)} agents")
 
     def add_neighbors(self):
@@ -159,6 +172,17 @@ class ParallelFleet:
                                                                       LearnerCls, net_kwargs, agent_kwargs, train_kwargs, self.sharing_strategy)
             for node_id in self.graph.nodes
         ]
+
+        # make sure that all agents share the same (random) preprocessing parameters in MNIST variants
+        # check that self.agents[0].net has "random_linear_projection" layer, if yes, then share it
+        # among all other agents
+        # use get_net to get the net from the remote agent
+        net0 = ray.get(self.agents[0].get_net.remote())
+        if hasattr(net0, "random_linear_projection"):
+            rand_lp = net0.random_linear_projection.state_dict()
+            for agent in self.agents[1:]:
+                agent.load_and_freeze_random_linear_projection.remote(rand_lp)
+
         logging.info(f"Created fleet with {len(self.agents)} agents")
 
     def add_neighbors(self):

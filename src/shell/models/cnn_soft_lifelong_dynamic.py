@@ -42,7 +42,6 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         self.padding = padding
         self.max_components = max_components if max_components != -1 else np.inf
         self.num_components = self.depth
-        self.freeze_encoder = True
 
         self.components = nn.ModuleList()
         self.relu = nn.ReLU()

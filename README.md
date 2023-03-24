@@ -125,3 +125,7 @@ Recommendation stuff: contrastive objectives might be a bit terrible.
 
 
 
+
+See random_projection.py, with the same projection, it takes the 4th task 1 epoch to reach back 90%. With random projection per task,
+it takes 4 epochs (Mono). (Mod): same projection takes 1 epoch to get back to 92%. The model didn't make any new components (keep components=3). With random per task projection, Mod took 5 epochs to get 90%, and have to use a new module. Generalization across
+tasks is non-existent!

@@ -14,7 +14,7 @@ from torch.utils.data.dataset import ConcatDataset
 
 
 """
-NOTE: BUG: we should probably not share the task-specific parameters i.e. encoder/decoder (maybe projector)
+NOTE: BUG: we should probably not share the task-specific parameters i.e. decoder (maybe projector)
 """
 
 
@@ -27,7 +27,7 @@ class ModelSyncAgent(Agent):
         self.bytes_sent = {}
         self.num_init_tasks = net_kwargs.get("num_init_tasks", 1)
         self.excluded_params = set(
-            ["encoder", "decoder", "projector", "structure"])
+            ["decoder", "projector", "structure"])
 
     def compute_model_size(self, state_dict):
         return sum(p.numel() for p in state_dict.values())
@@ -40,7 +40,7 @@ class ModelSyncAgent(Agent):
         def is_in(string, exclude_set):
             """
             return true if the string partially matches any keyword in exclude_set
-            e.g. string = "encoder.0.weight", exclude_set = ["encoder"] => True
+            e.g. string = "decoder.0.weight", exclude_set = ["decoder"] => True
             """
             for exclude in exclude_set:
                 if exclude in string:
@@ -84,10 +84,6 @@ class ModelSyncAgent(Agent):
         for name, param in self.net.state_dict().items():
             # +1 because it includes the current model
             param.data /= len(self.models) + 1
-
-        # print("AFTER (encoder):", self.net.state_dict()["encoder.0.bias"])
-        # print("AFTER (components):",
-        #       self.net.state_dict()["components.0.bias"])
 
     def retrain(self, num_epochs, task_id, testloaders, save_freq=1, eval_bool=True):
         """

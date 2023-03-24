@@ -24,7 +24,6 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                  max_components=-1,
                  init_ordering_mode='one_module_per_task',
                  device='cuda',
-                 freeze_encoder=True,
                  dropout=0.5,
                  ):
         super().__init__(i_size,
@@ -37,11 +36,15 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.size = layer_size
         self.max_components = max_components if max_components != -1 else np.inf
         self.num_components = self.depth
-        self.freeze_encoder = freeze_encoder
 
         self.components = nn.ModuleList()
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(dropout)
+        self.random_linear_projection = nn.Linear(
+            self.i_size[0], self.size)
+        # freeze the random linear projection (preprocessing)
+        for param in self.random_linear_projection.parameters():
+            param.requires_grad = False
 
         for i in range(self.depth):
             fc = nn.Linear(self.size, self.size)
@@ -54,6 +57,11 @@ class MLPSoftLLDynamic(SoftOrderingNet):
             self.decoder.append(decoder_t)
 
         self.to(self.device)
+
+    def load_and_freeze_random_linear_projection(self, state_dict):
+        self.random_linear_projection.load_state_dict(state_dict)
+        for param in self.random_linear_projection.parameters():
+            param.requires_grad = False
 
     def add_tmp_module(self, task_id):
         if self.num_components < self.max_components:
@@ -76,9 +84,14 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.components = self.components[:-1]
         self.num_components = len(self.components)
 
-    def encode(self, X, task_id):
+    def preprocess(self, X):
+        # if X shape is (b, c, h, w) then flatten to (b, c*h*w)
         if len(X.shape) > 2:
             X = X.view(X.shape[0], -1)
+        return self.random_linear_projection(X)
+
+    def encode(self, X, task_id):
+        X = self.preprocess(X)
         n = X.shape[0]
         s = self.softmax(self.structure[task_id][:self.num_components, :])
         for k in range(self.depth):

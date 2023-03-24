@@ -36,7 +36,6 @@ if __name__ == "__main__":
         "net.depth": 4,
         "net.num_init_tasks": 4,
         "net.dropout": 0.5,
-        "net.freeze_encoder": True,
         "train.num_epochs": 50,
         "train.component_update_freq": 50,
         # "train.num_epochs": 5,

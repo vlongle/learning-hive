@@ -37,7 +37,6 @@ if __name__ == "__main__":
         "net.depth": 2,
         "num_init_tasks": 2,
         "net.dropout": 0.0,
-        "net.freeze_encoder": True,
         "train.num_epochs": 200,
         "train.component_update_freq": 200,
         "root_save_dir": "vanilla_mnist_results",

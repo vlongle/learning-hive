@@ -312,7 +312,6 @@ class CompositionalDynamicLearner(CompositionalLearner):
             # NOTE: we're keeping the decoder unfrozen!
             # and freeze structure just in case we're using one-hot same structure
             # for all the tasks!
-            self.net.freeze_encoder_fn()
             self.net.freeze_linear_weights()
             self.init_train(trainloader, task_id, num_epochs,
                             save_freq, testloaders)
@@ -321,7 +320,6 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.net.freeze_structure()     # freeze structure for all tasks
             # freeze original modules and structure
             self.net.add_tmp_module(task_id)
-
             self.optimizer.add_param_group(
                 {'params': self.net.components[-1].parameters()})
 

@@ -42,7 +42,8 @@ seed_everything(0)
 data_cfg = {
     "dataset_name": "kmnist",
     "num_tasks": 1,
-    "num_train_per_task": 128,
+    # "num_train_per_task": 128,
+    "num_train_per_task": -1,
     "labels": np.array([1, 2]),
     'remap_labels': True,
 }
@@ -52,8 +53,9 @@ dataset = get_dataset(**data_cfg)
 data_cfg2 = {
     "dataset_name": "kmnist",
     "num_tasks": 1,
-    "num_train_per_task": 500,
-    "labels": np.array([3, 1]),
+    "num_train_per_task": 128,
+    # "labels": np.array([3, 1]),
+    "labels": np.array([1, 3]),
     'remap_labels': True,
 }
 dataset2 = get_dataset(**data_cfg2)
@@ -111,14 +113,14 @@ agent = NoComponentsER(net, **agent_cfg)
 # somehow eval_net makes the model actually train like wtf???
 # print(eval_net(net, testloaders))
 
-viz_embedding(net, testloaders, "init.png")
+# viz_embedding(net, testloaders, "init.png")
 
 # # normal, local training
 agent.train(trainloader1, task_id=0, num_epochs=100, testloaders=testloaders,
             # train_mode='both', save_freq=1)
             train_mode='both', save_freq=20)
 
-viz_embedding(net, testloaders, "after_training.png")
+# viz_embedding(net, testloaders, "after_training.png")
 
 print('\n\n SHARING DATA \n\n')
 # # train on newly shared data!
@@ -135,23 +137,23 @@ for i in range(20):
                 save_freq=1,
                 train_mode='cl')
 
-mega_testloaders = testloaders | {
-    1: torch.utils.data.DataLoader(dataset2.testset[0],
-                                   batch_size=128,
-                                   shuffle=False,
-                                   num_workers=0,
-                                   pin_memory=True,
-                                   )
-}
-viz_embedding(net, mega_testloaders, "after_sharing.png")
+# mega_testloaders = testloaders | {
+#     1: torch.utils.data.DataLoader(dataset2.testset[0],
+#                                    batch_size=128,
+#                                    shuffle=False,
+#                                    num_workers=0,
+#                                    pin_memory=True,
+#                                    )
+# }
+# viz_embedding(net, mega_testloaders, "after_sharing.png")
 
 # agent._train(trainloader2, task_id=0, num_epochs=100, testloaders=testloaders,
 #              save_freq=20,
 #              train_mode='ce')
 
-print('\n\n Retraining\n\n')
+# print('\n\n Retraining\n\n')
 # # retrain on my own data
-agent.train(trainloader1, task_id=0, num_epochs=20, testloaders=testloaders,
-            train_mode='both')
+# agent.train(trainloader1, task_id=0, num_epochs=20, testloaders=testloaders,
+#             train_mode='both')
 
-viz_embedding(net, mega_testloaders, "after_retraining.png")
+# viz_embedding(net, mega_testloaders, "after_retraining.png")

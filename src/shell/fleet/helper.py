@@ -7,7 +7,7 @@ Author: Long Le (vlongle@seas.upenn.edu)
 Copyright (c) 2023 Long Le
 '''
 from shell.fleet.fleet import Fleet, ParallelFleet, ParallelAgent, Agent
-from shell.fleet.gradient_fleet import ModelSyncAgent, ParallelModelSyncAgent
+from shell.fleet.monograd import ModelSyncAgent, ParallelModelSyncAgent
 
 
 def get_fleet(parallel=True):

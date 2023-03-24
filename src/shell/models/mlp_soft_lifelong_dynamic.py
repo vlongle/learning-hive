@@ -26,7 +26,7 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                  device='cuda',
                  freeze_encoder=True,
                  dropout=0.5,
-                 project_dim=32):
+                 ):
         super().__init__(i_size,
                          depth,
                          num_classes,
@@ -38,14 +38,6 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.max_components = max_components if max_components != -1 else np.inf
         self.num_components = self.depth
         self.freeze_encoder = freeze_encoder
-
-        self.encoder = nn.ModuleList()
-        for t in range(self.num_tasks):
-            encoder_t = nn.Linear(self.i_size[t] * self.i_size[t], self.size)
-            if freeze_encoder:
-                for param in encoder_t.parameters():
-                    param.requires_grad = False
-            self.encoder.append(encoder_t)
 
         self.components = nn.ModuleList()
         self.relu = nn.ReLU()
@@ -89,9 +81,6 @@ class MLPSoftLLDynamic(SoftOrderingNet):
             X = X.view(X.shape[0], -1)
         n = X.shape[0]
         s = self.softmax(self.structure[task_id][:self.num_components, :])
-        # X = self.encoder[task_id](X)
-        # NOTE: always use the first (fixed) encoder
-        X = self.encoder[0](X)
         for k in range(self.depth):
             X_tmp = torch.zeros_like(X)
             for j in range(self.num_components):

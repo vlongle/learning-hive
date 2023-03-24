@@ -389,7 +389,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
         self.test_loss = test_loss
         self.test_acc = test_acc
 
-    def evaluate(self, testloaders, eval_no_update=True):
+    def evaluate(self, testloaders, eval_no_update=True, mode=None):
         was_training = self.net.training
         # prev_reduction = self.loss.reduction
         prev_reduction = self.get_loss_reduction()
@@ -407,7 +407,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                     X = X.to(self.net.device, non_blocking=True)
                     Y = Y.to(self.net.device, non_blocking=True)
                     Y_hat = self.net(X, task)
-                    l += self.compute_loss(X, Y, task).item()
+                    l += self.compute_loss(X, Y, task, mode=mode).item()
                     a += (Y_hat.argmax(dim=1) == Y).sum().item()
                     # a += ((Y_hat > 0) == (Y == 1)
                     #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
@@ -419,7 +419,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         X = X.to(self.net.device, non_blocking=True)
                         Y = Y.to(self.net.device, non_blocking=True)
                         Y_hat = self.net(X, task)
-                        l1 += self.compute_loss(X, Y, task).item()
+                        l1 += self.compute_loss(X, Y, task, mode=mode).item()
                         a1 += (Y_hat.argmax(dim=1) == Y).sum().item()
                         # a1 += ((Y_hat > 0) == (Y == 1)
                         #        if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
@@ -439,8 +439,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
         if was_training:
             self.net.train()
 
-    def save_data(self, epoch, task_id, testloaders,  final_save=False):
-        super().save_data(epoch, task_id, testloaders, final_save=final_save)
+    def save_data(self, epoch, task_id, testloaders,  final_save=False, mode=None):
+        super().save_data(epoch, task_id, testloaders, final_save=final_save, mode=mode)
         if final_save:
             logging.info('final components: {}'.format(
                 self.net.num_components))

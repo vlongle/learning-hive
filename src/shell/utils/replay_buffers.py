@@ -50,19 +50,3 @@ class ReplayBufferReservoir(ReplayBufferBase):
                     self.tensors[1].data[idx] = y
             j += 1
         self.observed += j
-
-
-class ReplayBufferRing(ReplayBufferBase):
-    def __init__(self):
-        super().__init__(memory_size)
-        self.last_idx = 0
-
-    def push(self, X, Y):
-        if not self.is_dataset_init:
-            self.tensors = (torch.empty(
-                self.memory_size, *X.shape[1:], torch.empty(self.memory_size, *Y.shape[1:])))
-            self.is_dataset_init = True
-        for x, y in zip(X, Y):
-            self.tensors[0].data[self.last_idx] = x
-            self.last_idx = (self.last_idx + 1) % self.memory_size
-            self.observed += 1

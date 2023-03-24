@@ -35,12 +35,6 @@ class MLP(nn.Module):
         if isinstance(i_size, int):
             i_size = [i_size] * num_tasks
         self.i_size = i_size
-        self.encoder = nn.ModuleList()
-        for t in range(self.num_tasks):
-            encoder_t = nn.Linear(i_size[t] * i_size[t], self.size)
-            for param in encoder_t.parameters():
-                param.requires_grad = not freeze_encoder
-            self.encoder.append(encoder_t)
 
         self.components = nn.ModuleList()
         self.relu = nn.ReLU()
@@ -67,9 +61,6 @@ class MLP(nn.Module):
         # if X shape is (b, c, h, w) then flatten to (b, c*h*w)
         if len(X.shape) > 2:
             X = X.view(X.shape[0], -1)
-        # X = self.encoder[task_id](X)
-        # NOTE: always use the first encoder!
-        X = self.encoder[0](X)
         for fc in self.components:
             X = self.dropout(self.relu(fc(X)))
         return X

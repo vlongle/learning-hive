@@ -8,13 +8,61 @@ Copyright (c) 2023 Long Le
 '''
 
 
+import torch.nn.functional as F
 import torch
 import ray
 from shell.fleet.fleet import Agent
 
 """
 Receiver-first procedure.
+Scorers return higher scores for more valuable instances (need to train more on).
 """
+
+
+# ====================
+# Unsupervised methods
+# ====================
+@torch.inference_mode()
+def least_confidence_scorer(logits, labels=None):
+    """
+    Prioritize the samples with the lowest confidence (i.e., lowest maximum
+    logits)
+    """
+    p = F.softmax(logits, dim=1)
+    return -torch.max(p, dim=1).values
+
+
+@torch.inference_mode()
+def margin_scorer(logits, labels=None):
+    """
+    Prioritize the samples with the lowest margin (i.e., difference between
+    two highest logits)
+    """
+    max_logits, _ = torch.max(logits, dim=1)
+    second_max_logits = torch.topk(logits, k=2, dim=1).values[:, 1]
+    return -(max_logits - second_max_logits)
+
+
+@torch.inference_mode()
+def entropy_scorer(logits, labels=None):
+    """
+    Prioritize the samples with the highest entropy (uncertainty
+    of the softmax distribution)
+    """
+    probs = F.softmax(logits, dim=1)
+    return -torch.sum(probs * torch.log(probs), dim=1)
+
+# ====================
+# Supervised Methods
+# ====================
+
+
+@torch.inference_mode()
+def cross_entropy_scorer(logits, labels):
+    """
+    Prioritize the samples with the highest cross entropy loss
+    """
+    return F.cross_entropy(logits, labels, reduction='none')
 
 
 class ReceiverFirstDataAgent(Agent):
@@ -23,6 +71,27 @@ class ReceiverFirstDataAgent(Agent):
     1. send query to neighbors
     2. send data to neighbors
     """
+
+    def compute_ball(self, metric="cosine"):
+        # get all the data from the replay buffer to compute the ball
+        from sklearn.neighbors import BallTree
+        for task_id in range(self.task_id):
+            X, _, _ = self.replay_buffers[task_id]
+            self.ball_trees[task_id] = BallTree(X, metric=metric)
+
+    def nearest_neighbors(self, X, n_neighbors):
+        """
+        Get the nearest neighbors to X in the dataset.
+        """
+        # we have self.replay_buffers[tasks] = (X, y)
+        task_neighbors = {}
+        for task_id in range(self.task_id):
+            # use self.ball_trees[task_id] to get the nearest neighbors
+            # to X in the dataset
+            dist, ind = self.ball_trees[task_id].query(
+                X, k=n_neighbors)
+            task_neighbors[task_id] = (dist, ind)
+        return task_neighbors
 
     def compute_query(self, task_id):
         # get all valdataset from task=0 to task=task_id

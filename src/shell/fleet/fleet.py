@@ -92,10 +92,20 @@ class Agent:
         pass
 
     def get_net(self):
+        """
+        Used for reading only, because technically actor
+        might live on a different name space (node/machine).
+        """
         return self.net
 
     def load_and_freeze_random_linear_projection(self, state_dict):
         self.net.load_and_freeze_random_linear_projection(state_dict)
+
+    def get_model(self):
+        return self.net.state_dict()
+
+    def get_num_components(self):
+        return len(self.net.components)
 
 
 @ray.remote

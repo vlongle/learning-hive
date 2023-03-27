@@ -28,7 +28,7 @@ def main(cfg: DictConfig) -> None:
     graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg = setup_experiment(
         cfg)
 
-    FleetCls = get_fleet(cfg.parallel)
+    FleetCls = get_fleet(cfg.sharing_strategy, cfg.parallel)
 
     fleet = FleetCls(graph, cfg.seed, datasets, cfg.sharing_strategy, AgentCls, NetCls=NetCls,
                      LearnerCls=LearnerCls, net_kwargs=net_cfg, agent_kwargs=agent_cfg,

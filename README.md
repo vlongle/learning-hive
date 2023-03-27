@@ -23,8 +23,6 @@ In longer-sequence Hard-Data, task distribution can overlap still, which create 
 ## TODO:
 - [x] Only FedAvg on modules (and not task-specific structures)
 - [] implement FedAvg with momentum (see Flower module)
-- [] Keep the encoder fixed during the retrainining stuff. Use one encoder for everything!
-- [] might even keep the decoder fixed?
 - [] check ray.put to see if we need deepcopy
 - [] use fixed projections across all agents but still random across tasks?
 
@@ -82,50 +80,12 @@ on full and reduced datasets.
 
 
 
-
-No flipping
-
-
-tensor([1, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1, 1, 0, 1, 1, 1, 1, 0,
-        1, 0, 1, 1, 1, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1,
-        1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 1, 0, 1, 1, 1, 0, 0,r
-        0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 1, 0, 1, 1, 0,
-        1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 1, 0,
-        1, 1, 1, 1, 1, 1, 0, 1], device='cuda:0')
-
-X[0, :, :5, :]
-tensor([[[0.0000, 0.3804, 0.1373, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
-          0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
-          0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000,
-          0.0000, 0.0000, 0.0000, 0.0000],
-         [0.0000, 0.1333, 0.5608, 0.0196, 0.0000, 0.0000, 0.0000, 0.0000,
-          0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0980,
-          0.0784, 0.0000, 0.0000, 0.0000, 0.1176, 0.4980, 0.4588, 0.1333,
-          0.0000, 0.0000, 0.0000, 0.0000],
-         [0.0000, 0.0000, 0.1922, 0.3490, 0.0000, 0.0000, 0.0000, 0.0000,
-          0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.0000, 0.3020, 0.9333,
-          0.9216, 0.1529, 0.0784, 0.5216, 0.7098, 0.6471, 0.8235, 0.9529,
-          0.3216, 0.0000, 0.0000, 0.0000],
-         [0.0000, 0.0000, 0.0000, 0.5255, 0.0000, 0.0000, 0.0000, 0.0000,
-          0.0000, 0.0000, 0.0000, 0.0000, 0.0078, 0.4941, 0.5686, 0.8902,
-          1.0000, 0.9216, 0.9333, 0.5412, 0.0314, 0.0000, 0.0627, 0.9255,
-          0.6784, 0.0000, 0.0000, 0.0000],
-         [0.0000, 0.0000, 0.0000, 0.6784, 0.0196, 0.0000, 0.0000, 0.0000,
-          0.0000, 0.0000, 0.0000, 0.0000, 0.5216, 0.3686, 0.0078, 0.8118,
-          1.0000, 1.0000, 0.6745, 0.0000, 0.0078, 0.0314, 0.0000, 0.6745,
-          0.7059, 0.0000, 0.0000, 0.0000]]], device='cuda:0')
-
-Flipping
-
-
-Bug somewhere. Flipping labels should NOT change the contrastive learning.
-
-
 Recommendation stuff: contrastive objectives might be a bit terrible.
 
 
 
-
+__Should not use random projection per task__: define the purpose of forward transfer. At least, we'll need a task-specific 
+adapter before for it to work. Note that the `soft layer ordering` paper is about multi-task learning so it worked out for them.
 See random_projection.py, with the same projection, it takes the 4th task 1 epoch to reach back 90%. With random projection per task,
 it takes 4 epochs (Mono). (Mod): same projection takes 1 epoch to get back to 92%. The model didn't make any new components (keep components=3). With random per task projection, Mod took 5 epochs to get 90%, and have to use a new module. Generalization across
 tasks is non-existent!

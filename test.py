@@ -6,20 +6,24 @@ Author: Long Le (vlongle@seas.upenn.edu)
 
 Copyright (c) 2023 Long Le
 '''
-import torch.nn as nn
+# import torch.nn as nn
 
 
-ln = nn.Linear(
-    28, 50)
+# ln = nn.Linear(
+#     28, 50)
 
-# freeze the random linear projection
-for param in ln.parameters():
-    param.requires_grad = False
+# # freeze the random linear projection
+# for param in ln.parameters():
+#     param.requires_grad = False
 
-ln2 = nn.Linear(
-    28, 50)
+# ln2 = nn.Linear(
+#     28, 50)
 
-ln2.load_state_dict(ln.state_dict())
-# ln = ln2
-print(ln.weight)
-print(ln2.weight)
+# ln2.load_state_dict(ln.state_dict())
+# # ln = ln2
+# print(ln.weight)
+# print(ln2.weight)
+
+# for t in range(-1):
+for t in range(-1):
+    print(t)

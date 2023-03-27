@@ -23,6 +23,7 @@ class CNN(nn.Module):
                  padding=0,
                  device='cuda',
                  dropout=0.5,
+                 init_ordering_mode=None,
                  ):
         super().__init__()
         self.device = device

@@ -11,7 +11,7 @@ from shell.fleet.fleet import Agent
 from copy import deepcopy
 import torch
 from torch.utils.data.dataset import ConcatDataset
-
+from shell.fleet.model_sharing_utils import exclude_model
 
 """
 NOTE: BUG: we should probably not share the task-specific parameters i.e. decoder (maybe projector)
@@ -25,7 +25,7 @@ class ModelSyncAgent(Agent):
         self.models = {}
         # key: (task_id, communication_round, neighbor_id)
         self.bytes_sent = {}
-        self.num_init_tasks = net_kwargs.get("num_init_tasks", 1)
+        # self.num_init_tasks = net_kwargs.get("num_init_tasks", 1)
         self.excluded_params = set(
             ["decoder", "projector", "structure"])
 
@@ -35,30 +35,12 @@ class ModelSyncAgent(Agent):
     def prepare_model(self):
         # return self.net.state_dict()
         # without the task-specific parameters named in self.excluded_params
-        model = self.net.state_dict()
-
-        def is_in(string, exclude_set):
-            """
-            return true if the string partially matches any keyword in exclude_set
-            e.g. string = "decoder.0.weight", exclude_set = ["decoder"] => True
-            """
-            for exclude in exclude_set:
-                if exclude in string:
-                    return True
-            return False
-
-        # remove the task-specific parameters
-        to_excludes = [name for name in model.keys(
-        ) if is_in(name, self.excluded_params)]
-
-        # remove to_excludes from model
-        for name in to_excludes:
-            model.pop(name)
+        model = exclude_model(self.net.state_dict(), self.excluded_params)
         return model
 
     def communicate(self, task_id, communication_round):
-        if task_id < self.num_init_tasks - 1:
-            return
+        # if task_id < self.num_init_tasks - 1:
+        #     return
         model = self.prepare_model()
         # send model to neighbors
         for neighbor in self.neighbors:
@@ -101,8 +83,8 @@ class ModelSyncAgent(Agent):
                           testloaders, save_freq, eval_bool)
 
     def process_communicate(self, task_id, communication_round):
-        if task_id < self.num_init_tasks - 1:
-            return
+        # if task_id < self.num_init_tasks - 1:
+        #     return
         self.aggregate_models()
         # train on some local tasks some more...
         testloaders = {task: torch.utils.data.DataLoader(testset,
@@ -125,6 +107,11 @@ class ModelSyncAgent(Agent):
                              testloaders, final_save=True)  # final eval
 
         # self.net.freeze_structure(freeze=False, task_id=task_id)
+
+    def replace_model(self, new_model, strict=True):
+        print("replacing model with strict:", strict)
+        self.net.load_state_dict(new_model, strict=strict)
+        self.net.to(self.net.device)
 
 
 @ray.remote

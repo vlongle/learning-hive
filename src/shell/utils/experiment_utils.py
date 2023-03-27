@@ -23,13 +23,7 @@ from shell.learners.er_dynamic import CompositionalDynamicER
 from shell.learners.er_nocomponents import NoComponentsER
 
 
-def setup_experiment(cfg: DictConfig):
-    """
-    Seed and return dataset, learner, agent, and net
-    for fully reproducible experiments.
-    """
-    pprint(cfg)
-    seed_everything(cfg.seed)
+def process_dataset_cfg(cfg):
     dataset_cfg = dict(cfg.dataset)
     dataset_cfg |= {"num_init_tasks": cfg.num_init_tasks}
     dataset_cfg["num_train_per_task"] = dataset_cfg["num_trains_per_class"] * \
@@ -38,6 +32,17 @@ def setup_experiment(cfg: DictConfig):
     dataset_cfg["num_val_per_task"] = dataset_cfg["num_vals_per_class"] * \
         dataset_cfg["num_classes_per_task"]
     del dataset_cfg["num_vals_per_class"]
+    return dataset_cfg
+
+
+def setup_experiment(cfg: DictConfig):
+    """
+    Seed and return dataset, learner, agent, and net
+    for fully reproducible experiments.
+    """
+    pprint(cfg)
+    seed_everything(cfg.seed)
+    dataset_cfg = process_dataset_cfg(cfg)
     datasets = [get_dataset(**dataset_cfg) for _ in range(cfg.num_agents)]
     net_cfg = dict(cfg.net)
     agent_cfg = dict(cfg.agent)

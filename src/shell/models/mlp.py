@@ -19,6 +19,7 @@ class MLP(nn.Module):
                  num_init_tasks,
                  device='cuda',
                  dropout=0.5,
+                 init_ordering_mode=None,
                  ):
         super().__init__()
         self.device = device
@@ -38,7 +39,7 @@ class MLP(nn.Module):
         self.dropout = nn.Dropout(dropout)
 
         self.random_linear_projection = nn.Linear(
-            self.i_size[0], self.size)
+            self.i_size[0] * self.i_size[0], self.size)
         # freeze the random linear projection
         for param in self.random_linear_projection.parameters():
             param.requires_grad = False
@@ -59,6 +60,12 @@ class MLP(nn.Module):
         self.random_linear_projection.load_state_dict(state_dict)
         for param in self.random_linear_projection.parameters():
             param.requires_grad = False
+
+    def preprocess(self, X):
+        # if X shape is (b, c, h, w) then flatten to (b, c*h*w)
+        if len(X.shape) > 2:
+            X = X.view(X.shape[0], -1)
+        return self.random_linear_projection(X)
 
     def encode(self, X, task_id):
         X = self.preprocess(X)

@@ -105,7 +105,7 @@ class ModelSyncAgent(Agent):
     def process_communicate(self, task_id, communication_round):
         self.aggregate_models()
 
-        # # # train on some local tasks some more...
+        # Monograd: retrain on local tasks using experience replay
         testloaders = {task: torch.utils.data.DataLoader(testset,
                                                          batch_size=128,
                                                          shuffle=False,

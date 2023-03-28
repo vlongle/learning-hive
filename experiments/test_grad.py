@@ -26,19 +26,13 @@ import os
 
 logging.basicConfig(level=logging.INFO)
 
-# config_path = os.path.join("conf", "grad.yaml")
-# # read the config file
-# cfg = omegaconf.OmegaConf.load(config_path)
 initialize(config_path="conf", job_name="tmp_job")
 cfg = compose(config_name="grad")
 seed_everything(cfg.seed)
 
-# override
-# cfg.parallel = False
 cfg.parallel = True
-
-cfg.train.num_epochs = 5
-cfg.train.component_update_freq = 5
+cfg.train.num_epochs = 50
+cfg.train.component_update_freq = 50
 
 AgentCls = get_agent_cls(cfg.sharing_strategy, cfg.algo, cfg.parallel)
 
@@ -71,7 +65,6 @@ def diff_models(modelA_statedict, modelB_statedict, keys=None):
 #             ray.get(fleet.agents[1].get_net.remote()).state_dict(),
 #             keys=["random_linear_projection", "components"])
 
-# ray.get(fleet.agents[0].eval.remote(0))
 
 # local train
 fleet.train(0)

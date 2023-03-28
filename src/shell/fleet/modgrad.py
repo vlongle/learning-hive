@@ -23,6 +23,9 @@ class ModGrad(ModelSyncAgent):
             self.excluded_params.add("components.{}".format(i))
         return super().prepare_model()
 
+    def process_communicate(self, task_id, communication_round):
+        raise NotImplementedError
+
 
 @ray.remote
 class ParallelModGrad(ModGrad):

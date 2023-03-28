@@ -1,6 +1,6 @@
 seed: 0
-# algo: monolithic
-algo: modular 
+algo: monolithic
+# algo: modular 
 job_name: fun
 num_agents: 4
 root_save_dir: results
@@ -15,8 +15,8 @@ agent:
   use_contrastive: true
 
 defaults:
-  # - train: monolithic
-  - train: modular
+  - train: monolithic
+  # - train: modular
   - dataset: mnist
   - net: mlp
   - sharing_strategy: grad_sharing

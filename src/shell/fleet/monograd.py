@@ -79,7 +79,7 @@ class ModelSyncAgent(Agent):
                 self.net.state_dict()[name].data += param.data
                 stuff_added[name] += 1
 
-        print("stuff_added:", stuff_added)
+        # print("stuff_added:", stuff_added)
         # TODO: this normalization is BUGGY. We should only normalize
         # stuff that was actually added!
         # normalize
@@ -103,34 +103,25 @@ class ModelSyncAgent(Agent):
                           testloaders, save_freq, eval_bool)
 
     def process_communicate(self, task_id, communication_round):
-        # if task_id < self.num_init_tasks - 1:
-        #     return
         self.aggregate_models()
 
-        # # train on some local tasks some more...
-        # testloaders = {task: torch.utils.data.DataLoader(testset,
-        #                                                  batch_size=128,
-        #                                                  shuffle=False,
-        #                                                  num_workers=0,
-        #                                                  pin_memory=True,
-        #                                                  ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
+        # # # train on some local tasks some more...
+        testloaders = {task: torch.utils.data.DataLoader(testset,
+                                                         batch_size=128,
+                                                         shuffle=False,
+                                                         num_workers=0,
+                                                         pin_memory=True,
+                                                         ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
 
-        # task_id_retrain = f"{task_id}_retrain_round_{communication_round}"
-        # # NOTE: all the saving here might be a bit problematic!
+        task_id_retrain = f"{task_id}_retrain_round_{communication_round}"
+        self.retrain(
+            self.sharing_strategy.retrain.num_epochs, task_id_retrain, testloaders, save_freq=1, eval_bool=True)
 
-        # # self.net.freeze_structure(freeze=True)
-
-        # # retrain only the modules and not task specific parameters!
-        # self.retrain(
-        #     self.sharing_strategy.retrain.num_epochs, task_id_retrain, testloaders, save_freq=1, eval_bool=True)
-
-        # self.agent.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id_retrain,
-        #                      testloaders, final_save=True)  # final eval
-
-        # # self.net.freeze_structure(freeze=False, task_id=task_id)
+        self.agent.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id_retrain,
+                             testloaders, final_save=True)  # final eval
 
     def replace_model(self, new_model, strict=True):
-        print("replacing model with strict:", strict)
+        # print("replacing model with strict:", strict)
         self.net.load_state_dict(new_model, strict=strict)
         self.net.to(self.net.device)
 
@@ -138,15 +129,15 @@ class ModelSyncAgent(Agent):
 @ray.remote
 class ParallelModelSyncAgent(ModelSyncAgent):
     def communicate(self, task_id, communication_round):
-        logging.info(
-            f"node {self.node_id} is communicating at round {communication_round} for task {task_id}")
+        # logging.info(
+        #     f"node {self.node_id} is communicating at round {communication_round} for task {task_id}")
         # TODO: Should we do deepcopy???
         # put model on object store
         # state_dict = deepcopy(self.net.state_dict())
         # model = state_dict
         # model = ray.put(state_dict)
         # send model to neighbors
-        logging.info(f"My neighbors are: {self.neighbors}")
+        # logging.info(f"My neighbors are: {self.neighbors}")
         for neighbor in self.neighbors:
             # neighbor_id = ray.get(neighbor.get_node_id.remote())
             # NOTE: neighbor_id for some reason is NOT responding...

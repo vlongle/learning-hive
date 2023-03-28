@@ -2,7 +2,7 @@ seed: 0
 # algo: monolithic
 algo: modular 
 job_name: fun
-num_agents: 1
+num_agents: 4
 root_save_dir: results
 parallel: false
 num_init_tasks: 2

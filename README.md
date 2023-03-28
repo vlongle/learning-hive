@@ -89,3 +89,10 @@ adapter before for it to work. Note that the `soft layer ordering` paper is abou
 See random_projection.py, with the same projection, it takes the 4th task 1 epoch to reach back 90%. With random projection per task,
 it takes 4 epochs (Mono). (Mod): same projection takes 1 epoch to get back to 92%. The model didn't make any new components (keep components=3). With random per task projection, Mod took 5 epochs to get 90%, and have to use a new module. Generalization across
 tasks is non-existent!
+
+
+
+
+
+TODO: multi-agent coordination is all over the place...
+We should **not** parallelize the sending part because the receiver must be present at the end of the pipe when the caller makes the call.

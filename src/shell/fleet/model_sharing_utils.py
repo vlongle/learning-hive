@@ -26,5 +26,6 @@ def exclude_model(model_state_dict, excluded_params):
 
     # remove to_excludes from model
     for name in to_excludes:
+        # print("Popping", name)
         model_state_dict.pop(name)
     return model_state_dict

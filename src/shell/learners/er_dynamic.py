@@ -39,8 +39,11 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
             (torch.full((len(tmp_dataset),), task_id, dtype=int),)
         mega_dataset = ConcatDataset(
             [loader.dataset for loader in self.memory_loaders.values()] + [tmp_dataset])
-        tmp_loader = next(iter(self.memory_loaders.values()))
-        batch_size = tmp_loader.batch_size
+        # tmp_loader = next(iter(self.memory_loaders.values()))
+        # batch_size = tmp_loader.batch_size
+        # NOTE: changed to account for cases when we don't
+        # have any init tasks i.e. len(self.memory_loaders) == 0
+        batch_size = trainloader.batch_size
         mega_loader = torch.utils.data.DataLoader(mega_dataset,
                                                   batch_size=batch_size,
                                                   shuffle=True,

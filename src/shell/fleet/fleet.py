@@ -14,6 +14,7 @@ from typing import Iterable
 import os
 import logging
 from shell.utils.utils import seed_everything, create_dir_if_not_exist
+from shell.utils.experiment_utils import eval_net
 
 SEED_SCALE = 1000
 
@@ -72,9 +73,24 @@ class Agent:
         self.agent.train(trainloader, task_id, testloaders=testloaders,
                          valloader=valloader, **self.train_kwargs)
 
+    def eval(self, task_id):
+        testloaders = {task: torch.utils.data.DataLoader(testset,
+                                                         batch_size=128,
+                                                         shuffle=False,
+                                                         num_workers=4,
+                                                         pin_memory=True,
+                                                         ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
+        return eval_net(self.net, testloaders)
+
     def communicate(self, task_id, communication_round):
         """
         Sending communication to neighbors
+        """
+        pass
+
+    def prepare_communicate(self, task_id, communication_round):
+        """
+        Preparing communication to neighbors
         """
         pass
 
@@ -195,6 +211,9 @@ class ParallelFleet:
 
         logging.info(f"Created fleet with {len(self.agents)} agents")
 
+    def uniformize_preprocessing(self):
+        pass
+
     def add_neighbors(self):
         logging.info("Adding neighbors...")
         # adding neighbors
@@ -210,8 +229,16 @@ class ParallelFleet:
 
     def communicate(self, task_id):
         for communication_round in range(self.num_coms_per_round):
-            ray.get([agent.communicate.remote(task_id, communication_round)
+            # parallelize preprocessing to prepare neccessary data
+            # before the communication round.
+            ray.get([agent.prepare_communicate.remote(task_id, communication_round)
                     for agent in self.agents])
+            # NOTE: HACK: communicate in done in sequence to avoid dysnc issues,
+            # if the sender sends something to the receiver but the receiver is not paying
+            # attention, then the message is lost. Truly decen agent would have to have a
+            # while True loop and implement some more complicated logic.
+            for agent in self.agents:
+                ray.get(agent.communicate.remote(task_id, communication_round))
 
             ray.get([agent.process_communicate.remote(task_id, communication_round)
                     for agent in self.agents])

@@ -56,6 +56,11 @@ class CompositionalNet(nn.Module):
         for param in self.components.parameters():
             param.requires_grad = True
 
+    def unfreeze_some_modules(self, list_of_modules):
+        for i in list_of_modules:
+            for param in self.components[i].parameters():
+                param.requires_grad = True
+
     def freeze_structure(self, freeze=True):
         raise NotImplementedError(
             'Freeze structure must be architecture specific')

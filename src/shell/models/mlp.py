@@ -56,6 +56,9 @@ class MLP(nn.Module):
 
         self.to(self.device)
 
+    def get_hidden_size(self):
+        return self.size
+
     def load_and_freeze_random_linear_projection(self, state_dict):
         self.random_linear_projection.load_state_dict(state_dict)
         for param in self.random_linear_projection.parameters():

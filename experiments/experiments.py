@@ -26,42 +26,45 @@ if __name__ == "__main__":
         "algo": ["monolithic", "modular"],
         "seed": 0,
         "parallel": True,
-        "num_agents": 4,
+        "num_agents": 8,
         "dataset": "mnist",
-        "dataset.num_trains_per_class": [64, 128, -1],
-        "dataset.num_vals_per_class": [50, 100, -1],
-        "dataset.remap_labels": False,  # no remapping labels would absolutely wreck this
-        "dataset.with_replacement": False,
-        "dataset.num_tasks": 5,
+        "dataset.num_trains_per_class": 64,
+        "dataset.num_vals_per_class": 50,
+        "dataset.remap_labels": True,
+        "dataset.with_replacement": True,
+        "dataset.num_tasks": 10,
         "net": "mlp",
         "net.depth": 2,
         "num_init_tasks": 2,
         "net.dropout": 0.0,
-        "train.num_epochs": 200,
-        "train.component_update_freq": 200,
-        "root_save_dir": "vanilla_mnist_results",
+        "train.num_epochs": 100,
+        "train.component_update_freq": 100,
+        "root_save_dir": "vanilla_results",
         "agent.use_contrastive": [True, False],
-        # "dataset": ["kmnist", "fashionmnist"],
+        "dataset": ["mnist", "kmnist", "fashionmnist"],
     }
     run_experiment(config)
 
     # # # === CNN experiments: CIFAR100 ===
-    # config = {
-    #     "algo": ["monolithic", "modular"],
-    #     "seed": 0,
-    #     "num_agents": 4,
-    #     "dataset": "cifar100",
-    #     "dataset.num_trains_per_class": 256,
-    #     "dataset.num_vals_per_class": -1,
-    #     "dataset.num_tasks": 20,
-    #     "net": "cnn",
-    #     "net.num_init_tasks": 4,
-    #     "net.dropout": 0.5,
-    #     "train.num_epochs": 100,
-    #     "train.component_update_freq": 100,
-    #     "root_save_dir": "results",
-    # }
+    config = {
+        "algo": ["monolithic", "modular"],
+        "seed": 0,
+        "num_agents": 8,
+        "dataset": "cifar100",
+        "dataset.num_trains_per_class": 256,
+        "dataset.num_vals_per_class": -1,
+        "dataset.remap_labels": True,
+        "dataset.with_replacement": True,
+        "dataset.num_tasks": 20,
+        "net": "cnn",
+        "net.num_init_tasks": 4,
+        "net.dropout": 0.5,
+        "train.num_epochs": 100,
+        "train.component_update_freq": 100,
+        "agent.use_contrastive": [True, False],
+        "root_save_dir": "vanilla_results",
+    }
 
-    # run_experiment(config)
+    run_experiment(config)
     end = time.time()
     print(f"Experiment runs took {datetime.timedelta(seconds=end-start)}")

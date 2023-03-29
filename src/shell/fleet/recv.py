@@ -65,7 +65,7 @@ def cross_entropy_scorer(logits, labels):
     return F.cross_entropy(logits, labels, reduction='none')
 
 
-class ReceiverFirstDataAgent(Agent):
+class RecvDataAgent(Agent):
     """
     Have two rounds of communications.
     1. send query to neighbors
@@ -73,7 +73,7 @@ class ReceiverFirstDataAgent(Agent):
     """
 
     def compute_ball(self, metric="cosine"):
-        # get all the data from the replay buffer to compute the ball
+        # get all the data from the replay buffer to compute the ball tree
         from sklearn.neighbors import BallTree
         for task_id in range(self.task_id):
             X, _, _ = self.replay_buffers[task_id]
@@ -112,36 +112,6 @@ class ReceiverFirstDataAgent(Agent):
                       self.query_score_threshold]
         return X_val[top_k].cpu(), y_val[top_k].cpu()
 
-    def communicate(self, task_id, communication_round):
-        # https://rise.cs.berkeley.edu/blog/ray-tips-for-first-time-users/
-        # storing query to the (node) object store so that other
-        # processes can access it faster
-        if communication_round == 0:
-            self.send_query()
-        elif communication_round == 1:
-            self.provide_data()
-        else:
-            raise ValueError("Invalid round number")
-
-    def send_query(self):
-        query = ray.put(self.compute_query())
-        for neighbor in self.neighbors:
-            neighbor.receive.remote(self.node_id, query, "query")
-
-    def provide_data(self):
-        # send data to neighbors in object store
-        for requester, query in self.buffer_query.items():
-            data = ray.put(self.compute_data(query))
-            requester.receive.remote(self.node_id, data, "data")
-
-    def process_communicate(self, task_id, communication_round):
-        if communication_round == 0:
-            self.compute_data()
-        elif communication_round == 1:
-            self.learn_from_buffer()
-        else:
-            raise ValueError("Invalid round number")
-
     def receive(self, sender_id, data, data_type):
         if data_type == "query":
             # add query to buffer
@@ -165,3 +135,36 @@ class ReceiverFirstDataAgent(Agent):
     def learn_from_buffer(self):
         # get the data and now learn from it
         pass
+
+    def prepare_communicate(self, task_id, communication_round):
+        if communication_round == 0:
+            self.query = self.compute_query(task_id)
+
+        for requester, query in self.buffer_query.items():
+            data = ray.put(self.compute_data(query))
+            requester.receive.remote(
+                self.node_id, self.data[requester], "data")
+
+    def communicate(self, task_id, communication_round):
+        # https://rise.cs.berkeley.edu/blog/ray-tips-for-first-time-users/
+        # storing query to the (node) object store so that other
+        # processes can access it faster
+        if communication_round == 0:
+            # send query to neighbors
+            for neighbor in self.neighbors:
+                neighbor.receive.remote(self.node_id, self.query, "query")
+        elif communication_round == 1:
+            # send data to the requester
+            for requester in self.buffer_query:
+                requester.receive(
+                    self.node_id, self.data[requester], "data")
+        else:
+            raise ValueError("Invalid round number")
+
+    def process_communicate(self, task_id, communication_round):
+        if communication_round == 0:
+            self.compute_data()
+        elif communication_round == 1:
+            self.learn_from_buffer()
+        else:
+            raise ValueError("Invalid round number")

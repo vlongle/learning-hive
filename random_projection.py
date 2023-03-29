@@ -32,7 +32,7 @@ from shell.utils.experiment_utils import setup_experiment
 from sklearn.manifold import TSNE
 import logging
 import seaborn as sns
-from shell.fleet.data_fleet import least_confidence_scorer, entropy_scorer, margin_scorer, cross_entropy_scorer
+from shell.fleet.recv import least_confidence_scorer, entropy_scorer, margin_scorer, cross_entropy_scorer
 logging.basicConfig(level=logging.INFO)
 
 seed_everything(0)

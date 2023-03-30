@@ -95,9 +95,16 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                 X_tmp += s[j, k] * \
                     self.dropout(self.relu(self.maxpool(conv(X))))
             X = X_tmp
-        X = X.view(-1, X.shape[1] * X.shape[2] * X.shape[3])
+        X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])
         return X
 
     def forward(self, X, task_id):
         X = self.encode(X, task_id)
         return self.decoder[task_id](X)
+
+    def contrastive_embedding(self, X, task_id):
+        """
+        NOTE: not currently using any projector!
+        """
+        X = self.encode(X, task_id)
+        return X

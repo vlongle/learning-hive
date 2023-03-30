@@ -15,13 +15,39 @@ from torch.utils.data import TensorDataset
 import os
 import logging
 
+import torchvision.transforms as transforms
 SRC_DIR = os.path.join('src', 'shell')
+
+
+# TODO: normalize CIFAR-100 channels to be std 1 and mean 0
+
+class CustomTensorDataset(TensorDataset):
+    # tensordataset but also apply transforms
+    def __init__(self, *tensors, transform=None):
+        super().__init__(*tensors)
+        self.transform = transform
+
+    def __getitem__(self, index):
+        x, y = super().__getitem__(index)
+        if self.transform:
+            x = self.transform(x)
+        return x, y
+
+
+class TwoCropTransform:
+    """Create two crops of the same image"""
+
+    def __init__(self, transform):
+        self.transform = transform
+
+    def __call__(self, x):
+        return [x, self.transform(x)]
 
 
 class SplitDataset():
     def __init__(self, num_tasks, num_classes, num_classes_per_task, with_replacement=False,
                  normalize=True, num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
-                 num_init_tasks=None, labels=None):
+                 num_init_tasks=None, labels=None, name=None, use_contrastive=False):
         self.num_classes = num_classes
         if not with_replacement:
             assert num_tasks <= num_classes // num_classes_per_task, 'Dataset does not support more than {} tasks'.format(
@@ -66,7 +92,7 @@ class SplitDataset():
             if num_val_per_task != -1:
                 Xb_val_t = Xb_val_t[:num_val_per_task]
                 yb_val_t = yb_val_t[:num_val_per_task]
-            logging.info(Xb_train_t.shape)
+            logging.info(f"task {task_id} :{Xb_train_t.shape}")
 
             yb_train_t = torch.from_numpy(yb_train_t).long().squeeze()
             yb_val_t = torch.from_numpy(yb_val_t).long().squeeze()
@@ -85,7 +111,77 @@ class SplitDataset():
             Xb_train_t = torch.from_numpy(Xb_train_t).float()
             Xb_val_t = torch.from_numpy(Xb_val_t).float()
             Xb_test_t = torch.from_numpy(Xb_test_t).float()
-            self.trainset.append(TensorDataset(Xb_train_t, yb_train_t))
+
+            # cifar100 augmentation
+            # source: https://github.com/HobbitLong/SupContrast/blob/master/main_supcon.py
+            if name == 'cifar100':
+                # commonly used values on entire datasets
+                # mean = (0.5071, 0.4867, 0.4408)
+                # std = (0.2675, 0.2565, 0.2761)
+
+                # empirically in our processing on
+                # entire datasets
+                mean = (0.5079, 0.4872, 0.4415)
+                std = (0.2676, 0.2567, 0.2765)
+
+                i_size = X_train.shape[2]
+                # NOTE: should be calculate the mean per task? There
+                # seems to be some deviation between tasks.
+                self.train_transform = transforms.Compose([
+                    transforms.RandomResizedCrop(
+                        size=i_size, scale=(0.2, 1.), antialias=True),
+                    transforms.RandomHorizontalFlip(),
+                    transforms.RandomApply([
+                        transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
+                    ], p=0.8),
+                    transforms.RandomGrayscale(p=0.2),
+                    # NOTE: typically, in SupContrast, the two views of the data
+                    # are both normalized to 0 mean and 1 std.
+                    # transforms.Normalize(mean=mean, std=std),
+                ])
+
+            elif name == "fashionmnist":
+                # self.train_transform = transforms.Compose([
+                #     transforms.RandomResizedCrop(
+                #         size=self.net.i_size[0], scale=(0.2, 1.), antialias=True),
+                #     transforms.RandomHorizontalFlip(),
+                # ])
+
+                self.train_transform = transforms.Compose([
+                    # transforms.RandomResizedCrop(
+                    #     size=self.net.i_size[0], scale=(0.2, 1.), antialias=True),
+                    transforms.RandomHorizontalFlip(),
+                    # transforms.GaussianBlur(
+                    #     kernel_size=3, sigma=2.),
+
+                    # gaussian noise (pepper noise)
+                    # lambda x: x + torch.randn(x.size()) * 0.1,
+                    transforms.GaussianBlur(
+                        kernel_size=3, sigma=(0.1, 2.0)),
+                    transforms.Lambda(
+                        lambda x: x + torch.randn(x.size()).to(self.net.device) * 0.05),
+                    # transforms.Lambda(
+                    #     lambda x: x + torch.randn(x.size()) * 0.05),
+                ])
+
+            else:
+                # default augmentation (MNIST, KMNIST). Only affine and blur
+                # since rotation might change the semantics of hand-writing digits
+                # and Japanese letters.
+                self.train_transform = transforms.Compose([
+                    transforms.RandomAffine(
+                        degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1),
+                        shear=0.1),
+                    transforms.GaussianBlur(
+                        kernel_size=3, sigma=(0.1, 2.0)),
+                ])
+
+            self.train_transform = TwoCropTransform(self.train_transform)
+            if not use_contrastive:
+                self.train_transform = None
+
+            self.trainset.append(CustomTensorDataset(
+                Xb_train_t, yb_train_t, transform=self.train_transform))
             self.valset.append(TensorDataset(Xb_val_t, yb_val_t))
             self.testset.append(TensorDataset(Xb_test_t, yb_test_t))
 
@@ -126,11 +222,11 @@ class SplitDataset():
 class MNIST(SplitDataset):
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
                  num_train_per_task=-1, num_val_per_task=-1, remap_labels=False, num_init_tasks=None,
-                 labels=None):
+                 labels=None, use_contrastive=False):
         super().__init__(num_tasks, num_classes=10, num_classes_per_task=num_classes_per_task,
                          with_replacement=with_replacement, num_train_per_task=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels,
                          num_init_tasks=num_init_tasks,
-                         labels=labels)
+                         labels=labels, name='mnist', use_contrastive=use_contrastive)
         self.name = 'mnist'
 
     def load_data(self):
@@ -175,12 +271,13 @@ class FashionMNIST(MNIST):
 
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
                  num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
-                 num_init_tasks=None, labels=None):
+                 num_init_tasks=None, labels=None, use_contrastive=False):
         super().__init__(num_tasks, num_classes_per_task=num_classes_per_task,
                          with_replacement=with_replacement, num_train_per_task=num_train_per_task,
                          num_val_per_task=num_val_per_task, remap_labels=remap_labels,
-                         num_init_tasks=num_init_tasks, labels=labels)
-        self.name = 'fashion_mnist'
+                         num_init_tasks=num_init_tasks, labels=labels, name='fashionmnist',
+                         use_contrastive=use_contrastive)
+        self.name = 'fashionmnist'
 
     def load_data(self):
         with open(os.path.join(SRC_DIR, 'datasets/fashion/train-labels.idx1-ubyte'), 'rb') as flbl:
@@ -219,11 +316,12 @@ class FashionMNIST(MNIST):
 class KMNIST(MNIST):
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
                  num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
-                 num_init_tasks=None, labels=None):
+                 num_init_tasks=None, labels=None, use_contrastive=False):
         super().__init__(num_tasks, num_classes_per_task=num_classes_per_task,
                          with_replacement=with_replacement, num_train_per_task=num_train_per_task,
                          num_val_per_task=num_val_per_task, remap_labels=remap_labels,
-                         num_init_tasks=num_init_tasks, labels=labels)
+                         num_init_tasks=num_init_tasks, labels=labels, name='kmnist',
+                         use_contrastive=use_contrastive)
         self.name = 'kmnist'
 
     def load_data(self):
@@ -258,11 +356,12 @@ class KMNIST(MNIST):
 class CIFAR100(SplitDataset):
     def __init__(self, num_tasks=20, num_classes_per_task=5, with_replacement=False,
                  num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
-                 num_init_tasks=None, labels=None):
+                 num_init_tasks=None, labels=None, use_contrastive=False):
         super().__init__(num_tasks, num_classes=100, num_classes_per_task=num_classes_per_task,
                          with_replacement=with_replacement, num_train_per_task=num_train_per_task,
                          num_val_per_task=num_val_per_task, remap_labels=remap_labels,
-                         num_init_tasks=num_init_tasks, labels=labels)
+                         num_init_tasks=num_init_tasks, labels=labels, name='cifar100',
+                         use_contrastive=use_contrastive)
         self.name = 'cifar100'
 
     def load_data(self):

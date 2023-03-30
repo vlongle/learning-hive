@@ -15,44 +15,21 @@ from shell.utils.record import Record
 from torch.utils.tensorboard import SummaryWriter
 import logging
 from shell.utils.supcontrast import SupConLoss
-import torchvision.transforms as transforms
+
+# write custom RandomGrayScale that operate on a per image
+# basis
 
 
 class Learner():
     def __init__(self, net, save_dir='./tmp/results/', improvement_threshold=0.05,
-                 use_contrastive=False):
+                 use_contrastive=False, dataset_name=None):
         self.net = net
         self.ce_loss = nn.CrossEntropyLoss()
         self.use_contrastive = use_contrastive
         if use_contrastive:
-            self.sup_loss = SupConLoss()
+            temperature = 0.01 if dataset_name == 'cifar100' else 0.06
+            self.sup_loss = SupConLoss(temperature=temperature)
 
-            # cifar100 augmentation
-            # self.train_transform = transforms.Compose([
-            #     transforms.RandomResizedCrop(
-            #         size=self.net.i_size[0], scale=(0.2, 1.), antialias=True),
-            #     transforms.RandomHorizontalFlip(),
-            #     transforms.RandomApply([
-            #         transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
-            #     ], p=0.8),
-            #     transforms.RandomGrayscale(p=0.2),
-            # ])
-
-            self.train_transform = transforms.Compose([
-                # transforms.RandomAffine(
-                # transforms.RandomResizedCrop(
-                #     size=self.net.i_size[0], scale=(0.5, 1.), antialias=True),
-                transforms.RandomAffine(
-                    degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1),
-                    shear=0.1),
-                # transforms.RandomApply([
-                #                        transforms.ColorJitter(
-                #                            brightness=0.2, contrast=0.2),
-                #                        ], p=0.8),
-                transforms.GaussianBlur(
-                    kernel_size=3, sigma=(0.1, 2.0)),
-
-            ])
         # self.loss = nn.BCEWithLogitsLoss() if net.binary else nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.net.parameters())
         self.improvement_threshold = improvement_threshold
@@ -71,6 +48,14 @@ class Learner():
         if self.use_contrastive:
             self.mode = "both"
 
+    # def apply_transform(self, X):
+    #     # X: (batch_size, n_channels, height, width)
+    #     # apply self.transform to each image in X
+    #     # return: (batch_size, n_channels, height, width)
+    #     return self.train_transform(X)
+        # morally correct way but it's too slow
+        # return torch.stack([self.train_transform(x) for x in X])
+
     def get_loss_reduction(self):
         if self.use_contrastive:
             assert self.ce_loss.reduction == self.sup_loss.reduction
@@ -83,11 +68,13 @@ class Learner():
 
     def compute_contrastive_loss(self, X, Y, task_id):
         encoded_X = self.net.contrastive_embedding(X, task_id)
-        encoded_transformed_X = self.net.contrastive_embedding(
-            self.train_transform(X), task_id)  # (N_samples, N_features)
+        # encoded_transformed_X = self.net.contrastive_embedding(
+        #     self.apply_transform(X), task_id)  # (N_samples, N_features)
         # features.shape = (N_samples, N_views=2, N_features)
+        encoded_X, encoded_transformed_X = torch.split(
+            encoded_X, encoded_X.shape[0] // 2, dim=0)
         features = torch.cat(
-            [encoded_transformed_X.unsqueeze(1), encoded_X.unsqueeze(1)], dim=1)
+            [encoded_X.unsqueeze(1), encoded_transformed_X.unsqueeze(1)], dim=1)
         cl = self.sup_loss(features, labels=Y)
         # if cl is nan, then exit
         if torch.isnan(cl):
@@ -99,6 +86,9 @@ class Learner():
         # =============================
         # Cross entropy loss
         # NOTE: detach so that cross_entropy does not propagate gradients back to the representation learner
+        if X.shape[0] != Y.shape[0]:
+            # using contrastive so we have two views
+            X, _ = torch.split(X, X.shape[0] // 2, dim=0)
         X_encode = self.net.encode(X, task_id)
         if detach:
             X_encode = X_encode.detach()
@@ -181,7 +171,7 @@ class Learner():
                     X = X.to(self.net.device, non_blocking=True)
                     Y = Y.to(self.net.device, non_blocking=True)
                     Y_hat = self.net(X, task)
-                    l += self.compute_loss(X, Y, task, mode=mode).item()
+                    l += self.compute_loss(X, Y, task, mode='ce').item()
                     a += (Y_hat.argmax(dim=1) == Y).sum().item()
                     # a += ((Y_hat > 0) == (Y == 1)
                     #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
@@ -405,7 +395,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                     X = X.to(self.net.device, non_blocking=True)
                     Y = Y.to(self.net.device, non_blocking=True)
                     Y_hat = self.net(X, task)
-                    l += self.compute_loss(X, Y, task, mode=mode).item()
+                    l += self.compute_loss(X, Y, task, mode='ce').item()
                     a += (Y_hat.argmax(dim=1) == Y).sum().item()
                     # a += ((Y_hat > 0) == (Y == 1)
                     #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
@@ -417,7 +407,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         X = X.to(self.net.device, non_blocking=True)
                         Y = Y.to(self.net.device, non_blocking=True)
                         Y_hat = self.net(X, task)
-                        l1 += self.compute_loss(X, Y, task, mode=mode).item()
+                        l1 += self.compute_loss(X, Y, task, mode='ce').item()
                         a1 += (Y_hat.argmax(dim=1) == Y).sum().item()
                         # a1 += ((Y_hat > 0) == (Y == 1)
                         #        if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()

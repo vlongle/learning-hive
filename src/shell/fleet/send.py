@@ -80,7 +80,7 @@ class SendDataAgent(Agent):
         # get data from all task <= task_id
         data = []
         candidate_indices = []
-        for task in range(task_id + 1):
+        for task in range(task_id):
             d, idx = self.get_candidate_data(task, neighbor_id)
             data.append(d)
             candidate_indices.append(idx)

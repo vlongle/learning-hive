@@ -25,13 +25,16 @@ from shell.learners.er_nocomponents import NoComponentsER
 
 def process_dataset_cfg(cfg):
     dataset_cfg = dict(cfg.dataset)
-    dataset_cfg |= {"num_init_tasks": cfg.num_init_tasks}
+    dataset_cfg |= {"num_init_tasks": cfg.num_init_tasks,
+                    "use_contrastive": cfg.agent.use_contrastive, }
+
     dataset_cfg["num_train_per_task"] = dataset_cfg["num_trains_per_class"] * \
         dataset_cfg["num_classes_per_task"]
     del dataset_cfg["num_trains_per_class"]
     dataset_cfg["num_val_per_task"] = dataset_cfg["num_vals_per_class"] * \
         dataset_cfg["num_classes_per_task"]
     del dataset_cfg["num_vals_per_class"]
+
     return dataset_cfg
 
 
@@ -43,12 +46,13 @@ def setup_experiment(cfg: DictConfig):
     pprint(cfg)
     seed_everything(cfg.seed)
     dataset_cfg = process_dataset_cfg(cfg)
+
     datasets = [get_dataset(**dataset_cfg) for _ in range(cfg.num_agents)]
     net_cfg = dict(cfg.net)
     agent_cfg = dict(cfg.agent)
     train_cfg = dict(cfg.train)
 
-    x = datasets[0].trainset[0][0][0]
+    x = datasets[0].testset[0][0][0]
 
     i_size = x.shape[1]
     num_classes = datasets[0].num_classes
@@ -58,6 +62,7 @@ def setup_experiment(cfg: DictConfig):
     net_cfg |= {"i_size": i_size,
                 "num_classes": num_classes, "num_tasks": cfg.dataset.num_tasks,
                 "num_init_tasks": cfg.num_init_tasks}
+    agent_cfg |= {'dataset_name': cfg.dataset.dataset_name}
     print("net_cfg", net_cfg)
     tg = TopologyGenerator(num_nodes=cfg.num_agents)
     graph = tg.generate_random()
@@ -160,7 +165,7 @@ def get_all_combinations(config, strict=True):
     return combs
 
 
-def run_experiment(config):
+def run_experiment(config, strict=True):
     """
     Generate all the combinations from config
     and run them in *sequence*.
@@ -168,7 +173,7 @@ def run_experiment(config):
     script_path = os.path.join("experiments", "run.py")
 
     print(config)
-    combs = get_all_combinations(config)
+    combs = get_all_combinations(config, strict=strict)
     print("No. of experiments:", len(combs))
 
     for cfg in combs:

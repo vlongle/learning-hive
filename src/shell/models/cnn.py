@@ -8,6 +8,7 @@ Copyright (c) 2023 Long Le
 '''
 import torch.nn as nn
 import torch.nn.functional as F
+import torchvision.transforms as transforms
 
 
 class CNN(nn.Module):
@@ -35,6 +36,7 @@ class CNN(nn.Module):
 
         if isinstance(i_size, int):
             i_size = [i_size] * num_tasks
+        self.i_size = i_size
         if isinstance(self.num_classes, int):
             self.num_classes = [self.num_classes] * num_tasks
 
@@ -57,17 +59,43 @@ class CNN(nn.Module):
                 out_h * out_h * self.channels, self.num_classes[t])
             self.decoder.append(decoder_t)
 
+        self.out_h = out_h
+
+        mean = (0.5079, 0.4872, 0.4415)
+        std = (0.2676, 0.2567, 0.2765)
+        # normalize
+        self.transform = transforms.Normalize(mean, std)
+
+        hidden_dim = 64
+        # self.projector = nn.Linear(out_h * out_h * self.channels,
+        #                            hidden_dim)
+        dim_in = out_h * out_h * self.channels
+        self.projector = nn.Sequential(
+            nn.Linear(dim_in, dim_in),
+            nn.ReLU(inplace=True),
+            nn.Linear(dim_in, hidden_dim)
+        )
         self.to(self.device)
 
     def encode(self, X, task_id):
+        X = self.transform(X)
         c = X.shape[1]
         X = F.pad(X, (0, 0, 0, 0, 0, self.channels-c))
         for conv in self.components:
             X = self.dropout(self.relu(self.maxpool(conv(X))))
 
-        X = X.view(-1, X.shape[1] * X.shape[2] * X.shape[3])
+        X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])
         return X
 
     def forward(self, X, task_id):
-        self.encode(X, task_id)
+        X = self.encode(X, task_id)
         return self.decoder[task_id](X)
+
+    def contrastive_embedding(self, X, task_id):
+        """
+        NOTE: not currently using any projector!
+        """
+        X = self.encode(X, task_id)
+        X = self.projector(X)  # (N, 128)
+        X = F.normalize(X, dim=1)
+        return X

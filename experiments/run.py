@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 def main(cfg: DictConfig) -> None:
     start = time.time()
 
-    AgentCls = get_agent_cls(cfg.sharing_strategy, cfg.parallel)
+    AgentCls = get_agent_cls(cfg.sharing_strategy, cfg.algo, cfg.parallel)
 
     graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg = setup_experiment(
         cfg)

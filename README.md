@@ -87,8 +87,7 @@ Recommendation stuff: contrastive objectives might be a bit terrible.
 __Should not use random projection per task__: define the purpose of forward transfer. At least, we'll need a task-specific 
 adapter before for it to work. Note that the `soft layer ordering` paper is about multi-task learning so it worked out for them.
 See random_projection.py, with the same projection, it takes the 4th task 1 epoch to reach back 90%. With random projection per task,
-it takes 4 epochs (Mono). (Mod): same projection takes 1 epoch to get back to 92%. The model didn't make any new components (keep components=3). With random per task projection, Mod took 5 epochs to get 90%, and have to use a new module. Generalization across
-tasks is non-existent!
+it takes 4 epochs (Mono). (Mod): same projection takes 1 epoch to get back to 92%. The model didn't make any new components (keep components=3). With random per task projection, Mod took 5 epochs to get 90%, and have to use a new module. Generalization across tasks is non-existent!
 
 
 
@@ -96,3 +95,33 @@ tasks is non-existent!
 
 TODO: multi-agent coordination is all over the place...
 We should **not** parallelize the sending part because the receiver must be present at the end of the pipe when the caller makes the call.
+
+
+
+
+FashionMNIST data augmentation
+
+transforms.RandomResizedCrop(
+                    size=self.net.i_size[0], scale=(0.2, 1.), antialias=True),
+transforms.RandomHorizontalFlip(),
+__maybe__ also salt pepper (gaussian) noise like: https://github.com/1202kbs/EBCLR/blob/main/configs_ebclr/fmnist_b64.yaml?
+
+
+train for 100 epochs.
+modular     fashionmnist  False              0.930831
+                          True               0.925538
+
+increase to 150 epochs
+modular     fashionmnist  False              0.940206
+                          True               0.935081
+
+
+Use 
+transforms.RandomHorizontalFlip(),
+transforms.GaussianBlur(
+                        kernel_size=3, sigma=(0.1, 2.0)),
+transforms.Lambda(
+                lambda x: x + torch.randn(x.size()).to(self.net.device) * 0.05),
+-> modular     fashionmnist  True               0.936975
+
+Changing contrast_mode to "all" for curiosity.

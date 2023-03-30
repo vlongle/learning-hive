@@ -59,13 +59,13 @@ class Agent:
                                         pin_memory=True,
                                         ))
         testloaders = {task: torch.utils.data.DataLoader(testset,
-                                                         batch_size=128,
+                                                         batch_size=256,
                                                          shuffle=False,
                                                          num_workers=4,
                                                          pin_memory=True,
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
         valloader = torch.utils.data.DataLoader(self.dataset.valset[task_id],
-                                                batch_size=128,
+                                                batch_size=256,
                                                 shuffle=False,
                                                 num_workers=4,
                                                 pin_memory=True,
@@ -140,7 +140,8 @@ class Fleet:
         self.add_neighbors()
         logging.info("Fleet initialized")
 
-    def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
+    def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs,
+                      train_kwargs, uniformized=False):
         self.agents = [
             AgentCls(node_id, seed, datasets[node_id], NetCls,
                      LearnerCls, net_kwargs, agent_kwargs, train_kwargs, self.sharing_strategy)

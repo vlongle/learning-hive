@@ -11,6 +11,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
+import torchvision.transforms as transforms
 from shell.models.base_net_classes import SoftOrderingNet
 
 
@@ -60,6 +61,20 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                 out_h * out_h * channels, self.num_classes[t])
             self.decoder.append(decoder_t)
 
+        mean = (0.5079, 0.4872, 0.4415)
+        std = (0.2676, 0.2567, 0.2765)
+        # normalize
+        self.transform = transforms.Normalize(mean, std)
+
+        hidden_dim = 128
+        # self.projector = nn.Linear(out_h * out_h * self.channels,
+        #                            hidden_dim)
+        dim_in = out_h * out_h * self.channels
+        self.projector = nn.Sequential(
+            nn.Linear(dim_in, dim_in),
+            nn.ReLU(inplace=True),
+            nn.Linear(dim_in, hidden_dim)
+        )
         self.to(self.device)
 
     def add_tmp_module(self, task_id):
@@ -85,6 +100,7 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         self.num_components = len(self.components)
 
     def encode(self, X, task_id):
+        X = self.transform(X)
         c = X.shape[1]
         s = self.softmax(self.structure[task_id][:self.num_components, :])
         X = F.pad(X, (0, 0, 0, 0, 0, self.channels-c, 0, 0))
@@ -107,4 +123,6 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         NOTE: not currently using any projector!
         """
         X = self.encode(X, task_id)
+        X = self.projector(X)  # (N, 128)
+        X = F.normalize(X, dim=1)
         return X

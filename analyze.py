@@ -27,9 +27,9 @@ result_dir = "vanilla_results"
 record = Record("experiment_results.csv")
 
 # pattern = r"/fashion.*"
-pattern = r".*64.*"
+# pattern = r".*64.*"
 # pattern = r".*64_contrastive"
-# pattern = r".*256.*"
+pattern = r".*256.*"
 
 num_init_tasks = 4
 
@@ -81,6 +81,6 @@ print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
 
 print("=====FORWARD======")
 print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-      "backward"].mean())
+      "forward"].mean())
 
 record.save()

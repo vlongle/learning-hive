@@ -19,8 +19,6 @@ import torchvision.transforms as transforms
 SRC_DIR = os.path.join('src', 'shell')
 
 
-# TODO: normalize CIFAR-100 channels to be std 1 and mean 0
-
 class CustomTensorDataset(TensorDataset):
     # tensordataset but also apply transforms
     def __init__(self, *tensors, transform=None):
@@ -28,10 +26,12 @@ class CustomTensorDataset(TensorDataset):
         self.transform = transform
 
     def __getitem__(self, index):
-        x, y = super().__getitem__(index)
+        tensors = super().__getitem__(index)
+        x = tensors[0]
+        # if self.transform, apply it on the first tensor
         if self.transform:
-            x = self.transform(x)
-        return x, y
+            x = self.transform(tensors[0])
+        return tuple([x] + list(tensors[1:]))
 
 
 class TwoCropTransform:
@@ -42,6 +42,57 @@ class TwoCropTransform:
 
     def __call__(self, x):
         return [x, self.transform(x)]
+
+
+def get_transform(name, device="cuda"):
+    if name == 'cifar100':
+        train_transform = transforms.Compose([
+            transforms.RandomResizedCrop(
+                size=32, scale=(0.2, 1.), antialias=True),
+            transforms.RandomHorizontalFlip(),
+            transforms.RandomApply([
+                transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
+            ], p=0.8),
+            transforms.RandomGrayscale(p=0.2),
+        ])
+
+    elif name == "fashionmnist":
+        train_transform = transforms.Compose([
+            transforms.RandomHorizontalFlip(),
+            transforms.GaussianBlur(
+                kernel_size=3, sigma=(0.1, 2.0)),
+            transforms.Lambda(
+                lambda x: x + torch.randn(x.size()).to(device) * 0.05),
+        ])
+
+    elif name == "kmnist" or name == "mnist":
+        # default augmentation (MNIST, KMNIST). Only affine and blur
+        # since rotation might change the semantics of hand-writing digits
+        # and Japanese letters.
+        train_transform = transforms.Compose([
+            transforms.RandomAffine(
+                degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1),
+                shear=0.1),
+            transforms.GaussianBlur(
+                kernel_size=3, sigma=(0.1, 2.0)),
+        ])
+    else:
+        raise NotImplementedError(
+            'Dataset {} not supported'.format(name))
+    return train_transform
+
+
+def get_custom_tensordataset(tensors, name, use_contrastive=False):
+    """
+    tensors: tuple of tensors
+    """
+    train_transform = None
+    if use_contrastive:
+        train_transform = TwoCropTransform(
+            get_transform(name))
+
+    return CustomTensorDataset(
+        *tensors, transform=train_transform)
 
 
 class SplitDataset():
@@ -98,90 +149,12 @@ class SplitDataset():
             yb_val_t = torch.from_numpy(yb_val_t).long().squeeze()
             yb_test_t = torch.from_numpy(yb_test_t).long().squeeze()
 
-            # if num_classes_per_task == 2:
-            #     yb_train_t = torch.from_numpy(
-            #         yb_train_t).float().reshape(-1, 1)
-            #     yb_val_t = torch.from_numpy(yb_val_t).float().reshape(-1, 1)
-            #     yb_test_t = torch.from_numpy(yb_test_t).float().reshape(-1, 1)
-            # else:
-            #     yb_train_t = torch.from_numpy(yb_train_t).long().squeeze()
-            #     yb_val_t = torch.from_numpy(yb_val_t).long().squeeze()
-            #     yb_test_t = torch.from_numpy(yb_test_t).long().squeeze()
-
             Xb_train_t = torch.from_numpy(Xb_train_t).float()
             Xb_val_t = torch.from_numpy(Xb_val_t).float()
             Xb_test_t = torch.from_numpy(Xb_test_t).float()
 
-            # cifar100 augmentation
-            # source: https://github.com/HobbitLong/SupContrast/blob/master/main_supcon.py
-            if name == 'cifar100':
-                # commonly used values on entire datasets
-                # mean = (0.5071, 0.4867, 0.4408)
-                # std = (0.2675, 0.2565, 0.2761)
-
-                # empirically in our processing on
-                # entire datasets
-                mean = (0.5079, 0.4872, 0.4415)
-                std = (0.2676, 0.2567, 0.2765)
-
-                i_size = X_train.shape[2]
-                # NOTE: should be calculate the mean per task? There
-                # seems to be some deviation between tasks.
-                self.train_transform = transforms.Compose([
-                    transforms.RandomResizedCrop(
-                        size=i_size, scale=(0.2, 1.), antialias=True),
-                    transforms.RandomHorizontalFlip(),
-                    transforms.RandomApply([
-                        transforms.ColorJitter(0.4, 0.4, 0.4, 0.1)
-                    ], p=0.8),
-                    transforms.RandomGrayscale(p=0.2),
-                    # NOTE: typically, in SupContrast, the two views of the data
-                    # are both normalized to 0 mean and 1 std.
-                    # transforms.Normalize(mean=mean, std=std),
-                ])
-
-            elif name == "fashionmnist":
-                # self.train_transform = transforms.Compose([
-                #     transforms.RandomResizedCrop(
-                #         size=self.net.i_size[0], scale=(0.2, 1.), antialias=True),
-                #     transforms.RandomHorizontalFlip(),
-                # ])
-
-                self.train_transform = transforms.Compose([
-                    # transforms.RandomResizedCrop(
-                    #     size=self.net.i_size[0], scale=(0.2, 1.), antialias=True),
-                    transforms.RandomHorizontalFlip(),
-                    # transforms.GaussianBlur(
-                    #     kernel_size=3, sigma=2.),
-
-                    # gaussian noise (pepper noise)
-                    # lambda x: x + torch.randn(x.size()) * 0.1,
-                    transforms.GaussianBlur(
-                        kernel_size=3, sigma=(0.1, 2.0)),
-                    transforms.Lambda(
-                        lambda x: x + torch.randn(x.size()).to(self.net.device) * 0.05),
-                    # transforms.Lambda(
-                    #     lambda x: x + torch.randn(x.size()) * 0.05),
-                ])
-
-            else:
-                # default augmentation (MNIST, KMNIST). Only affine and blur
-                # since rotation might change the semantics of hand-writing digits
-                # and Japanese letters.
-                self.train_transform = transforms.Compose([
-                    transforms.RandomAffine(
-                        degrees=10, translate=(0.1, 0.1), scale=(0.9, 1.1),
-                        shear=0.1),
-                    transforms.GaussianBlur(
-                        kernel_size=3, sigma=(0.1, 2.0)),
-                ])
-
-            self.train_transform = TwoCropTransform(self.train_transform)
-            if not use_contrastive:
-                self.train_transform = None
-
-            self.trainset.append(CustomTensorDataset(
-                Xb_train_t, yb_train_t, transform=self.train_transform))
+            self.trainset.append(get_custom_tensordataset(
+                [Xb_train_t, yb_train_t], name=name, use_contrastive=use_contrastive))
             self.valset.append(TensorDataset(Xb_val_t, yb_val_t))
             self.testset.append(TensorDataset(Xb_test_t, yb_test_t))
 

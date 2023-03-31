@@ -66,7 +66,7 @@ class CNN(nn.Module):
         # normalize
         self.transform = transforms.Normalize(mean, std)
 
-        hidden_dim = 64
+        hidden_dim = 128
         # self.projector = nn.Linear(out_h * out_h * self.channels,
         #                            hidden_dim)
         dim_in = out_h * out_h * self.channels

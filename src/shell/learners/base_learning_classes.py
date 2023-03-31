@@ -26,6 +26,7 @@ class Learner():
         self.net = net
         self.ce_loss = nn.CrossEntropyLoss()
         self.use_contrastive = use_contrastive
+        self.dataset_name = dataset_name
         if use_contrastive:
             temperature = 0.01 if dataset_name == 'cifar100' else 0.06
             self.sup_loss = SupConLoss(temperature=temperature)
@@ -67,6 +68,7 @@ class Learner():
             self.sup_loss.reduction = reduction
 
     def compute_contrastive_loss(self, X, Y, task_id):
+        assert len(X) == 2 * len(Y)
         encoded_X = self.net.contrastive_embedding(X, task_id)
         # encoded_transformed_X = self.net.contrastive_embedding(
         #     self.apply_transform(X), task_id)  # (N_samples, N_features)
@@ -137,6 +139,9 @@ class Learner():
                     for task, XY in zip(self.init_trainloaders.keys(), XY_all):
                         if XY is not None:
                             X, Y = XY
+                            if isinstance(X, list):
+                                # contrastive two views
+                                X = torch.cat([X[0], X[1]], dim=0)
                             X = X.to(self.net.device, non_blocking=True)
                             Y = Y.to(self.net.device, non_blocking=True)
                             self.gradient_step(X, Y, task)
@@ -245,39 +250,6 @@ class Learner():
 
 
 class CompositionalLearner(Learner):
-    def train(self, trainloader, task_id, component_update_freq=100, num_epochs=100, save_freq=1, testloaders=None):
-        if task_id not in self.observed_tasks:
-            self.observed_tasks.add(task_id)
-            self.T += 1
-        self.save_data(0, task_id, testloaders)
-        if self.T <= self.net.num_init_tasks:
-            self.net.freeze_structure()
-            self.init_train(trainloader, task_id, num_epochs,
-                            save_freq, testloaders)
-        else:
-            self.net.freeze_modules()
-            self.net.freeze_structure()     # freeze structure for all tasks
-            # self.net.freeze_structure(
-            #     freeze=False, task_id=task_id)    # except current one
-            self.net.unfreeze_structure(task_id=task_id)
-            iter_cnt = 0
-            for i in range(num_epochs):
-                if (i + 1) % component_update_freq == 0:
-                    # replace one structure epoch with one module epoch
-                    self.update_modules(trainloader, task_id)
-                else:
-                    for X, Y in trainloader:
-                        X = X.to(self.net.device, non_blocking=True)
-                        Y = Y.to(self.net.device, non_blocking=True)
-                        self.update_structure(X, Y, task_id)
-                        iter_cnt += 1
-                if i % save_freq == 0 or i == num_epochs - 1:
-                    self.save_data(i + 1, task_id, testloaders)
-
-            self.save_data(num_epochs + 1, task_id,
-                           testloaders, final_save=True)
-            self.update_multitask_cost(trainloader, task_id)
-
     def update_structure(self, X, Y, task_id, train_mode=None):
         # assume shared parameters are frozen and just take a gradient step on the structure
         self.gradient_step(X, Y, task_id, train_mode=train_mode)
@@ -327,7 +299,9 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         trainloader, task_id, train_mode=train_mode)
                 else:
                     for X, Y in trainloader:
-                        X_cpu, Y_cpu = X, Y
+                        if isinstance(X, list):
+                            # contrastive two views
+                            X = torch.cat([X[0], X[1]], dim=0)
                         X = X.to(self.net.device, non_blocking=True)
                         Y = Y.to(self.net.device, non_blocking=True)
                         self.update_structure(

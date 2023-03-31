@@ -125,3 +125,18 @@ transforms.Lambda(
 -> modular     fashionmnist  True               0.936975
 
 Changing contrast_mode to "all" for curiosity.
+
+
+
+Cifar100.
+Why does the results for cifar100 monolithic False is so high??
+
+algo        dataset   use_contrastive
+modular     cifar100  False              0.78525
+                      True               0.73130
+monolithic  cifar100  False              0.73740
+                      True               0.74390
+
+Jorge paper: no comp. should be around 51.6%
+Our shows 73%.
+It might be that 

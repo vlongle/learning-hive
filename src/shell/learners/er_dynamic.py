@@ -14,6 +14,7 @@ from torch.utils.data.dataset import ConcatDataset
 import copy
 from shell.utils.replay_buffers import ReplayBufferReservoir
 from shell.learners.base_learning_classes import CompositionalDynamicLearner
+from shell.datasets.datasets import get_custom_tensordataset
 
 
 class CompositionalDynamicER(CompositionalDynamicLearner):
@@ -38,7 +39,8 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         tmp_dataset.tensors = tmp_dataset.tensors + \
             (torch.full((len(tmp_dataset),), task_id, dtype=int),)
         mega_dataset = ConcatDataset(
-            [loader.dataset for loader in self.memory_loaders.values()] + [tmp_dataset])
+            [get_custom_tensordataset(loader.dataset.tensors, name=self.dataset_name,
+                                      use_contrastive=self.use_contrastive) for loader in self.memory_loaders.values()] + [tmp_dataset])
         # tmp_loader = next(iter(self.memory_loaders.values()))
         # batch_size = tmp_loader.batch_size
         # NOTE: changed to account for cases when we don't
@@ -51,16 +53,31 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                                                   pin_memory=True
                                                   )
         for X, Y, t in mega_loader:
+            if isinstance(X, list):
+                # contrastive two views
+                X = torch.cat([X[0], X[1]], dim=0)
             X = X.to(self.net.device, non_blocking=True)
             Y = Y.to(self.net.device, non_blocking=True)
             l = 0.
             n = 0
             all_t = torch.unique(t)
+
+            if self.use_contrastive:
+                Xhaf = X[:len(X)//2]
+                Xother = X[len(X)//2:]
+
             for task_id_tmp in all_t:
-                # Y_hat = self.net(X[t == task_id_tmp], task_id=task_id_tmp)
-                # l += self.loss(Y_hat, Y[t == task_id_tmp])
-                l += self.compute_loss(X[t == task_id_tmp],
-                                       Y[t == task_id_tmp], task_id_tmp,
+                Yt = Y[t == task_id_tmp]
+                if self.use_contrastive:
+                    # Xt will be twice as long as Yt
+                    # use advanced indexing to get the first half
+                    Xt_haf = Xhaf[t == task_id_tmp]
+                    Xt_other = Xother[t == task_id_tmp]
+                    Xt = torch.cat([Xt_haf, Xt_other], dim=0)
+                else:
+                    Xt = X[t == task_id_tmp]
+                l += self.compute_loss(Xt,
+                                       Yt, task_id_tmp,
                                        mode=train_mode)
                 n += X.shape[0]
             l /= n
@@ -72,10 +89,17 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
             n = 0
             self.net.hide_tmp_module()
             for task_id_tmp in all_t:
-                # Y_hat = self.net(X[t == task_id_tmp], task_id=task_id_tmp)
-                # l += self.loss(Y_hat, Y[t == task_id_tmp])
-                l += self.compute_loss(X[t == task_id_tmp],
-                                       Y[t == task_id_tmp], task_id_tmp,
+                Yt = Y[t == task_id_tmp]
+                if self.use_contrastive:
+                    # Xt will be twice as long as Yt
+                    # use advanced indexing to get the first half
+                    Xt_haf = Xhaf[t == task_id_tmp]
+                    Xt_other = Xother[t == task_id_tmp]
+                    Xt = torch.cat([Xt_haf, Xt_other], dim=0)
+                else:
+                    Xt = X[t == task_id_tmp]
+                l += self.compute_loss(Xt,
+                                       Yt, task_id_tmp,
                                        mode=train_mode)
                 n += X.shape[0]
             l /= n
@@ -95,6 +119,9 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         self.replay_buffers[task_id] = ReplayBufferReservoir(
             self.memory_size, task_id)
         for X, Y in trainloader:
+            if isinstance(X, list):
+                # contrastive two views
+                X = X[0]  # only store the first view (original image)
             self.replay_buffers[task_id].push(X, Y)
         self.memory_loaders[task_id] = (
             torch.utils.data.DataLoader(self.replay_buffers[task_id],

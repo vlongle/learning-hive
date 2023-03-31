@@ -4,3 +4,4 @@
 **results/
 src/shell/datasets/*/
 **checkpoints/
+**wo_replacement/

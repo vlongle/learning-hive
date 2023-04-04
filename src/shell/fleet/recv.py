@@ -50,7 +50,9 @@ def entropy_scorer(logits, labels=None):
     of the softmax distribution)
     """
     probs = F.softmax(logits, dim=1)
-    return -torch.sum(probs * torch.log(probs), dim=1)
+    log_probs = F.log_softmax(logits, dim=1)
+    return -torch.sum(probs * log_probs, dim=1)
+    # return -torch.sum(probs * torch.log(probs), dim=1)
 
 # ====================
 # Supervised Methods

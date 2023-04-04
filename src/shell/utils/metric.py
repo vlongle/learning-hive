@@ -55,11 +55,17 @@ class Metric:
             avg_acc = avg_acc['test_acc'].mean()
         return avg_acc
 
+    def get_max_tasks(self):
+        # self.df["train_task"] is a string, convert
+        # to numeric (ignore non-numeric values) and take the max
+        max_task = pd.to_numeric(self.df["train_task"], errors="coerce").max()
+        return max_task
+
     def compute_final_accuracy(self, reduce='mean'):
         """
         Compute the final accuracy over all tasks at the end of lifetime.
         """
-        max_task = self.df['train_task'].max()
+        max_task = str(self.get_max_tasks())
         final_acc = self.df[(self.df['train_task'] == max_task) & (
             self.df['epoch'] == self.max_epoch)]
         if reduce == 'mean':

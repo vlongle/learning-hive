@@ -47,30 +47,38 @@ if __name__ == "__main__":
     # }
 
     # run_experiment(config)
+    # 1 hour for around 100 epochs, contrastive=False, ~ 76%
 
     # # # === CNN experiments: CIFAR100 ===
     config = {
-        "algo": ["monolithic", "modular"],
+        # "algo": ["monolithic", "modular"],
+        "algo": "modular",
         "seed": 0,
-        "num_agents": 4,
+        "num_agents": 1,
         "parallel": True,
         "dataset": "cifar100",
         "dataset.num_trains_per_class": 256,
         "dataset.num_vals_per_class": -1,
         "dataset.remap_labels": True,
         "dataset.with_replacement": False,
-        "dataset.num_tasks": 20,
+        "dataset.num_tasks": 6,
         "net": "cnn",
         "net.depth": 4,
         "num_init_tasks": 4,
         "net.dropout": 0.5,
-        "train.num_epochs": 200,
-        "train.component_update_freq": 200,
-        "agent.memory_size": 128,
-        "agent.batch_size": 128,
+        "train.init_num_epochs": 50,
+        "train.init_component_update_freq": 50,
+        "train.num_epochs": 20,
+        "train.component_update_freq": 20,
+        "agent.memory_size": 32,
+        # "agent.batch_size": 1024,
+        "agent.batch_size": 64,
         "train.save_freq": 20,
-        "agent.use_contrastive": [True, False],
-        "root_save_dir": "vanilla_results_wo_replacement",
+        "agent.use_contrastive": True,
+        # "agent.use_contrastive": [True, False],
+        # "agent.use_contrastive": True,
+        # "root_save_dir": "vanilla_results_wo_replacement",
+        "root_save_dir": "finding_hyper_for_mod_contrastive2",
     }
 
     run_experiment(config, strict=False)

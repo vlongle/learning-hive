@@ -4,3 +4,5 @@
 **results/
 src/shell/datasets/*/
 **checkpoints/
+**finding**
+**vanilla**

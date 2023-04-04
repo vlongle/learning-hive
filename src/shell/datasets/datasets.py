@@ -62,7 +62,7 @@ def get_transform(name, device="cuda"):
             transforms.GaussianBlur(
                 kernel_size=3, sigma=(0.1, 2.0)),
             transforms.Lambda(
-                lambda x: x + torch.randn(x.size()).to(device) * 0.05),
+                lambda x: x + torch.randn(x.size()) * 0.05),
         ])
 
     elif name == "kmnist" or name == "mnist":
@@ -125,7 +125,7 @@ class SplitDataset():
                     num_classes, num_classes_per_task, replace=False) for t in range(self.num_tasks)])
                 labels = labels.reshape(-1)
 
-        if num_init_tasks is not None:
+        if num_init_tasks is not None and with_replacement:
             # make sure that the first num_init_tasks * num_classes_per_task classes are ALL DISTINCT!
             labels[:num_init_tasks*num_classes_per_task] = np.random.choice(
                 num_classes, num_init_tasks*num_classes_per_task, replace=False)
@@ -195,12 +195,14 @@ class SplitDataset():
 class MNIST(SplitDataset):
     def __init__(self, num_tasks=5, num_classes_per_task=2, with_replacement=False,
                  num_train_per_task=-1, num_val_per_task=-1, remap_labels=False, num_init_tasks=None,
-                 labels=None, use_contrastive=False):
+                 labels=None, use_contrastive=False, name=None):
+        if name is None:
+            name = "mnist"
         super().__init__(num_tasks, num_classes=10, num_classes_per_task=num_classes_per_task,
                          with_replacement=with_replacement, num_train_per_task=num_train_per_task, num_val_per_task=num_val_per_task, remap_labels=remap_labels,
                          num_init_tasks=num_init_tasks,
-                         labels=labels, name='mnist', use_contrastive=use_contrastive)
-        self.name = 'mnist'
+                         labels=labels, name=name, use_contrastive=use_contrastive)
+        self.name = name
 
     def load_data(self):
         with open(os.path.join(SRC_DIR, 'datasets/mnist/train-labels.idx1-ubyte'), 'rb') as flbl:

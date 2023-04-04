@@ -1,2 +1,4 @@
 name: data_sharing_recv
 num_coms_per_round: 1
+num_queries: 10
+num_data_neighbors: 5

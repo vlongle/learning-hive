@@ -70,8 +70,24 @@ class Agent:
                                                 num_workers=4,
                                                 pin_memory=True,
                                                 )
+        train_kwargs = self.train_kwargs.copy()
+
+        # use `init_num_epochs` and `init_component_update_freq` for the first few tasks
+        num_epochs, component_update_freq = None, None
+        if "init_num_epochs" in train_kwargs:
+            num_epochs = train_kwargs.pop(
+                "init_num_epochs")
+        if "init_component_update_freq" in train_kwargs:
+            component_update_freq = train_kwargs.pop(
+                "init_component_update_freq")
+        if task_id < self.agent.net.num_init_tasks:
+            if num_epochs is not None:
+                train_kwargs["num_epochs"] = num_epochs
+            if component_update_freq is not None:
+                train_kwargs["component_update_freq"] = component_update_freq
+
         self.agent.train(trainloader, task_id, testloaders=testloaders,
-                         valloader=valloader, **self.train_kwargs)
+                         valloader=valloader, **train_kwargs)
 
     def eval(self, task_id):
         testloaders = {task: torch.utils.data.DataLoader(testset,

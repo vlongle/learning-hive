@@ -41,8 +41,8 @@ class Learner():
         self.record = Record(os.path.join(self.save_dir, "record.csv"))
         self.dynamic_record = Record(os.path.join(
             self.save_dir, "add_modules_record.csv"))
-        self.writer = SummaryWriter(
-            log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
+        # self.writer = SummaryWriter(
+        #     log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
         self.init_trainloaders = None
 
         self.mode = "ce"
@@ -198,10 +198,12 @@ class Learner():
         l.backward()
         self.optimizer.step()
 
-    def save_data(self, epoch, task_id, testloaders, final_save=False, mode=None):
+    def save_data(self, epoch, task_id, testloaders, final_save=False, mode=None, save_dir=None):
+        if save_dir is None:
+            save_dir = self.save_dir
         self.evaluate(testloaders, mode=mode)
         task_results_dir = os.path.join(
-            self.save_dir, 'task_{}'.format(task_id))
+            save_dir, 'task_{}'.format(task_id))
         os.makedirs(task_results_dir, exist_ok=True)
         line = 'epochs: {}, training task: {}'.format(epoch, task_id)
         logging.info(line)
@@ -401,8 +403,9 @@ class CompositionalDynamicLearner(CompositionalLearner):
         if was_training:
             self.net.train()
 
-    def save_data(self, epoch, task_id, testloaders,  final_save=False, mode=None):
-        super().save_data(epoch, task_id, testloaders, final_save=final_save, mode=mode)
+    def save_data(self, epoch, task_id, testloaders,  final_save=False, mode=None, save_dir=None):
+        super().save_data(epoch, task_id, testloaders,
+                          final_save=final_save, mode=mode, save_dir=save_dir)
         if final_save:
             logging.info('final components: {}'.format(
                 self.net.num_components))

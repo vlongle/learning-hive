@@ -16,20 +16,19 @@ Copyright (c) 2023 Long Le
 '''
 
 
-# result_dir = "results"
-# result_dir = "vanilla_results"
-# result_dir = "vanilla_2modules_results"
-import os
-from shell.utils.record import Record
-from shell.utils.metric import Metric
+# result_dir = "vanilla_results_wo_replacement_2"
 import re
+from shell.utils.metric import Metric
+from shell.utils.record import Record
+import os
 result_dir = "vanilla_results"
 record = Record("experiment_results.csv")
 
 # pattern = r"/fashion.*"
-# pattern = r".*64.*"
+pattern = r".*64.*"
 # pattern = r".*64_contrastive"
-pattern = r".*256.*"
+# pattern = r".*256.*"
+# pattern = r".*modular_numtrain_256_contrastive.*"
 
 num_init_tasks = 4
 
@@ -69,18 +68,18 @@ print(record.df)
 print("=====FINAL ACC======")
 print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
       "final_acc"].mean())
-print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-      "final_acc"].sem())
-print("=====AVG ACC======")
-print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-      "avg_acc"].mean())
+# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+#       "final_acc"].sem())
+# print("=====AVG ACC======")
+# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+#       "avg_acc"].mean())
 
-print("=====BACKWARD======")
-print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-      "backward"].mean())
+# print("=====BACKWARD======")
+# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+#       "backward"].mean())
 
-print("=====FORWARD======")
-print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-      "forward"].mean())
+# print("=====FORWARD======")
+# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+#       "forward"].mean())
 
 record.save()

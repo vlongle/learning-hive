@@ -15,17 +15,22 @@ Author: Long Le (vlongle@seas.upenn.edu)
 Copyright (c) 2023 Long Le
 '''
 
+"""
+For cifar100, epochs=500 is stored in
+"""
 
+# result_dir = "finding_hyper_for_mod_contrastive_large_deeper_projector_results"
+# result_dir = "cifar_lasttry_im_done_results", "vanilla_results_wo_replacement_2"
 import re
 from shell.utils.metric import Metric
 from shell.utils.record import Record
 import os
-result_dir = "finding_hyper_for_mod_contrastive_large_deeper_projector_results"
-# result_dir = "vanilla_results_wo_replacement_2"
+result_dir = "vanilla_results_wo_replacement_2"
 # result_dir = "finding_hyper_for_mod_contrastive_large_results"
 # result_dir = "finding_hyper_for_mod_contrastive_large_lower_temp_results"
 # result_dir = "vanilla_init_big_mod_nocontrast_results"
 # result_dir = "vanilla_results"
+# result_dir = "finding_hyper_for_mod_contrastive2"
 record = Record("experiment_results.csv")
 
 # pattern = r"/fashion.*"
@@ -74,9 +79,9 @@ print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
       "final_acc"].mean())
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
 #       "final_acc"].sem())
-print("=====AVG ACC======")
-print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-      "avg_acc"].mean())
+# print("=====AVG ACC======")
+# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+#       "avg_acc"].mean())
 
 # print("=====BACKWARD======")
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[

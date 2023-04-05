@@ -45,4 +45,18 @@ Post(even): pass
 
 Pre(odd): compute data from query using image search + outlier removal.
 Com(odd): send data
-Post(odd): pass
+Post(odd): learn from data
+
+
+__Learn from data__
+Receiver sends back (x, y) where y is their own labels, and the task_id `t` attached to which query it is from.
+If contrastive learning, then use all the shared data on `t`.
+If not, then we have to pretend the majority labels (another heuristic is to use the closest labels) is the true labels, and learn using only those points on `t`.
+
+__Image Search__
+Upon receiving a query, we get k-nearest neighbors using the cosine distance of the embeddings. Then, we use the distance to determine if
+they are outliers using in-training data.
+
+
+
+All data sharing should implement a dedup routine!

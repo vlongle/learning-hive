@@ -66,14 +66,20 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         # normalize
         self.transform = transforms.Normalize(mean, std)
 
-        hidden_dim = 128
+        hidden_dim = 64
         # self.projector = nn.Linear(out_h * out_h * self.channels,
         #                            hidden_dim)
         dim_in = out_h * out_h * self.channels
         self.projector = nn.Sequential(
             nn.Linear(dim_in, dim_in),
             nn.ReLU(inplace=True),
-            nn.Linear(dim_in, hidden_dim)
+            # a bit deeper
+            # nn.Linear(dim_in, dim_in),
+            # nn.ReLU(inplace=True),
+            # nn.Linear(dim_in, hidden_dim),
+            nn.Linear(dim_in, 128),
+            nn.ReLU(inplace=True),
+            nn.Linear(128, hidden_dim),
         )
         self.to(self.device)
 

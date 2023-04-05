@@ -147,9 +147,23 @@ God, plz no, maybe have to do different encoders stupid trick again.
 
 ### Bugs
 - There's a slight difference (but consistent) in accuracy reported in record.csv vs replay.ipynb. Might be some randomness is different. Not sure.
+
+TODO: debug `replay.ipynb`
 TODO: Investigate if we have this problem in MNIST.
+Monolithic_contrastive is clear. The results match.
+Modular_contrastive: clear.
 
 
+
+Cifar100, there's inconsistency for some reasons...
+actual, agent_0: task 4: avg: 0.361
+                replay: 0.3436, actually, everytime, we run the
+evaluation, the results is different, which is SUPER WEIRD.
+It's dropout, it's always dropout. What the fuck.
+
+
+
+## CIFAR SHIT
 
 Boot and shirt
 

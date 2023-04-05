@@ -16,18 +16,22 @@ Copyright (c) 2023 Long Le
 '''
 
 
-# result_dir = "vanilla_results_wo_replacement_2"
 import re
 from shell.utils.metric import Metric
 from shell.utils.record import Record
 import os
-result_dir = "vanilla_results"
+result_dir = "finding_hyper_for_mod_contrastive_large_deeper_projector_results"
+# result_dir = "vanilla_results_wo_replacement_2"
+# result_dir = "finding_hyper_for_mod_contrastive_large_results"
+# result_dir = "finding_hyper_for_mod_contrastive_large_lower_temp_results"
+# result_dir = "vanilla_init_big_mod_nocontrast_results"
+# result_dir = "vanilla_results"
 record = Record("experiment_results.csv")
 
 # pattern = r"/fashion.*"
-pattern = r".*64.*"
+# pattern = r".*64.*"
 # pattern = r".*64_contrastive"
-# pattern = r".*256.*"
+pattern = r".*256.*"
 # pattern = r".*modular_numtrain_256_contrastive.*"
 
 num_init_tasks = 4
@@ -70,9 +74,9 @@ print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
       "final_acc"].mean())
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
 #       "final_acc"].sem())
-# print("=====AVG ACC======")
-# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-#       "avg_acc"].mean())
+print("=====AVG ACC======")
+print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+      "avg_acc"].mean())
 
 # print("=====BACKWARD======")
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[

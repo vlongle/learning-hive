@@ -51,9 +51,20 @@ class CompositionalNet(nn.Module):
         for param in self.components.parameters():
             param.requires_grad = False
             param.grad = None
+        self.freeze_projector()
+
+    def freeze_projector(self):
+        for param in self.projector.parameters():
+            param.requires_grad = False
+            param.grad = None
 
     def unfreeze_modules(self):
         for param in self.components.parameters():
+            param.requires_grad = True
+        self.unfreeze_projector()
+
+    def unfreeze_projector(self):
+        for param in self.projector.parameters():
             param.requires_grad = True
 
     def unfreeze_some_modules(self, list_of_modules):

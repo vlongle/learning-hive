@@ -147,7 +147,11 @@ God, plz no, maybe have to do different encoders stupid trick again.
 
 ### Bugs
 - There's a slight difference (but consistent) in accuracy reported in record.csv vs replay.ipynb. Might be some randomness is different. Not sure.
+TODO: Investigate if we have this problem in MNIST.
 
 
 
 Boot and shirt
+
+
+Stuff to try, maybe even freeze the projector.

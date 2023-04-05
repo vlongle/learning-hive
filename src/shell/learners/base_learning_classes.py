@@ -28,11 +28,13 @@ class Learner():
         self.use_contrastive = use_contrastive
         self.dataset_name = dataset_name
         if use_contrastive:
+            # temperature = 0.1 if dataset_name == 'cifar100' else 0.06
             temperature = 0.01 if dataset_name == 'cifar100' else 0.06
             self.sup_loss = SupConLoss(temperature=temperature)
 
         # self.loss = nn.BCEWithLogitsLoss() if net.binary else nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.Adam(self.net.parameters())
+        self.optimizer = torch.optim.Adam(self.net.parameters(),)
+        #   lr=0.005)
         self.improvement_threshold = improvement_threshold
         self.T = 0
         self.observed_tasks = set()
@@ -112,6 +114,7 @@ class Learner():
             ce = self.compute_cross_entropy_loss(X, Y, task_id, detach=True)
             cl = self.compute_contrastive_loss(X, Y, task_id)
             scale = 1.0
+            # scale = 10.0
             return ce + scale * cl
         elif mode == "ce":
             # only train ce (backpropage through the entire model)

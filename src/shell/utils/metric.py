@@ -36,6 +36,7 @@ class Metric:
             self.df = pd.read_csv(self.file_path)
         else:
             logging.critical(f"File {self.file_path} does not exist")
+            exit(1)
 
         if num_init_tasks is not None:
             # throw away all the data before num_init_tasks

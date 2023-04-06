@@ -7,10 +7,12 @@ Author: Long Le (vlongle@seas.upenn.edu)
 Copyright (c) 2023 Long Le
 '''
 
+from copy import deepcopy
+import logging
 import ray
 from shell.fleet.fleet import Fleet, ParallelFleet
 import networkx as nx
-from shell.fleet.model_sharing_utils import exclude_model
+from shell.fleet.utils.model_sharing_utils import exclude_model
 
 """
 TODO: be careful and check for dedup ect...
@@ -25,18 +27,19 @@ class GradFleet(Fleet):
         # replace net_kwargs["num_init_tasks"] with -1 as we will do joint training on the init tasks.
 
         self.fake_agent = AgentCls(69420, seed, fake_dataset, NetCls, LearnerCls,
-                                   net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
+                                   deepcopy(net_kwargs), deepcopy(
+                                       agent_kwargs),
+                                   deepcopy(train_kwargs), deepcopy(sharing_strategy))
 
         net_kwargs["num_init_tasks"] = -1
         net_kwargs["init_ordering_mode"] = "uniform"
         super().__init__(graph, seed, datasets, sharing_strategy, AgentCls,
                          NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
-
         self.joint_training()
 
     def joint_training(self):
         for task_id in range(self.num_init_tasks):
-            print("Joint training on task", task_id, "...")
+            logging.info(f"Joint training on task {task_id} ...")
             self.fake_agent.train(task_id)
         # all agents should replace their models with the fake_agent's model
 
@@ -54,7 +57,9 @@ class ParallelGradFleet(ParallelFleet, GradFleet):
         self.num_init_tasks = net_kwargs["num_init_tasks"]
 
         self.fake_agent = AgentCls.options(num_gpus=1).remote(69420, seed, fake_dataset, NetCls,
-                                                              LearnerCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
+                                                              LearnerCls, deepcopy(
+                                                                  net_kwargs), deepcopy(agent_kwargs),
+                                                              deepcopy(train_kwargs), deepcopy(sharing_strategy))
         # need to do the joint training right here, and free the gpu so that other agents can later use them
         for task_id in range(self.num_init_tasks):
             self.fake_agent.train.remote(task_id)

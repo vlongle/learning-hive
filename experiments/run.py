@@ -10,7 +10,7 @@ Copyright (c) 2023 Long Le
 import hydra
 from omegaconf import DictConfig
 
-from shell.fleet.helper import get_fleet, get_agent_cls
+from shell.fleet.utils.fleet_utils import get_fleet, get_agent_cls
 
 import time
 import datetime
@@ -25,14 +25,15 @@ def main(cfg: DictConfig) -> None:
 
     AgentCls = get_agent_cls(cfg.sharing_strategy, cfg.algo, cfg.parallel)
 
-    graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg = setup_experiment(
+    graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg = setup_experiment(
         cfg)
 
     FleetCls = get_fleet(cfg.sharing_strategy, cfg.parallel)
 
     fleet = FleetCls(graph, cfg.seed, datasets, cfg.sharing_strategy, AgentCls, NetCls=NetCls,
                      LearnerCls=LearnerCls, net_kwargs=net_cfg, agent_kwargs=agent_cfg,
-                     train_kwargs=train_cfg)
+                     train_kwargs=train_cfg, **fleet_additional_cfg)
+
     for task_id in range(cfg.dataset.num_tasks):
         fleet.train(task_id)
         fleet.communicate(task_id)

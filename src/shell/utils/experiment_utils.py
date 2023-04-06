@@ -87,7 +87,12 @@ def setup_experiment(cfg: DictConfig):
 
     LearnerCls = CompositionalDynamicER if cfg.algo == "modular" else NoComponentsER
     print(LearnerCls)
-    return graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg
+    fleet_additional_cfg = {}
+
+    if cfg.sharing_strategy.name == "gradient":
+        fleet_additional_cfg['fake_dataset'] = get_dataset(
+            **process_dataset_cfg(cfg))
+    return graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg
 
 
 def load_net(cfg, NetCls, net_cfg, agent_id, task_id, num_added_components=None):

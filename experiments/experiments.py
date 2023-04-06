@@ -39,11 +39,13 @@ if __name__ == "__main__":
     #     "net.dropout": 0.0,
     #     "train.num_epochs": 100,
     #     "train.component_update_freq": 100,
+    # "train.init_num_epochs": 100,
+    # "train.init_component_update_freq": 100,
     #     "train.save_freq": 20,
-    #     "root_save_dir": "vanilla_results",
     #     "agent.use_contrastive": [True, False],
     #     "agent.memory_size": 32,
     #     "dataset": ["mnist", "kmnist", "fashionmnist"],
+    #     "root_save_dir": "vanilla_results",
     # }
 
     # run_experiment(config)

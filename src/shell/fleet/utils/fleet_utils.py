@@ -7,9 +7,9 @@ Author: Long Le (vlongle@seas.upenn.edu)
 Copyright (c) 2023 Long Le
 '''
 from shell.fleet.fleet import Fleet, ParallelFleet, ParallelAgent, Agent
-from shell.fleet.monograd import ModelSyncAgent, ParallelModelSyncAgent
-from shell.fleet.gradient_fleet import GradFleet, ParallelGradFleet
-from shell.fleet.modgrad import ModGrad, ParallelModGrad
+from shell.fleet.grad.monograd import ModelSyncAgent, ParallelModelSyncAgent
+from shell.fleet.grad.gradient_fleet import GradFleet, ParallelGradFleet
+from shell.fleet.grad.modgrad import ModGrad, ParallelModGrad
 
 
 FLEET_CLS = {

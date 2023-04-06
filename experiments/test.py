@@ -11,7 +11,7 @@ Copyright (c) 2023 Long Le
 import hydra
 from omegaconf import DictConfig
 
-from shell.fleet.helper import get_fleet, get_agent_cls
+from shell.fleet.utils.fleet_utils import get_fleet, get_agent_cls
 
 import time
 import datetime

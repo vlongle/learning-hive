@@ -18,8 +18,8 @@ if __name__ == "__main__":
     num_init_tasks = 4
     # num_init_tasks = 2
     config = {
-        "algo": "monolithic",
-        "seed": 0,
+        "algo": ["monolithic", "modular"],
+        "seed": [0, 1, 2, 3],
         "parallel": True,
         # "parallel": False,
         "num_agents": 8,
@@ -48,9 +48,9 @@ if __name__ == "__main__":
         "train.save_freq": 20,
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
-        "dataset": "mnist",
+        "dataset": ["mnist", "kmnist", "fashionmnist"],
         # "root_save_dir": "test_grad_results",
-        "root_save_dir": "grad_results",
+        "root_save_dir": "grad_new_results",
         # ================================================
         # GRAD SHARING SETUP
         "sharing_strategy": "grad_sharing",

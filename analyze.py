@@ -36,7 +36,7 @@ from shell.utils.metric import Metric
 import re
 result_dir = "grad_results"
 # result_dir = "finding_hyper_for_mod_contrastive2"
-record = Record("experiment_results.csv")
+record = Record(f"{result_dir}.csv")
 
 # pattern = r"/fashion.*"
 # pattern = r".*64.*"
@@ -49,8 +49,13 @@ pattern = r".*"
 # TODO:
 # TODO: this might not be true for config that involves joint training
 # e.g., grad and mod^2
-# num_init_tasks = 4
-num_init_tasks = 0
+# num_init_tasks = 4  # vanilla_results
+num_init_tasks = 0  # grad_results bc of joint training
+
+num_epochs_ = num_init_epochs_ = None
+# num_epochs_ = 200
+# num_init_epochs_ = 500
+# num_init_tasks = 0
 
 for job_name in os.listdir(result_dir):
     use_contrastive = "contrastive" in job_name
@@ -67,7 +72,12 @@ for job_name in os.listdir(result_dir):
                         continue
                     print(save_dir)
 
-                    m = Metric(save_dir, num_init_tasks)
+                    num_epochs = num_init_epochs = None
+                    if dataset_name == "cifar100":
+                        num_epochs = num_epochs_
+                        num_init_epochs = num_init_epochs_
+                    m = Metric(save_dir, num_init_tasks, num_epochs=num_epochs,
+                               num_init_epochs=num_init_epochs)
                     record.write(
                         {
                             "dataset": dataset_name,
@@ -78,8 +88,8 @@ for job_name in os.listdir(result_dir):
                             "avg_acc": m.compute_avg_accuracy(),
                             "final_acc": m.compute_final_accuracy(),
                             "forward": m.compute_forward_transfer(),
-                            "backward": m.compute_backward_transfer(
-                            ),
+                            "backward": m.compute_backward_transfer(),
+                            "catastrophic": m.compute_catastrophic_forgetting(),
                         }
                     )
 print(record.df)
@@ -87,9 +97,9 @@ print(record.df)
 # and whether it uses contrastive loss
 print("=====FINAL ACC======")
 print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-      "final_acc"].mean())
+      "final_acc"].mean() * 100)
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-#       "final_acc"].sem())
+#       "final_acc"].sem() * 100)
 # print("=====AVG ACC======")
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
 #       "avg_acc"].mean())
@@ -101,5 +111,11 @@ print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
 # print("=====FORWARD======")
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
 #       "forward"].mean())
+
+
+# print("=====CATASTROPHIC======")
+# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+#       "catastrophic"].mean())
+
 
 record.save()

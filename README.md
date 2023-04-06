@@ -165,7 +165,8 @@ It's dropout, it's always dropout. What the fuck.
 
 ## CIFAR SHIT
 
-Boot and shirt
-
-
 Stuff to try, maybe even freeze the projector.
+
+__invasive modification__: do a lot of backward update on the projector ONLY (and NOT the 
+structure), one hacky way to do this is to concat megadataset to trainset during normal dynamic training.
+

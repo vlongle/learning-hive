@@ -29,7 +29,8 @@ class Metric:
     - test_acc: test accuracy of the test task (numeric)
     """
 
-    def __init__(self, save_dir, num_init_tasks=None):
+    def __init__(self, save_dir, num_init_tasks=None, num_init_epochs=None,
+                 num_epochs=None):
         self.save_dir = save_dir
         self.file_path = os.path.join(save_dir, 'record.csv')
         if os.path.exists(self.file_path):
@@ -52,10 +53,18 @@ class Metric:
             # computation, for final_acc it doesn't matter. We're using
             # init_num_epochs != num_epochs, and so for hacky reasons.
             # keeping, num_init_tasks sol
-            # self.df = self.df[self.df['train_task'] >= num_init_tasks-1]
-            self.df = self.df[self.df['train_task'] >= num_init_tasks]
+            self.df = self.df[self.df['train_task'] >= num_init_tasks-1]
+            # self.df = self.df[self.df['train_task'] >= num_init_tasks]
 
+        self.num_init_tasks = num_init_tasks
         self.max_epoch = self.df['epoch'].max()
+        if num_init_epochs is not None and num_epochs is not None:
+            # HACK: replace all the rows with epoch == num_init_epochs
+            # or num_epochs to max_epoch to uniformize the metric computation
+            self.df.loc[self.df['epoch'] ==
+                        num_init_epochs, 'epoch'] = self.max_epoch
+            self.df.loc[self.df['epoch'] ==
+                        num_epochs, 'epoch'] = self.max_epoch
         # 'test_task' column is string, we need to convert train_task to string as well
         self.df['train_task'] = self.df['train_task'].astype(str)
 
@@ -98,7 +107,7 @@ class Metric:
             forward_transfer = forward_transfer['test_acc'].mean()
         return forward_transfer
 
-    def compute_backward_transfer(self, num_init_tasks=None, reduce='mean'):
+    def compute_backward_transfer(self, reduce='mean'):
         """
         Compute the backward transfer: the difference accuracy of past task at epoch = 0 and after training
         on the current task.
@@ -118,6 +127,48 @@ class Metric:
         if reduce == 'mean':
             backward_transfer = backward_transfer['backward_transfer'].mean()
         return backward_transfer
+
+    def compute_catastrophic_forgetting(self, reduce='mean'):
+        """
+        catastrophic[t] = (accuracy of t at the end of train_task == t) - (accuracy of t at the end of lifetime0)
+
+        High positive catastrophic is bad.
+        "Negative catastrophic" is good: backward transfer.
+        """
+        pre = self.df[(self.df['epoch'] == self.max_epoch) & (
+            self.df['test_task'] == self.df['train_task'])]
+        # get the pre for task before num_init_tasks by
+        # setting the values to that when train_task == num_init_tasks -1
+        pre_init = self.df[(self.df['epoch'] == self.max_epoch)
+                           & (self.df['train_task'] == str(self.num_init_tasks - 1))]
+        # combine pre and pre_init
+        pre = pd.concat([pre, pre_init])
+        # remove non-numeric test_task column (e.g., "avg")
+        pre = pre[pd.to_numeric(
+            pre['test_task'], errors='coerce').notnull()]
+        # remove duplicate rows
+        pre = pre.drop_duplicates(subset=['test_task'])
+
+        max_task = str(self.get_max_tasks())
+        post = self.df[(self.df['epoch'] == self.max_epoch) & (
+            self.df['train_task'] == max_task)]
+
+        # remove non-numeric
+        post = post[pd.to_numeric(
+            post['test_task'], errors='coerce').notnull()]
+
+        catastrophic = pre.merge(
+            post, on=['test_task'], suffixes=('_pre', '_post'))
+
+        # catastrophic column is test_acc_pre - test_acc_post
+        catastrophic['catastrophic'] = (catastrophic['test_acc_pre'] -
+                                        catastrophic['test_acc_post'])
+
+        print(catastrophic)
+        if reduce == 'mean':
+            # percentage
+            catastrophic = catastrophic['catastrophic'].mean() * 100
+        return catastrophic
 
 
 def task_similarity(classes_sequence_list, num_tasks, num_classes_per_task):
@@ -157,5 +208,4 @@ def task_similarity(classes_sequence_list, num_tasks, num_classes_per_task):
                 }
                 df = pd.concat([df, pd.DataFrame(row, index=[0])])
     return df
-
 # TODO: monitor metric related to data sharing accuracy, modules proning accuracy, federated learning stuff ect...

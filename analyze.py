@@ -16,36 +16,41 @@ Copyright (c) 2023 Long Le
 '''
 
 """
-For cifar100, epochs=500 is stored in
+For cifar100, epochs=500 is stored in 
 """
 
 # result_dir = "finding_hyper_for_mod_contrastive_large_deeper_projector_results"
-import re
-from shell.utils.metric import Metric
-from shell.utils.record import Record
-import os
-result_dir = "cifar_lasttry_im_done_projector_no_freeze_results"
+# result_dir = "cifar_lasttry_im_done_projector_no_freeze_results"
 # result_dir = "cifar_lasttry_im_done_results"
-# result_dir =  "vanilla_results_wo_replacement_2"
+# result_dir = "vanilla_results_wo_replacement_2"
+# result_dir = "vanilla_results_wo_replacement"
 # result_dir = "vanilla_results_wo_replacement_2"
 # result_dir = "finding_hyper_for_mod_contrastive_large_results"
 # result_dir = "finding_hyper_for_mod_contrastive_large_lower_temp_results"
 # result_dir = "vanilla_init_big_mod_nocontrast_results"
+# result_dir = "vanilla_cifar_old_results"
 # result_dir = "vanilla_results"
+import os
+from shell.utils.record import Record
+from shell.utils.metric import Metric
+import re
+result_dir = "grad_results"
 # result_dir = "finding_hyper_for_mod_contrastive2"
 record = Record("experiment_results.csv")
 
 # pattern = r"/fashion.*"
 # pattern = r".*64.*"
+pattern = r".*"
 # pattern = r".*64_contrastive"
-pattern = r".*256.*"
+# pattern = r".*256.*"
 # pattern = r".*modular_numtrain_256_contrastive.*"
 
 # TODO: BUG: be careful with num_init_tasks!!!!!
 # TODO:
 # TODO: this might not be true for config that involves joint training
 # e.g., grad and mod^2
-num_init_tasks = 4
+# num_init_tasks = 4
+num_init_tasks = 0
 
 for job_name in os.listdir(result_dir):
     use_contrastive = "contrastive" in job_name

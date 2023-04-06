@@ -97,8 +97,9 @@ class ModelSyncAgent(Agent):
             {
                 "task_id": task_id,
                 "communication_round": communication_round,
-            } | diffs
+            } | diffs['avg_neigh']
         )
+        self.sharing_record.save()
 
     def aggregate_models(self):
         # get model from neighbors
@@ -135,7 +136,8 @@ class ModelSyncAgent(Agent):
                           testloaders, save_freq, eval_bool)
 
     def process_communicate(self, task_id, communication_round):
-        self.log(task_id, communication_round)
+        if communication_round % self.sharing_strategy.log_freq == 0:
+            self.log(task_id, communication_round)
         self.aggregate_models()
 
         # Monograd: retrain on local tasks using experience replay
@@ -150,8 +152,10 @@ class ModelSyncAgent(Agent):
         self.retrain(
             self.sharing_strategy.retrain.num_epochs, task_id_retrain, testloaders, save_freq=1, eval_bool=True)
 
+        # self.agent.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id_retrain,
+        #                      testloaders, final_save=True)  # final eval
         self.agent.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id_retrain,
-                             testloaders, final_save=True)  # final eval
+                             testloaders, final_save=False)  # final eval
 
     def replace_model(self, new_model, strict=True):
         # print("replacing model with strict:", strict)

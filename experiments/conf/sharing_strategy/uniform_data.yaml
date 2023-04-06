@@ -1,0 +1,5 @@
+name: uniform_data
+num_coms_per_round: 1
+num_data_points: 10
+retrain:
+  num_epochs: 10

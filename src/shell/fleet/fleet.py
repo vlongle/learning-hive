@@ -15,6 +15,7 @@ import os
 import logging
 from shell.utils.utils import seed_everything, create_dir_if_not_exist
 from shell.utils.experiment_utils import eval_net
+from copy import deepcopy
 
 SEED_SCALE = 1000
 
@@ -160,7 +161,8 @@ class Fleet:
                       train_kwargs, uniformized=False):
         self.agents = [
             AgentCls(node_id, seed, datasets[node_id], NetCls,
-                     LearnerCls, net_kwargs, agent_kwargs, train_kwargs, self.sharing_strategy)
+                     LearnerCls, deepcopy(net_kwargs), deepcopy(agent_kwargs),
+                     deepcopy(train_kwargs), deepcopy(self.sharing_strategy))
             for node_id in self.graph.nodes
         ]
         # make sure that all agents share the same (random) preprocessing parameters in MNIST variants
@@ -188,6 +190,8 @@ class Fleet:
     def communicate(self, task_id):
         for communication_round in range(self.num_coms_per_round):
             for agent in self.agents:
+                agent.prepare_communicate(task_id, communication_round)
+            for agent in self.agents:
                 agent.communicate(task_id, communication_round)
             for agent in self.agents:
                 agent.process_communicate(task_id, communication_round)
@@ -212,7 +216,10 @@ class ParallelFleet:
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
         self.agents = [
             AgentCls.options(num_gpus=self.num_gpus_per_agent).remote(node_id, seed, datasets[node_id], NetCls,
-                                                                      LearnerCls, net_kwargs, agent_kwargs, train_kwargs, self.sharing_strategy)
+                                                                      LearnerCls,
+                                                                      deepcopy(net_kwargs), deepcopy(
+                                                                          agent_kwargs),
+                                                                      deepcopy(train_kwargs), deepcopy(self.sharing_strategy))
             for node_id in self.graph.nodes
         ]
 

@@ -6,7 +6,7 @@ Author: Long Le (vlongle@seas.upenn.edu)
 
 Copyright (c) 2023 Long Le
 '''
-from shell.fleet.model_sharing_utils import is_in
+from shell.fleet.utils.model_sharing_utils import is_in
 from shell.utils.utils import seed_everything
 from omegaconf import OmegaConf
 from hydra import compose, initialize
@@ -18,7 +18,7 @@ import logging
 import datetime
 import time
 import torch
-from shell.fleet.helper import get_fleet, get_agent_cls
+from shell.fleet.utils.fleet_utils import get_fleet, get_agent_cls
 from omegaconf import DictConfig
 import hydra
 import os

@@ -9,7 +9,7 @@ Copyright (c) 2023 Long Le
 import hydra
 from omegaconf import DictConfig
 
-from shell.fleet.helper import get_fleet, get_agent_cls
+from shell.fleet.utils.fleet_utils import get_fleet, get_agent_cls
 import torch
 import time
 import datetime
@@ -22,7 +22,7 @@ import os
 from hydra import compose, initialize
 from omegaconf import OmegaConf
 from shell.utils.utils import seed_everything
-from shell.fleet.model_sharing_utils import is_in
+from shell.fleet.utils.model_sharing_utils import is_in
 logging.basicConfig(level=logging.INFO)
 
 # config_path = os.path.join("conf", "grad.yaml")

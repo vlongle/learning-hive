@@ -9,7 +9,7 @@ Copyright (c) 2023 Long Le
 import logging
 from copy import deepcopy
 import ray
-from shell.fleet.monograd import ModelSyncAgent, ParallelModelSyncAgent
+from shell.fleet.grad.monograd import ModelSyncAgent, ParallelModelSyncAgent
 import copy
 import torch
 from torch.utils.data.dataset import ConcatDataset

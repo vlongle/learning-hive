@@ -9,7 +9,7 @@ Copyright (c) 2023 Long Le
 # %% [markdown]
 # Comparing different Methods for hard-example mining in `Recv` method
 # %%
-from shell.fleet.recv import least_confidence_scorer, entropy_scorer, margin_scorer, cross_entropy_scorer
+from shell.fleet.data.recv import least_confidence_scorer, entropy_scorer, margin_scorer, cross_entropy_scorer
 import seaborn as sns
 import logging
 from sklearn.manifold import TSNE

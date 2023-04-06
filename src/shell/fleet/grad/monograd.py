@@ -12,24 +12,28 @@ from shell.fleet.fleet import Agent
 from copy import deepcopy
 import torch
 from torch.utils.data.dataset import ConcatDataset
-from shell.fleet.model_sharing_utils import exclude_model
+from shell.fleet.utils.model_sharing_utils import exclude_model, diff_models
 from collections import defaultdict
-"""
-NOTE: 
-TODO: BUG: potential bug, make sure that the preprocessing is uniformized.
-"""
+from shell.utils.record import Record
+from shell.datasets.datasets import get_custom_tensordataset
+import os
 
 
 class ModelSyncAgent(Agent):
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
                          net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
-        self.models = {}
+        self.incoming_models = {}
         # key: (task_id, communication_round, neighbor_id)
         self.bytes_sent = {}
         # self.num_init_tasks = net_kwargs.get("num_init_tasks", 1)
         self.excluded_params = set(
             ["decoder", "projector", "structure"])
+
+        self.sharing_record = Record(os.path.join(
+            self.save_dir,
+            "sharing_record.csv"
+        ))
 
     def compute_model_size(self, state_dict):
         return sum(p.numel() for p in state_dict.values())
@@ -58,30 +62,54 @@ class ModelSyncAgent(Agent):
     def receive(self, node_id, model, msg_type):
         # get model from neighbors
         # average all the models together!
-        self.models[node_id] = model
+        self.incoming_models[node_id] = model
 
     def get_received_models(self):
-        return self.models
+        return self.incoming_models
 
     def get_bytes_sent(self):
         return self.bytes_sent
 
+    def log(self, task_id, communication_round):
+        my_model = self.net.state_dict()
+        diffs = {}  # diff['name'] is a dictionary of "param_key"
+        # and float indicating the difference
+        for neigh, inc_model in self.incoming_models.items():
+            diffs[neigh] = diff_models(my_model, inc_model)
+        # compute diff['avg'] which is a dictionary of "param_key"
+        # and float where the value is averaged over all the neighbors
+        # in diffs
+        diffs['avg_neigh'] = {}
+        for name, diff in diffs.items():
+            for param_key, value in diff.items():
+                if param_key not in diffs['avg_neigh']:
+                    diffs['avg_neigh'][param_key] = 0
+                diffs['avg_neigh'][param_key] += value
+
+        for param_key, value in diffs['avg_neigh'].items():
+            diffs['avg_neigh'][param_key] = value / len(self.incoming_models)
+
+        # diffs['avg_neigh']['avg_params'] is averaged over all param_key
+        diffs['avg_neigh']['avg_params'] = sum(
+            diffs['avg_neigh'].values()) / len(diffs['avg_neigh'])
+
+        self.sharing_record.write(
+            {
+                "task_id": task_id,
+                "communication_round": communication_round,
+            } | diffs
+        )
+
     def aggregate_models(self):
         # get model from neighbors
         # average all the models together!
-        # print("node_id:", self.node_id)
-        # print(self.models.keys())
-        # average all the models together!
         stuff_added = defaultdict(int)
-        for model in self.models.values():
+        for model in self.incoming_models.values():
             for name, param in model.items():
                 # print("Adding name:", name)
                 self.net.state_dict()[name].data += param.data
                 stuff_added[name] += 1
 
-        # print("stuff_added:", stuff_added)
-        # TODO: this normalization is BUGGY. We should only normalize
-        # stuff that was actually added!
         # normalize
         for name, param in self.net.state_dict().items():
             # +1 because it includes the current model
@@ -91,8 +119,12 @@ class ModelSyncAgent(Agent):
         """
         Retrain on local data after aggregation. Only tested for monolithic models.
         """
+        # mega_dataset = ConcatDataset(
+        #     [loader.dataset for loader in self.agent.memory_loaders.values()])
+
         mega_dataset = ConcatDataset(
-            [loader.dataset for loader in self.agent.memory_loaders.values()])
+            [get_custom_tensordataset(loader.dataset.tensors, name=self.agent.dataset_name,
+                                      use_contrastive=self.agent.use_contrastive) for loader in self.agent.memory_loaders.values()])
         mega_loader = torch.utils.data.DataLoader(mega_dataset,
                                                   batch_size=self.agent.memory_loaders[0].batch_size,
                                                   shuffle=True,
@@ -103,6 +135,7 @@ class ModelSyncAgent(Agent):
                           testloaders, save_freq, eval_bool)
 
     def process_communicate(self, task_id, communication_round):
+        self.log(task_id, communication_round)
         self.aggregate_models()
 
         # Monograd: retrain on local tasks using experience replay

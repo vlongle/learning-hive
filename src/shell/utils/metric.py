@@ -38,8 +38,21 @@ class Metric:
             logging.critical(f"File {self.file_path} does not exist")
             exit(1)
 
+        # HACK: for grad, we also log these immediate retraining during sync
+        # remove self.df['train_task'] that cannot be converted to numeric
+        self.df = self.df[pd.to_numeric(
+            self.df['train_task'], errors='coerce').notnull()]
+        # convert train_task column to numeric
+        self.df['train_task'] = pd.to_numeric(self.df['train_task'])
+
         if num_init_tasks is not None:
             # throw away all the data before num_init_tasks
+            # because it was before any training happens.
+            # NOTE: num_init_tasks-1 is actually more correct for avg_accuracy
+            # computation, for final_acc it doesn't matter. We're using
+            # init_num_epochs != num_epochs, and so for hacky reasons.
+            # keeping, num_init_tasks sol
+            # self.df = self.df[self.df['train_task'] >= num_init_tasks-1]
             self.df = self.df[self.df['train_task'] >= num_init_tasks]
 
         self.max_epoch = self.df['epoch'].max()

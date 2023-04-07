@@ -1,4 +1,12 @@
 '''
+File: /analayze_grad.py
+Project: learning-hive
+Created Date: Friday April 7th 2023
+Author: Long Le (vlongle@seas.upenn.edu)
+
+Copyright (c) 2023 Long Le
+'''
+'''
 File: /analyze.py
 Project: learning-hive
 Created Date: Monday March 20th 2023
@@ -6,18 +14,6 @@ Author: Long Le (vlongle@seas.upenn.edu)
 
 Copyright (c) 2023 Long Le
 '''
-'''
-File: /plot.py
-Project: lifelong-learning-viral
-Created Date: Wednesday March 15th 2023
-Author: Long Le (vlongle@seas.upenn.edu)
-
-Copyright (c) 2023 Long Le
-'''
-
-"""
-For cifar100, epochs=500 is stored in 
-"""
 
 # result_dir = "finding_hyper_for_mod_contrastive_large_deeper_projector_results"
 # result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_1.5_results"
@@ -29,21 +25,22 @@ For cifar100, epochs=500 is stored in
 # result_dir = "finding_hyper_for_mod_contrastive_large_lower_temp_results"
 # result_dir = "vanilla_init_big_mod_nocontrast_results"
 # result_dir = "vanilla_cifar_old_results"
+# result_dir = "vanilla_results"
+# result_dir = "grad_results"
+# result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_hidden_64_results"
+# result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_results"
 import re
 from shell.utils.metric import Metric
 from shell.utils.record import Record
 import os
-result_dir = "vanilla_results"
-# result_dir = "grad_results"
-# result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_hidden_64_results"
-# result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_results"
-# result_dir = "grad_new_results"
+result_dir = "grad_new_results"
 # result_dir = "finding_hyper_for_mod_contrastive2"
 record = Record(f"{result_dir}.csv")
 
 # pattern = r"/fashion.*"
-# pattern = r".*64_contrastive.*"
-pattern = r".*"
+# pattern = r".*64.*"
+pattern = r".*seed_0.*"
+# pattern = r".*"
 # pattern = r".*64_contrastive"
 # pattern = r".*256.*"
 # pattern = r".*modular_numtrain_256_contrastive.*"
@@ -52,8 +49,8 @@ pattern = r".*"
 # TODO:
 # TODO: this might not be true for config that involves joint training
 # e.g., grad and mod^2
-num_init_tasks = 4  # vanilla_results
-# num_init_tasks = 0  # grad_results bc of joint training
+# num_init_tasks = 4  # vanilla_results
+num_init_tasks = 0  # grad_results bc of joint training
 
 # num_epochs_ = num_init_epochs_ = None
 num_epochs_ = 200
@@ -101,14 +98,14 @@ for job_name in os.listdir(result_dir):
 print(record.df)
 # get the final accuracy with respect to different algo and dataset
 # and whether it uses contrastive loss
-print("=====FINAL ACC======")
-print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-      "final_acc"].mean() * 100)
-print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-      "final_acc"].sem() * 100)
-print("=====AVG ACC======")
-print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-      "avg_acc"].mean() * 100)
+# print("=====FINAL ACC======")
+# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+#       "final_acc"].mean() * 100)
+# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+#       "final_acc"].sem() * 100)
+# print("=====AVG ACC======")
+# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+#       "avg_acc"].mean() * 100)
 
 # print("=====BACKWARD======")
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[

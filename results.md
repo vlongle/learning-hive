@@ -40,6 +40,20 @@ monolithic  cifar100      False              63.623694
                           True               94.860344
 
 
+at start_epoch = 21
+
+=====FORWARD======
+algo        dataset       use_contrastive
+modular     fashionmnist  True               70.486607
+            kmnist        True               61.055357
+            mnist         True               68.606603
+monolithic  fashionmnist  True               89.035714
+            kmnist        True               79.141964
+            mnist         True               89.783732
+Name: forward, dtype: float64
+
+
+
 
 ## Grad sync
 =====FINAL ACC======
@@ -59,3 +73,58 @@ modular     fashionmnist  True               93.701065
 monolithic  fashionmnist  True               93.268908
             kmnist        True               82.987226
             mnist         True               94.914154
+
+
+
+start_epoch = 21
+
+=====FORWARD======
+algo        dataset       use_contrastive
+modular     fashionmnist  True               76.320139
+            kmnist        True               61.408102
+            mnist         True               67.448571
+monolithic  fashionmnist  True               90.245139
+            kmnist        True               78.157870
+            mnist         True               89.850139
+Name: forward, dtype: float64
+
+## Turning Modular
+
+result_dir = "vanilla_results"
+    dataset        algo  use_contrastive    seed agent_id   avg_acc  final_acc   forward  backward  catastrophic
+0  cifar100     modular            False  seed_0  agent_1  0.775173     0.7875  0.196471  0.017853          0.59
+0  cifar100     modular            False  seed_0  agent_2  0.767970     0.7801  0.199294  0.016905          0.12
+0  cifar100     modular            False  seed_0  agent_6  0.810245     0.7995  0.213412  0.020916          0.20
+0  cifar100     modular            False  seed_0  agent_7  0.794568     0.7871  0.205647  0.018768          0.62
+0  cifar100     modular            False  seed_0  agent_4  0.789978     0.7736  0.202824  0.020189          0.87
+0  cifar100     modular            False  seed_0  agent_3  0.764879     0.7798  0.188235  0.018221         -0.13
+0  cifar100     modular            False  seed_0  agent_0  0.780671     0.7942  0.200824  0.017463          0.20
+0  cifar100     modular            False  seed_0  agent_5  0.798915     0.8009  0.199647  0.018989         -0.16
+
+0  cifar100     modular             True  seed_0  agent_1  0.740929     0.7587  0.201647  0.016389          0.11
+0  cifar100     modular             True  seed_0  agent_2  0.749622     0.7680  0.198471  0.015368          0.56
+0  cifar100     modular             True  seed_0  agent_6  0.796976     0.7899  0.194941  0.019137          0.00
+0  cifar100     modular             True  seed_0  agent_7  0.770605     0.7604  0.202588  0.017379          1.42
+0  cifar100     modular             True  seed_0  agent_4  0.769633     0.7452  0.188588  0.018663          1.23
+0  cifar100     modular             True  seed_0  agent_3  0.732907     0.7624  0.211412  0.016368          0.25
+0  cifar100     modular             True  seed_0  agent_0  0.775489     0.7765  0.204824  0.017105          1.01
+0  cifar100     modular             True  seed_0  agent_5  0.771440     0.7784  0.217765  0.018653          0.08
+
+
+
+
+result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_results"
+
+
+    dataset     algo  use_contrastive    seed agent_id   avg_acc  final_acc   forward  backward  catastrophic
+0  cifar100  modular             True  seed_0  agent_1  0.734576     0.7503  0.207882  0.015095          1.18
+0  cifar100  modular             True  seed_0  agent_2  0.730013     0.7446  0.195882  0.013968          1.73
+0  cifar100  modular             True  seed_0  agent_6  0.785582     0.7712  0.205412  0.018495          0.76
+0  cifar100  modular             True  seed_0  agent_7  0.766055     0.7561  0.209176  0.016905          1.53
+0  cifar100  modular             True  seed_0  agent_4  0.773231     0.7484  0.209765  0.021705          0.41
+0  cifar100  modular             True  seed_0  agent_3  0.738278     0.7633  0.216118  0.016284          0.07
+0  cifar100  modular             True  seed_0  agent_0  0.764395     0.7725  0.193529  0.017189          0.22
+0  cifar100  modular             True  seed_0  agent_5  0.766867     0.7660  0.197882  0.017747          0.94
+
+
+

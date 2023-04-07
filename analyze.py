@@ -20,7 +20,7 @@ For cifar100, epochs=500 is stored in
 """
 
 # result_dir = "finding_hyper_for_mod_contrastive_large_deeper_projector_results"
-# result_dir = "cifar_lasttry_im_done_projector_no_freeze_results"
+# result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_1.5_results"
 # result_dir = "cifar_lasttry_im_done_results"
 # result_dir = "vanilla_results_wo_replacement_2"
 # result_dir = "vanilla_results_wo_replacement"
@@ -30,11 +30,14 @@ For cifar100, epochs=500 is stored in
 # result_dir = "vanilla_init_big_mod_nocontrast_results"
 # result_dir = "vanilla_cifar_old_results"
 # result_dir = "vanilla_results"
-import os
-from shell.utils.record import Record
-from shell.utils.metric import Metric
+# result_dir = "grad_results"
+# result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_hidden_64_results"
+# result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_results"
 import re
-result_dir = "grad_results"
+from shell.utils.metric import Metric
+from shell.utils.record import Record
+import os
+result_dir = "grad_new_results"
 # result_dir = "finding_hyper_for_mod_contrastive2"
 record = Record(f"{result_dir}.csv")
 
@@ -52,9 +55,9 @@ pattern = r".*"
 # num_init_tasks = 4  # vanilla_results
 num_init_tasks = 0  # grad_results bc of joint training
 
-num_epochs_ = num_init_epochs_ = None
-# num_epochs_ = 200
-# num_init_epochs_ = 500
+# num_epochs_ = num_init_epochs_ = None
+num_epochs_ = 200
+num_init_epochs_ = 500
 # num_init_tasks = 0
 
 for job_name in os.listdir(result_dir):
@@ -100,9 +103,9 @@ print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
       "final_acc"].mean() * 100)
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
 #       "final_acc"].sem() * 100)
-# print("=====AVG ACC======")
-# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-#       "avg_acc"].mean())
+print("=====AVG ACC======")
+print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+      "avg_acc"].mean() * 100)
 
 # print("=====BACKWARD======")
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[

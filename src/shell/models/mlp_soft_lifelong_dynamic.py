@@ -22,7 +22,7 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                  num_tasks,
                  num_init_tasks=None,
                  max_components=-1,
-                 init_ordering_mode='one_module_per_task',
+                 init_ordering_mode='random_onehot',
                  device='cuda',
                  dropout=0.5,
                  ):

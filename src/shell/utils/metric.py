@@ -7,6 +7,8 @@ Author: Long Le (vlongle@seas.upenn.edu)
 Copyright (c) 2023 Long Le
 '''
 
+import numpy as np
+import matplotlib
 import pandas as pd
 import os
 import logging
@@ -209,3 +211,20 @@ def task_similarity(classes_sequence_list, num_tasks, num_classes_per_task):
                 df = pd.concat([df, pd.DataFrame(row, index=[0])])
     return df
 # TODO: monitor metric related to data sharing accuracy, modules proning accuracy, federated learning stuff ect...
+
+
+def get_magma_colors(total_elements):
+    start = 0.2
+    stop = 0.8
+    cm_subsection = np.linspace(start, stop, total_elements)
+    return [matplotlib.cm.plasma(x) for x in cm_subsection]
+
+
+class DivergenceMetric:
+    def __init__(self, save_dir) -> None:
+        self.save_dir = save_dir
+        self.file_path = os.path.join(self.save_dir, "sharing_record.csv")
+        self.df = pd.read_csv(self.file_path)
+        self.max_comm_round = self.df['communication_round'].max() + 1
+        self.df["time"] = self.df["task_id"] * \
+            self.max_comm_round + self.df["communication_round"]

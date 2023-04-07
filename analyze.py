@@ -43,9 +43,9 @@ record = Record(f"{result_dir}.csv")
 
 # pattern = r"/fashion.*"
 # pattern = r".*64.*"
-pattern = r".*"
+# pattern = r".*"
 # pattern = r".*64_contrastive"
-# pattern = r".*256.*"
+pattern = r".*256.*"
 # pattern = r".*modular_numtrain_256_contrastive.*"
 
 # TODO: BUG: be careful with num_init_tasks!!!!!

@@ -51,23 +51,11 @@ class CompositionalNet(nn.Module):
         for param in self.components.parameters():
             param.requires_grad = False
             param.grad = None
-        # if hasattr(self, 'projector'):
-        #     self.freeze_projector()
-
-    def freeze_projector(self):
-        for param in self.projector.parameters():
-            param.requires_grad = False
-            param.grad = None
-
     def unfreeze_modules(self):
         for param in self.components.parameters():
             param.requires_grad = True
-        # if hasattr(self, 'projector'):
-        #     self.unfreeze_projector()
 
-    def unfreeze_projector(self):
-        for param in self.projector.parameters():
-            param.requires_grad = True
+
 
     def unfreeze_some_modules(self, list_of_modules):
         for i in list_of_modules:
@@ -134,10 +122,14 @@ class SoftOrderingNet(CompositionalNet):
     def freeze_structure(self):
         self.freeze_linear_weights()
         self.freeze_decoder()
+        if hasattr(self, 'projector'):
+            self.freeze_projector()
 
     def unfreeze_structure(self, task_id):
         self.unfreeze_linear_weights(task_id)
         self.unfreeze_decoder(task_id)
+        if hasattr(self, 'projector'):
+            self.unfreeze_projector(task_id)
 
     def freeze_linear_weights(self):
         for param in self.structure:
@@ -151,6 +143,15 @@ class SoftOrderingNet(CompositionalNet):
         for param in self.decoder.parameters():
             param.requires_grad = False
             param.grad = None
+
+    def freeze_projector(self):
+        for param in self.projector.parameters():
+            param.requires_grad = False
+            param.grad = None
+
+    def unfreeze_projector(self):
+        for param in self.projector[task_id].parameters():
+            param.requires_grad = True
 
     def unfreeze_decoder(self, task_id):
         for param in self.decoder[task_id].parameters():

@@ -24,7 +24,7 @@ if __name__ == "__main__":
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
     # config = {
     #     "algo": ["monolithic", "modular"],
-    #     "seed": 0,
+    #     "seed": [1,2,3],
     #     "parallel": True,
     #     "num_agents": 8,
     #     "dataset": "mnist",
@@ -39,24 +39,21 @@ if __name__ == "__main__":
     #     "net.dropout": 0.0,
     #     "train.num_epochs": 100,
     #     "train.component_update_freq": 100,
-    # "train.init_num_epochs": 100,
-    # "train.init_component_update_freq": 100,
+    #     "train.init_num_epochs": 100,
+    #     "train.init_component_update_freq": 100,
     #     "train.save_freq": 20,
     #     "agent.use_contrastive": [True, False],
     #     "agent.memory_size": 32,
     #     "dataset": ["mnist", "kmnist", "fashionmnist"],
-    #     "root_save_dir": "vanilla_results",
+    #     "root_save_dir": "vanilla_more_seeds_results",
     # }
-
-    # run_experiment(config)
-    # 1 hour for around 100 epochs, contrastive=False, ~ 76%
 
     # # # === CNN experiments: CIFAR100 ===
     config = {
         # "algo": ["monolithic", "modular"],
         "algo": "modular",
-        "seed": 1,
-        "num_agents": 4,
+        "seed": 0,
+        "num_agents": 8,
         "parallel": True,
         "dataset": "cifar100",
         "dataset.num_trains_per_class": 256,
@@ -70,22 +67,14 @@ if __name__ == "__main__":
         "net.dropout": 0.5,
         "train.init_num_epochs": 500,
         "train.init_component_update_freq": 500,
-        "train.num_epochs": 100,
-        "train.component_update_freq": 100,
+        "train.num_epochs": 200,
+        "train.component_update_freq": 200,
         "agent.memory_size": 32,
         # "agent.batch_size": 1024,
         "agent.batch_size": 64,
         "train.save_freq": 20,
         "agent.use_contrastive": True,
-        # "agent.use_contrastive": [True, False],
-        # "agent.use_contrastive": True,
-        # "root_save_dir": "vanilla_results_wo_replacement",
-        # "root_save_dir": "finding_hyper_for_mod_contrastive_large_lower_temp_results",
-        # "root_save_dir": "finding_hyper_for_mod_contrastive_large_no_projector_results",
-        # "root_save_dir": "finding_hyper_for_mod_contrastive_large_deeper_projector_results",
-        # "root_save_dir": "finding_hyper_for_mod_contrastive_large_deeper_projector_freeze_proj_results",
-        # "root_save_dir": "finding_hyper_for_mod_contrastive_large_deeper_projector_freeze_proj_more_epochs_results",
-        "root_save_dir": "finding_hyper_for_mod_contrastive_large_deeper_projector_freeze_proj_more_epochs_less_dim_results",
+        "root_save_dir": "cifar_task_specific_proj_results",
     }
 
     run_experiment(config, strict=False)

@@ -18,7 +18,7 @@ class CompositionalNet(nn.Module):
                  num_classes,
                  num_tasks,
                  num_init_tasks=None,
-                 init_ordering_mode='one_module_per_task',
+                 init_ordering_mode='random_onehot',
                  device='cuda'):
         super().__init__()
         self.device = device
@@ -51,8 +51,8 @@ class CompositionalNet(nn.Module):
         for param in self.components.parameters():
             param.requires_grad = False
             param.grad = None
-        if hasattr(self, 'projector'):
-            self.freeze_projector()
+        # if hasattr(self, 'projector'):
+        #     self.freeze_projector()
 
     def freeze_projector(self):
         for param in self.projector.parameters():
@@ -62,8 +62,8 @@ class CompositionalNet(nn.Module):
     def unfreeze_modules(self):
         for param in self.components.parameters():
             param.requires_grad = True
-        if hasattr(self, 'projector'):
-            self.unfreeze_projector()
+        # if hasattr(self, 'projector'):
+        #     self.unfreeze_projector()
 
     def unfreeze_projector(self):
         for param in self.projector.parameters():
@@ -86,7 +86,7 @@ class SoftOrderingNet(CompositionalNet):
                  num_classes,
                  num_tasks,
                  num_init_tasks=None,
-                 init_ordering_mode='one_module_per_task',
+                 init_ordering_mode='random_onehot',
                  device='cuda'):
         super().__init__(i_size,
                          depth,

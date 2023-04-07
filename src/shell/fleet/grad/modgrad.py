@@ -13,6 +13,7 @@ from shell.fleet.grad.monograd import ModelSyncAgent, ParallelModelSyncAgent
 import copy
 import torch
 from torch.utils.data.dataset import ConcatDataset
+from shell.datasets.datasets import get_custom_tensordataset
 
 
 class ModGrad(ModelSyncAgent):
@@ -27,6 +28,9 @@ class ModGrad(ModelSyncAgent):
         return super().prepare_model()
 
     def process_communicate(self, task_id, communication_round):
+        if communication_round % self.sharing_strategy.log_freq == 0:
+            self.log(task_id, communication_round)
+
         self.aggregate_models()
         # ModGrad: retrain on local tasks using experience replay. Update ONLY shared modules,
         # keeping structures and other task-specific modules fixed.
@@ -38,9 +42,21 @@ class ModGrad(ModelSyncAgent):
                                         pin_memory=True,
                                         ))
 
-        self.finetune_shared_modules(trainloader, task_id)
+        task_id_retrain = f"{task_id}_retrain_round_{communication_round}"
+        testloaders = {task: torch.utils.data.DataLoader(testset,
+                                                         batch_size=128,
+                                                         shuffle=False,
+                                                         num_workers=0,
+                                                         pin_memory=True,
+                                                         ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
+        self.finetune_shared_modules(
+            trainloader, task_id, testloaders, task_id_retrain=task_id_retrain)
 
-    def finetune_shared_modules(self, trainloader, task_id, train_mode=None):
+        self.agent.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id_retrain,
+                             testloaders, final_save=False)  # final eval
+
+    def finetune_shared_modules(self, trainloader, task_id, testloaders, train_mode=None,
+                                task_id_retrain=""):
         self.net.freeze_structure()
 
         # freeze all the modules except the shared ones and the task decoder.
@@ -55,31 +71,61 @@ class ModGrad(ModelSyncAgent):
         tmp_dataset = copy.copy(trainloader.dataset)
         tmp_dataset.tensors = tmp_dataset.tensors + \
             (torch.full((len(tmp_dataset),), task_id, dtype=int),)
+        # mega_dataset = ConcatDataset(
+        #     [loader.dataset for loader in self.agent.memory_loaders.values()] + [tmp_dataset])
+        # batch_size = trainloader.batch_size
+        # mega_loader = torch.utils.data.DataLoader(mega_dataset,
+        #                                           batch_size=batch_size,
+        #                                           shuffle=True,
+        #                                           num_workers=0,
+        #                                           pin_memory=True
+        #                                           )
+
         mega_dataset = ConcatDataset(
-            [loader.dataset for loader in self.agent.memory_loaders.values()] + [tmp_dataset])
-        batch_size = trainloader.batch_size
+            [get_custom_tensordataset(loader.dataset.tensors, name=self.agent.dataset_name,
+                                      use_contrastive=self.agent.use_contrastive) for loader in self.agent.memory_loaders.values()])
         mega_loader = torch.utils.data.DataLoader(mega_dataset,
-                                                  batch_size=batch_size,
+                                                  batch_size=self.agent.memory_loaders[0].batch_size,
                                                   shuffle=True,
                                                   num_workers=0,
                                                   pin_memory=True
                                                   )
 
-        for X, Y, t in mega_loader:
-            X = X.to(self.net.device, non_blocking=True)
-            Y = Y.to(self.net.device, non_blocking=True)
-            l = 0.
-            n = 0
-            all_t = torch.unique(t)
-            for task_id_tmp in all_t:
-                l += self.agent.compute_loss(X[t == task_id_tmp],
-                                             Y[t == task_id_tmp], task_id_tmp,
-                                             mode=train_mode)
-                n += X.shape[0]
-            l /= n
-            self.agent.optimizer.zero_grad()
-            l.backward()
-            self.agent.optimizer.step()
+        for epoch in range(self.sharing_strategy.retrain.num_epochs):
+            for X, Y, t in mega_loader:
+                if isinstance(X, list):
+                    # contrastive two views
+                    X = torch.cat([X[0], X[1]], dim=0)
+                X = X.to(self.net.device, non_blocking=True)
+                Y = Y.to(self.net.device, non_blocking=True)
+                l = 0.
+                n = 0
+                all_t = torch.unique(t)
+
+                if self.agent.use_contrastive:
+                    Xhaf = X[:len(X)//2]
+                    Xother = X[len(X)//2:]
+
+                for task_id_tmp in all_t:
+                    Yt = Y[t == task_id_tmp]
+                    if self.agent.use_contrastive:
+                        # Xt will be twice as long as Yt
+                        # use advanced indexing to get the first half
+                        Xt_haf = Xhaf[t == task_id_tmp]
+                        Xt_other = Xother[t == task_id_tmp]
+                        Xt = torch.cat([Xt_haf, Xt_other], dim=0)
+                    else:
+                        Xt = X[t == task_id_tmp]
+                    l += self.agent.compute_loss(Xt,
+                                                 Yt, task_id_tmp,
+                                                 mode=train_mode)
+                    n += X.shape[0]
+                l /= n
+                self.agent.optimizer.zero_grad()
+                l.backward()
+                self.agent.optimizer.step()
+            if epoch % self.train_kwargs['save_freq'] == 0:
+                self.agent.save_data(epoch + 1, task_id_retrain, testloaders)
 
         # undo all the freezing stuff
         self.agent.set_loss_reduction(prev_reduction)

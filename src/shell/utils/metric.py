@@ -61,12 +61,13 @@ class Metric:
         self.num_init_tasks = num_init_tasks
         self.max_epoch = self.df['epoch'].max()
         if num_init_epochs is not None and num_epochs is not None:
+            # NOTE: this is prolly BUGGY...
             # HACK: replace all the rows with epoch == num_init_epochs
             # or num_epochs to max_epoch to uniformize the metric computation
             self.df.loc[self.df['epoch'] ==
-                        num_init_epochs, 'epoch'] = self.max_epoch
+                        num_init_epochs+1, 'epoch'] = self.max_epoch
             self.df.loc[self.df['epoch'] ==
-                        num_epochs, 'epoch'] = self.max_epoch
+                        num_epochs+1, 'epoch'] = self.max_epoch
         # 'test_task' column is string, we need to convert train_task to string as well
         self.df['train_task'] = self.df['train_task'].astype(str)
 
@@ -136,6 +137,8 @@ class Metric:
 
         High positive catastrophic is bad.
         "Negative catastrophic" is good: backward transfer.
+
+        NOTE: Might be buggy with the joint initialization.
         """
         pre = self.df[(self.df['epoch'] == self.max_epoch) & (
             self.df['test_task'] == self.df['train_task'])]

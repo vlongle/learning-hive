@@ -61,7 +61,8 @@ def setup_experiment(cfg: DictConfig):
 
     net_cfg |= {"i_size": i_size,
                 "num_classes": num_classes, "num_tasks": cfg.dataset.num_tasks,
-                "num_init_tasks": cfg.num_init_tasks}
+                "num_init_tasks": cfg.num_init_tasks,
+                "use_contrastive": cfg.agent.use_contrastive, }
     agent_cfg |= {'dataset_name': cfg.dataset.dataset_name}
     print("net_cfg", net_cfg)
     tg = TopologyGenerator(num_nodes=cfg.num_agents)
@@ -116,6 +117,8 @@ def eval_net_task(net, task, testloader):
     a = 0.
     n = len(testloader.dataset)
     for X, Y in testloader:
+        if isinstance(X, list):
+            X, _ = X
         X = X.to(net.device, non_blocking=True)
         Y = Y.to(net.device, non_blocking=True)
         Y_hat = net(X, task)
@@ -129,6 +132,8 @@ def eval_net(net, testloaders):
     test_acc = {}
     for task, loader in testloaders.items():
         test_acc[task] = eval_net_task(net, task, loader)
+
+    test_acc['avg'] = sum(test_acc.values()) / len(test_acc)
     return test_acc
 
 

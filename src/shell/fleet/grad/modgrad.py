@@ -56,13 +56,27 @@ class ModGrad(ModelSyncAgent):
                              testloaders, final_save=False)  # final eval
 
     def finetune_shared_modules(self, trainloader, task_id, testloaders, train_mode=None,
-                                task_id_retrain=""):
+                                task_id_retrain="", save_freq=1):
+        """
+        Retrain:
+        - the shared modules.
+        - all task-specific decoders
+
+        Fixing:
+        - structures
+
+
+        NOTE: only tested for MNIST VARIANTS
+        """
         self.net.freeze_structure()
 
         # freeze all the modules except the shared ones and the task decoder.
         self.net.freeze_modules()
         self.net.unfreeze_some_modules(range(self.net.depth))
-        self.net.unfreeze_decoder(task_id)
+        # self.net.unfreeze_decoder(task_id)
+
+        for t in range(task_id+1):
+            self.net.unfreeze_decoder(t)
 
         # training
         prev_reduction = self.agent.get_loss_reduction()
@@ -71,15 +85,6 @@ class ModGrad(ModelSyncAgent):
         tmp_dataset = copy.copy(trainloader.dataset)
         tmp_dataset.tensors = tmp_dataset.tensors + \
             (torch.full((len(tmp_dataset),), task_id, dtype=int),)
-        # mega_dataset = ConcatDataset(
-        #     [loader.dataset for loader in self.agent.memory_loaders.values()] + [tmp_dataset])
-        # batch_size = trainloader.batch_size
-        # mega_loader = torch.utils.data.DataLoader(mega_dataset,
-        #                                           batch_size=batch_size,
-        #                                           shuffle=True,
-        #                                           num_workers=0,
-        #                                           pin_memory=True
-        #                                           )
 
         mega_dataset = ConcatDataset(
             [get_custom_tensordataset(loader.dataset.tensors, name=self.agent.dataset_name,
@@ -124,13 +129,14 @@ class ModGrad(ModelSyncAgent):
                 self.agent.optimizer.zero_grad()
                 l.backward()
                 self.agent.optimizer.step()
-            if epoch % self.train_kwargs['save_freq'] == 0:
+            if epoch % save_freq == 0:
                 self.agent.save_data(epoch + 1, task_id_retrain, testloaders)
 
         # undo all the freezing stuff
         self.agent.set_loss_reduction(prev_reduction)
-        self.net.unfreeze_structure(task_id)
+        self.net.freeze_decoder()
         self.net.freeze_modules()
+        self.net.unfreeze_structure(task_id)
 
 
 @ray.remote

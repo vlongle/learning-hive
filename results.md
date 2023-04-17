@@ -88,6 +88,14 @@ monolithic  fashionmnist  True               90.245139
             mnist         True               89.850139
 Name: forward, dtype: float64
 
+
+
+algo     dataset       use_contrastive
+modular  fashionmnist  True               93.790394
+         kmnist        True               84.109259
+         mnist         True               95.334392
+
+
 ## Turning Modular
 
 result_dir = "vanilla_results"

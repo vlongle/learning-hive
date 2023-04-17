@@ -29,18 +29,19 @@ Copyright (c) 2023 Long Le
 # result_dir = "grad_results"
 # result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_hidden_64_results"
 # result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_results"
-import re
-from shell.utils.metric import Metric
-from shell.utils.record import Record
 import os
+from shell.utils.record import Record
+from shell.utils.metric import Metric
+import re
 result_dir = "grad_new_results"
+# result_dir = "grad_new_unfreeze_all_decoders_retrain_results"
 # result_dir = "finding_hyper_for_mod_contrastive2"
 record = Record(f"{result_dir}.csv")
 
 # pattern = r"/fashion.*"
 # pattern = r".*64.*"
-pattern = r".*seed_0.*"
-# pattern = r".*"
+# pattern = r".*seed_0.*"
+pattern = r".*"
 # pattern = r".*64_contrastive"
 # pattern = r".*256.*"
 # pattern = r".*modular_numtrain_256_contrastive.*"
@@ -54,6 +55,7 @@ num_init_tasks = 0  # grad_results bc of joint training
 
 # num_epochs_ = num_init_epochs_ = None
 num_epochs_ = 200
+# num_epochs_ = 500
 num_init_epochs_ = 500
 # num_init_tasks = 0
 
@@ -98,9 +100,9 @@ for job_name in os.listdir(result_dir):
 print(record.df)
 # get the final accuracy with respect to different algo and dataset
 # and whether it uses contrastive loss
-# print("=====FINAL ACC======")
-# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-#       "final_acc"].mean() * 100)
+print("=====FINAL ACC======")
+print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+      "final_acc"].mean() * 100)
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
 #       "final_acc"].sem() * 100)
 # print("=====AVG ACC======")
@@ -111,9 +113,9 @@ print(record.df)
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
 #       "backward"].mean())
 
-print("=====FORWARD======")
-print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-      "forward"].mean() * 100)
+# print("=====FORWARD======")
+# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+#       "forward"].mean() * 100)
 
 
 # print("=====CATASTROPHIC======")

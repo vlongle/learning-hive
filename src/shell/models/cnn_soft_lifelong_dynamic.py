@@ -120,9 +120,6 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         return self.decoder[task_id](X)
 
     def contrastive_embedding(self, X, task_id):
-        """
-        NOTE: not currently using any projector!
-        """
         X = self.encode(X, task_id)
         X = self.projector[task_id](X)  # (N, 128)
         X = F.normalize(X, dim=1)

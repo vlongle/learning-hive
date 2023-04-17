@@ -181,3 +181,4 @@ Visualize the accuracy over time.
 0  cifar100     modular            False  seed_0  agent_5  0.798304     0.8009  0.699765  0.018853         -0.38
 
 
+There's a bug somewhere in our code!! No dropout for cifar is significantly WORSE than normal.

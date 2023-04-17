@@ -6,6 +6,6 @@ srun --gpus=2\
  --time=72:00:00\
  --exclude=ee-3090-0.grasp.maas\
  --partition=batch \
-bash -c "python experiments/experiments.py"
+bash -c "python experiments/experiments_temp.py"
 
 exit 3

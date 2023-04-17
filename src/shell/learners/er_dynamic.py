@@ -70,13 +70,21 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
 
     def update_modules(self, trainloader, task_id, train_mode=None):
         """
-        NOTE: for our contrastive method, this update modules will NOT update the cross entropy
-        loss (in the decoder), so it'll only affect the contrastive loss.
+        NOTE: for contrastive, during accommodation,
+        we should also allow past decoders to change so that gradients can flow
+        to CE.
         """
-        print("Updating modules...")
         self.net.unfreeze_modules()
         # self.net.freeze_structure(freeze=True)
         self.net.freeze_structure()
+
+
+        ### NEW: ====================
+        # if self.use_contrastive:
+        #     for t in range(task_id+1):
+        #         self.net.unfreeze_decoder(t)
+        ### =========================
+
         # prev_reduction = self.loss.reduction
         # self.loss.reduction = 'sum'     # make sure the loss is summed over instances
 
@@ -242,10 +250,10 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
             self.optimizer.step()
             self.net.recover_hidden_module()
 
-        # # NEW: ====================
+        ## NEW: ====================
         # if self.use_contrastive:
         #     self.net.freeze_decoder()
-        # # =========================
+        ### =========================
 
         # self.loss.reduction = prev_reduction
         self.set_loss_reduction(prev_reduction)

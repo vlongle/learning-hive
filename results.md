@@ -136,3 +136,6 @@ result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_re
 
 
 
+## TODO
+
+Actually compute the number of modules for each methods!

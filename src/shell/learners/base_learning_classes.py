@@ -29,7 +29,9 @@ class Learner():
         self.dataset_name = dataset_name
         if use_contrastive:
             # temperature = 0.1 if dataset_name == 'cifar100' else 0.06
-            temperature = 0.01 if dataset_name == 'cifar100' else 0.06
+            # temperature = 0.01 if dataset_name == 'cifar100' else 0.06
+            # temperature = 0.07 if dataset_name == 'cifar100' else 0.06
+            temperature = 0.06
             self.sup_loss = SupConLoss(temperature=temperature)
 
         # self.loss = nn.BCEWithLogitsLoss() if net.binary else nn.CrossEntropyLoss()

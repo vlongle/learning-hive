@@ -66,15 +66,16 @@ class CNN(nn.Module):
         # normalize
         self.transform = transforms.Normalize(mean, std)
 
-        hidden_dim = 128
-        # self.projector = nn.Linear(out_h * out_h * self.channels,
-        #                            hidden_dim)
+        
+        hidden_dim = 32
         dim_in = out_h * out_h * self.channels
-        self.projector = nn.Sequential(
+
+        self.projector = nn.ModuleList([nn.Sequential(
             nn.Linear(dim_in, dim_in),
             nn.ReLU(inplace=True),
-            nn.Linear(dim_in, hidden_dim)
-        )
+            nn.Linear(dim_in, hidden_dim),
+        ) for t in range(self.num_tasks)])
+
         self.to(self.device)
 
     def encode(self, X, task_id):
@@ -92,10 +93,7 @@ class CNN(nn.Module):
         return self.decoder[task_id](X)
 
     def contrastive_embedding(self, X, task_id):
-        """
-        NOTE: not currently using any projector!
-        """
         X = self.encode(X, task_id)
-        X = self.projector(X)  # (N, 128)
+        X = self.projector[task_id](X)  # (N, 128)
         X = F.normalize(X, dim=1)
         return X

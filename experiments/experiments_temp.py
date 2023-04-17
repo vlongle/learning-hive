@@ -83,8 +83,9 @@ if __name__ == "__main__":
 
     config = {
         # "algo": ["monolithic", "modular"],
-        # "algo": "modular",
         "algo": ["modular", "monolithic"],
+        # "algo": "monolithic",
+        # "algo": "modular",
         # "seed": [0, 1, 2, 3],
         "seed": 0,
         # "seed": 0,
@@ -99,19 +100,20 @@ if __name__ == "__main__":
         "net": "cnn",
         "net.depth": 4,
         "num_init_tasks": 4,
-        "net.dropout": 0.5,
+        "net.dropout": 0.25,
+
         "train.init_num_epochs": 500,
-        "train.init_component_update_freq": 500,
         "train.num_epochs": 500,
+        # NO COMPONENT UPDATE
         "train.component_update_freq": 500,
+        "train.init_component_update_freq": 500,
         "agent.memory_size": 64,
         "agent.batch_size": 64,
         "train.save_freq": 20,
-        # "train.save_freq": 1,
         # "agent.use_contrastive": [True, False],
-        "agent.use_contrastive": False,
-        # "root_save_dir": "cifar_lasttry_dropout_moreseed_epoch_200_results",
-        # "root_save_dir": "cifar_no_updates_contrastive_results",
+        "agent.use_contrastive": True,
+        # "agent.use_contrastive": False,
+        # "root_save_dir": "cifar_lasttry_fr_fr_results",
         "root_save_dir": "cifar_epochs_500_mild_dropout_memory_64_data_300_results",
     }
 

@@ -149,7 +149,7 @@ class SoftOrderingNet(CompositionalNet):
             param.requires_grad = False
             param.grad = None
 
-    def unfreeze_projector(self):
+    def unfreeze_projector(self, task_id):
         for param in self.projector[task_id].parameters():
             param.requires_grad = True
 

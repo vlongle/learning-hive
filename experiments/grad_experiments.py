@@ -18,7 +18,8 @@ if __name__ == "__main__":
     # ACTUAL CONFIG
     num_init_tasks = 4
     config = {
-        "algo": ["monolithic", "modular"],
+        # "algo": ["monolithic", "modular"],
+        "algo": "modular",
         "seed": [0, 1, 2, 3],
         "parallel": True,
         "num_agents": 8,
@@ -41,7 +42,7 @@ if __name__ == "__main__":
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
         "dataset": ["mnist", "kmnist", "fashionmnist"],
-        "root_save_dir": "grad_new_results",
+        "root_save_dir": "grad_new_unfreeze_all_decoders_retrain_results",
         # ================================================
         # GRAD SHARING SETUP
         "sharing_strategy": "grad_sharing",

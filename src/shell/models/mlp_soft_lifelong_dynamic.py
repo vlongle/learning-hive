@@ -25,6 +25,7 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                  init_ordering_mode='random_onehot',
                  device='cuda',
                  dropout=0.5,
+                 use_contrastive=None,
                  ):
         super().__init__(i_size,
                          depth,

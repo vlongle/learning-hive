@@ -29,7 +29,8 @@ class Learner():
         self.dataset_name = dataset_name
         if use_contrastive:
             # temperature = 0.1 if dataset_name == 'cifar100' else 0.06
-            temperature = 0.01 if dataset_name == 'cifar100' else 0.06
+            # temperature = 0.01 if dataset_name == 'cifar100' else 0.06
+            temperature = 0.07 if dataset_name == 'cifar100' else 0.06
             self.sup_loss = SupConLoss(temperature=temperature)
 
         # self.loss = nn.BCEWithLogitsLoss() if net.binary else nn.CrossEntropyLoss()
@@ -100,7 +101,7 @@ class Learner():
         ce = self.ce_loss(Y_hat, Y)
         return ce
 
-    def compute_loss(self, X, Y, task_id, mode=None):
+    def compute_loss(self, X, Y, task_id, mode=None, log=False):
         """
         Compute cross_entropy + supcon loss. Make sure that 
         cross_entropy does not propagate gradients back
@@ -114,6 +115,12 @@ class Learner():
             ce = self.compute_cross_entropy_loss(X, Y, task_id, detach=True)
             cl = self.compute_contrastive_loss(X, Y, task_id)
             scale = 1.0
+            if log:
+                print("task", task_id, "size", len(Y), "no components",
+                      self.net.num_components, "cl:", cl/len(Y), "ce:", ce/len(Y))
+                # print("task", task_id, "size", len(Y), "no components",
+                #       self.net.num_components, "cl:", cl, "ce:", ce,
+                #       self.sup_loss.reduction)
             # scale = 10.0
             return ce + scale * cl
         elif mode == "ce":
@@ -196,7 +203,7 @@ class Learner():
         # Y_hat = self.net(X, task_id=task_id)
         X = X.to(self.net.device, non_blocking=True)
         Y = Y.to(self.net.device, non_blocking=True)
-        l = self.compute_loss(X, Y, task_id, mode=train_mode)
+        l = self.compute_loss(X, Y, task_id, mode=train_mode, log=True)
         self.optimizer.zero_grad()
         l.backward()
         self.optimizer.step()
@@ -280,6 +287,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
             # and freeze structure just in case we're using one-hot same structure
             # for all the tasks!
             self.net.freeze_linear_weights()
+            # self.net.freeze_structure()
             self.init_train(trainloader, task_id, num_epochs,
                             save_freq, testloaders)
         else:

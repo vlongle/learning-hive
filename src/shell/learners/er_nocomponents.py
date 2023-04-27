@@ -92,7 +92,8 @@ class NoComponentsER(Learner):
                     l += self.compute_loss(Xt,
                                            Yt,
                                            task_id_tmp, mode=train_mode)
-                    n += X.shape[0]
+                    # n += X.shape[0]
+                n = len(Y)
                 l /= n
                 self.optimizer.zero_grad()
                 l.backward()

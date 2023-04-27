@@ -125,10 +125,11 @@ class SplitDataset():
                     num_classes, num_classes_per_task, replace=False) for t in range(self.num_tasks)])
                 labels = labels.reshape(-1)
 
-        if num_init_tasks is not None and with_replacement:
-            # make sure that the first num_init_tasks * num_classes_per_task classes are ALL DISTINCT!
-            labels[:num_init_tasks*num_classes_per_task] = np.random.choice(
-                num_classes, num_init_tasks*num_classes_per_task, replace=False)
+        # if num_init_tasks is not None and with_replacement:
+        #     # make sure that the first num_init_tasks * num_classes_per_task classes are ALL DISTINCT!
+        #     # NOTE: TODO: remove this hack. Unncecessary.
+        #     labels[:num_init_tasks*num_classes_per_task] = np.random.choice(
+        #         num_classes, num_init_tasks*num_classes_per_task, replace=False)
 
         self.class_sequence = labels
         logging.info(f"Class sequence: {self.class_sequence}")

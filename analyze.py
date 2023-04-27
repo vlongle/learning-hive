@@ -29,12 +29,10 @@ For cifar100, epochs=500 is stored in
 # result_dir = "finding_hyper_for_mod_contrastive_large_lower_temp_results"
 # result_dir = "vanilla_init_big_mod_nocontrast_results"
 # result_dir = "vanilla_cifar_old_results"
-# result_dir = "vanilla_results"
 # agent_4 final: 0.76 (catastrophic: 2.0), vanilla: 0.77 (catastrophic: 0.7)
 # result_dir = "cifar_contrastive_no_dropout_results"
 # result_dir = "cifar_task_specific_proj_results"
 # result_dir = "cifar_contrastive_no_dropout_results"
-# result_dir = "vanilla_results"
 # result_dir = "vanilla_results"
 # result_dir = "cifar_task_specific_proj_allow_decoder_change_accommodate_train_500_epochs_temp_0.07_results"
 # result_dir = "cifar_task_specific_proj_results"
@@ -43,18 +41,23 @@ For cifar100, epochs=500 is stored in
 # result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_results"
 # result_dir = "grad_new_results"
 # result_dir = "finding_hyper_for_mod_contrastive2"
+# result_dir = "cifar_no_updates_contrastive_results"
+# result_dir = "cifar_epochs_500_mild_dropout_memory_64_data_300_results"
 import os
 import re
 from shell.utils.metric import Metric
 from  shell.utils.record import Record
-result_dir = "cifar_no_updates_contrastive_results"
+result_dir = "vanilla_remove_datasets_hack_results"
+# result_dir = "vanilla_remove_datasets_hack_regular_dropout_results"
 record = Record(f"{result_dir}.csv")
 
-pattern = r".*"
+# pattern = r".*"
 # pattern = r".*modular_numtrain_256_contrastive/.*"
-pattern = r".*modular_numtrain_256/.*"
+# pattern = r".*modular_numtrain_300_contrastive/.*"
+# pattern = r".*modular_numtrain_300/.*"
+# pattern = r".*modular_numtrain_256/.*"
 # pattern = r".*256.*"
-# pattern = r".*64"
+pattern = r".*64"
 
 num_init_tasks = 4  # vanilla_results
 # num_init_tasks = 0  # grad_results bc of joint training
@@ -64,7 +67,10 @@ num_init_tasks = 4  # vanilla_results
 # num_epochs_ = 100
 # num_init_epochs_ = 100
 
-num_epochs_ = 200
+# num_epochs_ = 200
+# num_init_epochs_ = 500
+
+num_epochs_ = 500
 num_init_epochs_ = 500
 # num_init_tasks = 0
 

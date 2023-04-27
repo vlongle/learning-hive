@@ -78,12 +78,11 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         # self.net.freeze_structure(freeze=True)
         self.net.freeze_structure()
 
-
-        ### NEW: ====================
+        # NEW: ====================
         # if self.use_contrastive:
         #     for t in range(task_id+1):
         #         self.net.unfreeze_decoder(t)
-        ### =========================
+        # =========================
 
         # prev_reduction = self.loss.reduction
         # self.loss.reduction = 'sum'     # make sure the loss is summed over instances
@@ -214,14 +213,10 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                 l += self.compute_loss(Xt,
                                        Yt, task_id_tmp,
                                        mode=train_mode,
-                                       log=True,
                                        )
                 # n += X.shape[0]
             n = len(Y)
-            print("bloss: ", l.item())
             l /= n
-            print("mode:", train_mode, self.mode)
-            print("loss: ", l.item())
             self.optimizer.zero_grad()
             l.backward()
             self.optimizer.step()
@@ -250,10 +245,10 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
             self.optimizer.step()
             self.net.recover_hidden_module()
 
-        ## NEW: ====================
+        # NEW: ====================
         # if self.use_contrastive:
         #     self.net.freeze_decoder()
-        ### =========================
+        # =========================
 
         # self.loss.reduction = prev_reduction
         self.set_loss_reduction(prev_reduction)

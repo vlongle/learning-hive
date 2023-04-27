@@ -116,13 +116,13 @@ class Learner():
             ce = self.compute_cross_entropy_loss(X, Y, task_id, detach=True)
             cl = self.compute_contrastive_loss(X, Y, task_id)
             scale = 1.0
-            if log:
-                print("task", task_id, "size", len(Y), "no components",
-                      self.net.num_components, "cl:", cl/len(Y), "ce:", ce/len(Y))
-                # print("task", task_id, "size", len(Y), "no components",
-                #       self.net.num_components, "cl:", cl, "ce:", ce,
-                #       self.sup_loss.reduction)
-            # scale = 10.0
+            # if log:
+            #     print("task", task_id, "size", len(Y), "no components",
+            #           self.net.num_components, "cl:", cl/len(Y), "ce:", ce/len(Y))
+            #     # print("task", task_id, "size", len(Y), "no components",
+            #     #       self.net.num_components, "cl:", cl, "ce:", ce,
+            #     #       self.sup_loss.reduction)
+            # # scale = 10.0
             return ce + scale * cl
         elif mode == "ce":
             # only train ce (backpropage through the entire model)

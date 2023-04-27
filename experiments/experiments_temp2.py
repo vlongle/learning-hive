@@ -21,6 +21,7 @@ import datetime
 from shell.utils.experiment_utils import run_experiment
 if __name__ == "__main__":
     start = time.time()
+
     config = {
         "algo": ["monolithic", "modular"],
         "seed": [0, 1, 2, 3],
@@ -35,7 +36,7 @@ if __name__ == "__main__":
         "net": "mlp",
         "net.depth": 4,
         "num_init_tasks": 4,
-        "net.dropout": 0.0,
+        "net.dropout": 0.5,
         "train.num_epochs": 100,
         "train.component_update_freq": 100,
         "train.init_num_epochs": 100,
@@ -44,7 +45,7 @@ if __name__ == "__main__":
         "agent.use_contrastive": [True, False],
         "agent.memory_size": 32,
         "dataset": ["mnist", "kmnist", "fashionmnist"],
-        "root_save_dir": "vanilla_remove_datasets_hack_results",
+        "root_save_dir": "vanilla_remove_datasets_hack_regular_dropout_results",
     }
 
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===

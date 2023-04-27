@@ -5,7 +5,8 @@ srun --gpus=2\
  --mem-per-cpu=4G\
  --time=72:00:00\
  --exclude=ee-3090-0.grasp.maas\
- --partition=batch \
+  --qos=ee-med\
+ --partition=eaton-compute \
 bash -c "python experiments/experiments_temp.py"
 
 exit 3

@@ -87,7 +87,7 @@ if __name__ == "__main__":
         # "algo": "monolithic",
         # "algo": "modular",
         # "seed": [0, 1, 2, 3],
-        "seed": 0,
+        "seed": [1,2,3],
         # "seed": 0,
         "num_agents": 4,
         "parallel": True,

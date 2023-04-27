@@ -8,3 +8,4 @@ src/shell/datasets/*/
 **vanilla**
 **wo_replacement/
 *.csv
+*.gz

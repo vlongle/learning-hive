@@ -1,6 +1,7 @@
 #!/bin/bash
 
-LOCAL_FOLDER="cifar_no_updates_contrastive_results"
+# LOCAL_FOLDER="cifar_no_updates_contrastive_results"
+LOCAL_FOLDER="cifar_epochs_500_mild_dropout_memory_64_data_300_results"
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
 REMOTE_PATH="/home/vlongle/code/learning-hive"

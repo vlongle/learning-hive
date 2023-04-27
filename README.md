@@ -146,22 +146,6 @@ God, plz no, maybe have to do different encoders stupid trick again.
 
 
 ### Bugs
-- There's a slight difference (but consistent) in accuracy reported in record.csv vs replay.ipynb. Might be some randomness is different. Not sure.
-
-TODO: debug `replay.ipynb`
-TODO: Investigate if we have this problem in MNIST.
-Monolithic_contrastive is clear. The results match.
-Modular_contrastive: clear.
-
-
-
-Cifar100, there's inconsistency for some reasons...
-actual, agent_0: task 4: avg: 0.361
-                replay: 0.3436, actually, everytime, we run the
-evaluation, the results is different, which is SUPER WEIRD.
-It's dropout, it's always dropout. What the fuck.
-
-
 
 ## CIFAR SHIT
 
@@ -169,5 +153,32 @@ Stuff to try, maybe even freeze the projector.
 
 __invasive modification__: do a lot of backward update on the projector ONLY (and NOT the 
 structure), one hacky way to do this is to concat megadataset to trainset during normal dynamic training.
+
+Debug why contrastive is using so few components.
+
+Visualize the accuracy over time.
+
+
+    dataset     algo  use_contrastive    seed agent_id   avg_acc  final_acc   forward  backward  catastrophic
+0  cifar100  modular             True  seed_0  agent_1  0.786419     0.7828  0.587529  0.008353          1.09
+0  cifar100  modular             True  seed_0  agent_2  0.778686     0.7729  0.658471  0.007807          1.01
+0  cifar100  modular             True  seed_0  agent_6  0.809990     0.7875  0.645294  0.008492          1.78
+0  cifar100  modular             True  seed_0  agent_7  0.800894     0.7753  0.648235  0.008674          1.30
+0  cifar100  modular             True  seed_0  agent_4  0.794289     0.7610  0.621412  0.008332          2.00
+0  cifar100  modular             True  seed_0  agent_3  0.781079     0.7869  0.622353  0.009155          0.35
+0  cifar100  modular             True  seed_0  agent_0  0.787815     0.7741  0.617059  0.007626          1.69
+0  cifar100  modular             True  seed_0  agent_5  0.794106     0.7884  0.629176  0.009594          0.28
+
+
+
+0  cifar100     modular            False  seed_0  agent_1  0.774651     0.7837  0.715176  0.017884          0.05
+0  cifar100     modular            False  seed_0  agent_2  0.768384     0.7783  0.715529  0.017011          0.13
+0  cifar100     modular            False  seed_0  agent_6  0.808626     0.7995  0.715412  0.020621         -0.84
+0  cifar100     modular            False  seed_0  agent_7  0.793669     0.7871  0.713176  0.018579         -0.12
+0  cifar100     modular            False  seed_0  agent_4  0.789613     0.7736  0.691765  0.020095          0.70
+0  cifar100     modular            False  seed_0  agent_3  0.764018     0.7798  0.696941  0.018021         -0.44
+0  cifar100     modular            False  seed_0  agent_0  0.780143     0.7917  0.711059  0.017463         -0.12
+0  cifar100     modular            False  seed_0  agent_5  0.798304     0.8009  0.699765  0.018853         -0.38
+
 
 There's a bug somewhere in our code!! No dropout for cifar is significantly WORSE than normal.

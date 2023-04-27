@@ -51,11 +51,10 @@ class CompositionalNet(nn.Module):
         for param in self.components.parameters():
             param.requires_grad = False
             param.grad = None
+
     def unfreeze_modules(self):
         for param in self.components.parameters():
             param.requires_grad = True
-
-
 
     def unfreeze_some_modules(self, list_of_modules):
         for i in list_of_modules:

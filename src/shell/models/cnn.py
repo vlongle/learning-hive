@@ -25,6 +25,7 @@ class CNN(nn.Module):
                  device='cuda',
                  dropout=0.5,
                  init_ordering_mode=None,
+                 use_contrastive=False,
                  ):
         super().__init__()
         self.device = device
@@ -66,16 +67,15 @@ class CNN(nn.Module):
         # normalize
         self.transform = transforms.Normalize(mean, std)
 
-        
-        hidden_dim = 32
-        dim_in = out_h * out_h * self.channels
-
-        self.projector = nn.ModuleList([nn.Sequential(
-            nn.Linear(dim_in, dim_in),
-            nn.ReLU(inplace=True),
-            nn.Linear(dim_in, hidden_dim),
-        ) for t in range(self.num_tasks)])
-
+        self.use_contrastive = use_contrastive
+        if self.use_contrastive:
+            hidden_dim = 64
+            dim_in = out_h * out_h * self.channels
+            self.projector = nn.ModuleList([nn.Sequential(
+                nn.Linear(dim_in, dim_in),
+                nn.ReLU(inplace=True),
+                nn.Linear(dim_in, hidden_dim),
+            ) for t in range(self.num_tasks)])
         self.to(self.device)
 
     def encode(self, X, task_id):

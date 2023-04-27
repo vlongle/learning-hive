@@ -126,8 +126,8 @@ class SplitDataset():
                 labels = labels.reshape(-1)
 
         # if num_init_tasks is not None and with_replacement:
-        #     # NOTE: HACK: remove this.
         #     # make sure that the first num_init_tasks * num_classes_per_task classes are ALL DISTINCT!
+        #     # NOTE: TODO: remove this hack. Unncecessary.
         #     labels[:num_init_tasks*num_classes_per_task] = np.random.choice(
         #         num_classes, num_init_tasks*num_classes_per_task, replace=False)
 

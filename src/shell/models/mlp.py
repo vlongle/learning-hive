@@ -20,6 +20,7 @@ class MLP(nn.Module):
                  device='cuda',
                  dropout=0.5,
                  init_ordering_mode=None,
+                 use_contrastive=None,
                  ):
         super().__init__()
         self.device = device

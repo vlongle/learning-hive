@@ -21,63 +21,10 @@ import datetime
 from shell.utils.experiment_utils import run_experiment
 if __name__ == "__main__":
     start = time.time()
+
     config = {
         "algo": ["monolithic", "modular"],
         "seed": [0, 1, 2, 3],
-        "parallel": True,
-        "num_agents": 8,
-        "dataset": "mnist",
-        "dataset.num_trains_per_class": 64,
-        "dataset.num_vals_per_class": 50,
-        "dataset.remap_labels": True,
-        "dataset.with_replacement": True,
-        "dataset.num_tasks": 10,
-        "net": "mlp",
-        "net.depth": 4,
-        "num_init_tasks": 4,
-        "net.dropout": 0.0,
-        "train.num_epochs": 100,
-        "train.component_update_freq": 100,
-        "train.init_num_epochs": 100,
-        "train.init_component_update_freq": 100,
-        "train.save_freq": 1,
-        "agent.use_contrastive": [True, False],
-        "agent.memory_size": 32,
-        "dataset": ["mnist", "kmnist", "fashionmnist"],
-        "root_save_dir": "vanilla_remove_datasets_hack_results",
-    }
-
-    # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
-    config = {
-        "algo": ["monolithic", "modular"],
-        "seed": 0,
-        "parallel": True,
-        "num_agents": 8,
-        "dataset": "mnist",
-        "dataset.num_trains_per_class": 64,
-        "dataset.num_vals_per_class": 50,
-        "dataset.remap_labels": True,
-        "dataset.with_replacement": True,
-        "dataset.num_tasks": 10,
-        "net": "mlp",
-        "net.depth": 4,
-        "num_init_tasks": 4,
-        "net.dropout": 0.0,
-        "train.num_epochs": 100,
-        "train.component_update_freq": 100,
-        "train.init_num_epochs": 100,
-        "train.init_component_update_freq": 100,
-        "train.save_freq": 20,
-        "agent.use_contrastive": [True, False],
-        "agent.memory_size": 32,
-        "dataset": ["mnist", "kmnist", "fashionmnist"],
-        "root_save_dir": "vanilla_remove_datasets_hack_results",
-    }
-
-
-    config = {
-        "algo": ["monolithic", "modular"],
-        "seed": 0,
         "parallel": True,
         "num_agents": 8,
         "dataset": "mnist",
@@ -94,13 +41,39 @@ if __name__ == "__main__":
         "train.component_update_freq": 100,
         "train.init_num_epochs": 100,
         "train.init_component_update_freq": 100,
-        "train.save_freq": 20,
+        "train.save_freq": 1,
         "agent.use_contrastive": [True, False],
         "agent.memory_size": 32,
         "dataset": ["mnist", "kmnist", "fashionmnist"],
         "root_save_dir": "vanilla_remove_datasets_hack_regular_dropout_results",
     }
 
+    # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
+    # config = {
+    #     "algo": ["monolithic", "modular"],
+    #     "seed": [1,2,3],
+    #     "parallel": True,
+    #     "num_agents": 8,
+    #     "dataset": "mnist",
+    #     "dataset.num_trains_per_class": 64,
+    #     "dataset.num_vals_per_class": 50,
+    #     "dataset.remap_labels": True,
+    #     "dataset.with_replacement": True,
+    #     "dataset.num_tasks": 10,
+    #     "net": "mlp",
+    #     "net.depth": 4,
+    #     "num_init_tasks": 4,
+    #     "net.dropout": 0.0,
+    #     "train.num_epochs": 100,
+    #     "train.component_update_freq": 100,
+    #     "train.init_num_epochs": 100,
+    #     "train.init_component_update_freq": 100,
+    #     "train.save_freq": 20,
+    #     "agent.use_contrastive": [True, False],
+    #     "agent.memory_size": 32,
+    #     "dataset": ["mnist", "kmnist", "fashionmnist"],
+    #     "root_save_dir": "vanilla_more_seeds_results",
+    # }
 
     # # # === CNN experiments: CIFAR100 ===
     # config = {

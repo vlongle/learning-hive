@@ -26,12 +26,14 @@ class NoComponentsER(Learner):
         self.memory_size = memory_size
 
     def train(self, trainloader, task_id, component_update_freq=100, num_epochs=100, save_freq=1, testloaders=None, valloader=None,
-              eval_bool=True, train_mode=None):
+              eval_bool=True, train_mode=None,
+              record=None):
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
         self.save_data(0, task_id, testloaders,
-                       mode=train_mode)  # zeroshot eval
+                       mode=train_mode,
+                       record=record)  # zeroshot eval
         if self.T <= self.net.num_init_tasks:
             self.init_train(trainloader, task_id, num_epochs,
                             save_freq, testloaders)
@@ -52,11 +54,13 @@ class NoComponentsER(Learner):
             self._train(mega_loader, num_epochs, task_id,
                         testloaders, save_freq, eval_bool, train_mode=train_mode)
             self.save_data(num_epochs + 1, task_id,
-                           testloaders, final_save=True, mode=train_mode)  # final eval
+                           testloaders, final_save=True, mode=train_mode,
+                           record=record)  # final eval
             self.update_multitask_cost(trainloader, task_id)
 
     def _train(self, mega_loader, num_epochs, task_id, testloaders, save_freq=1, eval_bool=True,
-               train_mode=None):
+               train_mode=None,
+               record=None):
         # prev_reduction = self.loss.reduction
         # self.loss.reduction = 'sum'     # make sure the loss is summed over instances
         prev_reduction = self.get_loss_reduction()
@@ -99,7 +103,8 @@ class NoComponentsER(Learner):
                 l.backward()
                 self.optimizer.step()
             if i % save_freq == 0 or i == num_epochs - 1:
-                self.save_data(i + 1, task_id, testloaders, mode=train_mode)
+                self.save_data(i + 1, task_id, testloaders, mode=train_mode,
+                               record=record)
         # self.loss.reduction = prev_reduction
         self.set_loss_reduction(prev_reduction)
 

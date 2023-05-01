@@ -235,9 +235,6 @@ class ParallelFleet:
 
         logging.info(f"Created fleet with {len(self.agents)} agents")
 
-    def uniformize_preprocessing(self):
-        pass
-
     def add_neighbors(self):
         logging.info("Adding neighbors...")
         # adding neighbors

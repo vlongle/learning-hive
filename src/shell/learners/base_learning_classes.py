@@ -208,7 +208,10 @@ class Learner():
         l.backward()
         self.optimizer.step()
 
-    def save_data(self, epoch, task_id, testloaders, final_save=False, mode=None, save_dir=None):
+    def save_data(self, epoch, task_id, testloaders, final_save=False, mode=None,
+                  save_dir=None, record=None):
+        if record is None:
+            record = self.record
         if save_dir is None:
             save_dir = self.save_dir
         self.test_loss, self.test_acc = self.evaluate(testloaders, mode=mode)
@@ -235,7 +238,7 @@ class Learner():
             line = '\ttask: {}\tloss: {:.3f}\tacc: {:.3f}'.format(
                 task, self.test_loss[task], self.test_acc[task])
             logging.info(line)
-            self.record.write(
+            record.write(
                 {
                     'train_task': task_id,
                     'test_task': task,
@@ -254,7 +257,7 @@ class Learner():
                 'optimizer_state_dict': self.optimizer.state_dict(),
                 'observed_tasks': self.observed_tasks,
             }, path)
-            self.record.save()
+            record.save()
 
     def update_multitask_cost(self, loader, task_id):
         raise NotImplementedError(
@@ -415,9 +418,10 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.net.train()
         return test_loss, test_acc
 
-    def save_data(self, epoch, task_id, testloaders,  final_save=False, mode=None, save_dir=None):
+    def save_data(self, epoch, task_id, testloaders,  final_save=False, mode=None, save_dir=None,
+                  record=None):
         super().save_data(epoch, task_id, testloaders,
-                          final_save=final_save, mode=mode, save_dir=save_dir)
+                          final_save=final_save, mode=mode, save_dir=save_dir, record=record)
         if final_save:
             logging.info('final components: {}'.format(
                 self.net.num_components))

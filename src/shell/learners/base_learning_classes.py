@@ -168,17 +168,16 @@ class Learner():
             self.save_data(0, task_id,
                            testloaders, final_save=True)
 
-    def evaluate(self, testloaders, mode=None):
+    def evaluate(self, testloaders, mode=None, eval_no_update=True):
         was_training = self.net.training
-        # prev_reduction = self.loss.reduction
         prev_reduction = self.get_loss_reduction()
         # self.loss.reduction = 'sum'     # make sure the loss is summed over instances
         # make sure the loss is summed over instances
         self.set_loss_reduction('sum')
         self.net.eval()
         with torch.no_grad():
-            self.test_loss = {}
-            self.test_acc = {}
+            test_loss = {}
+            test_acc = {}
             for task, loader in testloaders.items():
                 l = 0.
                 a = 0.
@@ -192,13 +191,13 @@ class Learner():
                     # a += ((Y_hat > 0) == (Y == 1)
                     #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
 
-                self.test_loss[task] = l / n
-                self.test_acc[task] = a / n
+                test_loss[task] = l / n
+                test_acc[task] = a / n
 
-        # self.loss.reduction = prev_reduction
         self.set_loss_reduction(prev_reduction)
         if was_training:
             self.net.train()
+        return test_loss, test_acc
 
     def gradient_step(self, X, Y, task_id, train_mode=None):
         # Y_hat = self.net(X, task_id=task_id)
@@ -212,7 +211,7 @@ class Learner():
     def save_data(self, epoch, task_id, testloaders, final_save=False, mode=None, save_dir=None):
         if save_dir is None:
             save_dir = self.save_dir
-        self.evaluate(testloaders, mode=mode)
+        self.test_loss, self.test_acc = self.evaluate(testloaders, mode=mode)
         task_results_dir = os.path.join(
             save_dir, 'task_{}'.format(task_id))
         os.makedirs(task_results_dir, exist_ok=True)
@@ -337,7 +336,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
         test_loss = self.test_loss
         test_acc = self.test_acc
 
-        self.evaluate({task_id: valloader})
+        self.test_loss, self.test_acc = self.evaluate({task_id: valloader})
         update_loss, no_update_loss = self.test_loss[task_id]
         update_acc, no_update_acc = self.test_acc[task_id]
         logging.info(
@@ -373,8 +372,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
         self.set_loss_reduction('sum')
         self.net.eval()
         with torch.no_grad():
-            self.test_loss = {}
-            self.test_acc = {}
+            test_loss = {}
+            test_acc = {}
             for task, loader in testloaders.items():
                 l = 0.
                 a = 0.
@@ -399,21 +398,22 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         a1 += (Y_hat.argmax(dim=1) == Y).sum().item()
                         # a1 += ((Y_hat > 0) == (Y == 1)
                         #        if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
-                    self.test_loss[task] = (l / n, l1 / n)
-                    self.test_acc[task] = (a / n, a1 / n)
+                    test_loss[task] = (l / n, l1 / n)
+                    test_acc[task] = (a / n, a1 / n)
                     self.net.recover_hidden_module()
                     # print(
                     #     f"dropout test_acc {self.test_acc[task]}, structure {self.net.structure[task]}")
                     # print(
                     #     f"new components {self.net.components[-1].weight[:5]}")
                 else:
-                    self.test_loss[task] = l / n
-                    self.test_acc[task] = a / n
+                    test_loss[task] = l / n
+                    test_acc[task] = a / n
 
         # self.loss.reduction = prev_reduction
         self.set_loss_reduction(prev_reduction)
         if was_training:
             self.net.train()
+        return test_loss, test_acc
 
     def save_data(self, epoch, task_id, testloaders,  final_save=False, mode=None, save_dir=None):
         super().save_data(epoch, task_id, testloaders,

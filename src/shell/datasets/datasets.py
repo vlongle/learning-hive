@@ -115,6 +115,7 @@ class SplitDataset():
         self.valset = []
         self.testset = []
         self.features = []
+        self.num_classes_per_task = num_classes_per_task
 
         self.max_batch_size = 0
         if labels is None:

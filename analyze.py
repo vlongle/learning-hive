@@ -43,11 +43,12 @@ For cifar100, epochs=500 is stored in
 # result_dir = "finding_hyper_for_mod_contrastive2"
 # result_dir = "cifar_no_updates_contrastive_results"
 # result_dir = "cifar_epochs_500_mild_dropout_memory_64_data_300_results"
-import os
-import re
-from shell.utils.metric import Metric
+# result_dir = "vanilla_remove_datasets_hack_results"
 from  shell.utils.record import Record
-result_dir = "vanilla_remove_datasets_hack_results"
+from shell.utils.metric import Metric
+import re
+import os
+result_dir = "vanilla_fashion_add_random_crop_results"
 # result_dir = "vanilla_remove_datasets_hack_regular_dropout_results"
 record = Record(f"{result_dir}.csv")
 
@@ -57,7 +58,8 @@ record = Record(f"{result_dir}.csv")
 # pattern = r".*modular_numtrain_300/.*"
 # pattern = r".*modular_numtrain_256/.*"
 # pattern = r".*256.*"
-pattern = r".*64"
+# pattern = r".*64"
+pattern = r".*fashion"
 
 num_init_tasks = 4  # vanilla_results
 # num_init_tasks = 0  # grad_results bc of joint training

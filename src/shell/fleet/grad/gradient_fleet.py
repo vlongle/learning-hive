@@ -41,8 +41,9 @@ class GradFleet(Fleet):
         for task_id in range(self.num_init_tasks):
             logging.info(f"Joint training on task {task_id} ...")
             self.fake_agent.train(task_id)
-        # all agents should replace their models with the fake_agent's model
+        logging.info("DONE TRAINING THE JOINT AGENT...")
 
+        # all agents should replace their models with the fake_agent's model
         excluded_params = set(["decoder", "structure"])
         model = exclude_model(
             self.fake_agent.net.state_dict(), excluded_params)
@@ -60,8 +61,10 @@ class ParallelGradFleet(ParallelFleet, GradFleet):
                                                               LearnerCls, deepcopy(
                                                                   net_kwargs), deepcopy(agent_kwargs),
                                                               deepcopy(train_kwargs), deepcopy(sharing_strategy))
+
         # need to do the joint training right here, and free the gpu so that other agents can later use them
         for task_id in range(self.num_init_tasks):
+            logging.info(f"Joint training on task {task_id} ...")
             self.fake_agent.train.remote(task_id)
         # store the fake_agent's model
         self.fake_model = exclude_model(ray.get(self.fake_agent.get_model.remote()),
@@ -69,6 +72,8 @@ class ParallelGradFleet(ParallelFleet, GradFleet):
         # delete the fake_agent
         ray.kill(self.fake_agent)
         del self.fake_agent
+
+        logging.info("DONE TRAINING THE JOINT AGENT...")
 
         # replace net_kwargs["num_init_tasks"] with -1 as we will do joint training on the init tasks.
         net_kwargs["num_init_tasks"] = -1

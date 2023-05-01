@@ -34,6 +34,8 @@ class ModelSyncAgent(Agent):
             self.save_dir,
             "sharing_record.csv"
         ))
+        self.retrain_record = Record(os.path.join(
+            self.save_dir, "retrain_record.csv"))
 
     def compute_model_size(self, state_dict):
         return sum(p.numel() for p in state_dict.values())
@@ -133,7 +135,8 @@ class ModelSyncAgent(Agent):
                                                   pin_memory=True
                                                   )
         self.agent._train(mega_loader, num_epochs, task_id,
-                          testloaders, save_freq, eval_bool)
+                          testloaders, save_freq, eval_bool,
+                          record=self.retrain_record)
 
     def process_communicate(self, task_id, communication_round):
         if communication_round % self.sharing_strategy.log_freq == 0:
@@ -148,14 +151,20 @@ class ModelSyncAgent(Agent):
                                                          pin_memory=True,
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
 
-        task_id_retrain = f"{task_id}_retrain_round_{communication_round}"
+        self.agent.save_data(0,
+                             task_id, testloaders, final_save=False,
+                             record=self.retrain_record)  # zeroshot
+        # TODO: the epoch here is not incremented with respect to the previous communication round.
         self.retrain(
-            self.sharing_strategy.retrain.num_epochs, task_id_retrain, testloaders, save_freq=1, eval_bool=True)
+            self.sharing_strategy.retrain.num_epochs, task_id, testloaders, save_freq=1, eval_bool=True,
+        )
 
-        # self.agent.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id_retrain,
-        #                      testloaders, final_save=True)  # final eval
-        self.agent.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id_retrain,
-                             testloaders, final_save=False)  # final eval
+        self.agent.save_data(self.sharing_strategy.retrain.num_epochs+1,
+                             task_id, testloaders, final_save=True,
+                             record=self.retrain_record,
+                             save_dir=os.path.join(
+                                 self.agent.save_dir, "retrain"),
+                             )  # save final model
 
     def replace_model(self, new_model, strict=True):
         # print("replacing model with strict:", strict)

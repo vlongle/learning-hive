@@ -39,6 +39,8 @@ def viz_embedding(net, testloaders, name="test.png"):
     X_out = []  # features
     y_out = []  # global labels
     y_task = []  # globallabel_task_id
+    was_training = net.training
+    net.eval()
     with torch.no_grad():
         for task_id, testloader in testloaders.items():
             for X, y in testloader:
@@ -64,3 +66,7 @@ def viz_embedding(net, testloaders, name="test.png"):
     sns.scatterplot(x=X_embedded[:, 0], y=X_embedded[:, 1], hue=y_task_str,
                     ax=ax)
     plt.savefig(name)
+    if was_training:
+        net.train()
+
+# save_eval takes into a net

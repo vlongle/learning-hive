@@ -8,6 +8,7 @@ Copyright (c) 2023 Long Le
 '''
 
 
+from sklearn.neighbors import BallTree
 import torch.nn.functional as F
 import torch
 import ray
@@ -97,55 +98,87 @@ class RecvDataAgent(Agent):
         self.scorer = SCORER_FN_LOOKUP[self.sharing_strategy.scorer]
         self.scorer_type = SCORER_TYPE_LOOKUP[self.sharing_strategy.scorer]
 
+    @torch.inference_mode()
     def compute_ball(self, metric="cosine"):
+        was_training = self.net.training
+        self.net.eval()
+        self.ball_trees = {}
         # get all the data from the replay buffer to compute the ball tree
-        from sklearn.neighbors import BallTree
-        for task_id in range(self.task_id):
-            X, _, _ = self.replay_buffers[task_id]
-            self.ball_trees[task_id] = BallTree(X, metric=metric)
+        for t, replay in self.agent.replay_buffers.items():
+            X = replay.tensors[0]  # (B, C, H, W)
+            X_embed = self.net.encode(X, task_id=t)  # (B, hidden_dim)
+            self.ball_trees[t] = BallTree(X_embed, metric=metric)
+        if was_training:
+            self.net.train()
 
-    def nearest_neighbors(self, X, n_neighbors):
+    def nearest_neighbors(self, X, n_neighbors: int):
         """
         Get the nearest neighbors to X in the dataset.
         """
         # we have self.replay_buffers[tasks] = (X, y)
         task_neighbors = {}
-        for task_id in range(self.task_id):
+        for t, ball_tree in self.ball_trees.items():
             # use self.ball_trees[task_id] to get the nearest neighbors
             # to X in the dataset
-            dist, ind = self.ball_trees[task_id].query(
+            dist, ind = ball_tree.query(
                 X, k=n_neighbors)
-            task_neighbors[task_id] = (dist, ind)
+            task_neighbors[t] = (dist, ind)
         return task_neighbors
 
-    def compute_query(self, task_id, mode="all"):
+    @torch.inference_mode()
+    def compute_query(self, task_id, mode="all", debug_return=False):
         """
         Compute query using a validation
 
         If mode="all", get the query for all tasks up to `task_id`,
         If mode="current", get the query for the current task only.
         """
+        was_training = self.net.training
         if mode == "all":
-            valdataset = torch.utils.data.ConcatDataset(
-                self.dataset.valsets[:task_id+1])
+            tasks = range(task_id + 1)
         elif mode == "current":
-            valdataset = self.data.valsets[task_id]
+            tasks = [task_id]
         else:
             raise ValueError(f"Invalid mode {mode}")
-        X_val, y_val = valdataset.tensors[0], valdataset.tensors[1]
+
+        X_vals = {
+            t: self.dataset.valset[t].tensors[0]
+            for t in tasks
+        }
+        y_vals = {
+            t: self.dataset.valset[t].tensors[1]
+            for t in tasks
+        }
+        X_queries = {}
+        y_queries = {}
+        y_pred_queries = {}
+        score_queries = {}
         with torch.inference_mode():
-            logits = self.net(X_val)
-        if self.scorer_type == "unsupervised":
-            scores = self.scorer(logits)
-        elif self.scorer_type == "supervised":
-            scores = self.scorer(logits, y_val)
-        else:
-            raise ValueError("Invalid query method")
-        rank = torch.argsort(scores, descending=True)
-        top_k = rank[:self.cfg.receiver_first.num_queries]
-        top_k = top_k[scores[top_k] >
-                      self.query_score_threshold]
-        return X_val[top_k].cpu(), y_val[top_k].cpu()
+            for t in tasks:
+                X_val = X_vals[t].to(self.net.device)
+                y_val = y_vals[t].to(self.net.device)
+                logits = self.net(X_val, task_id=t)
+                y_pred = torch.argmax(logits, dim=1)
+                if self.scorer_type == "unsupervised":
+                    scores = self.scorer(logits)
+                elif self.scorer_type == "supervised":
+                    scores = self.scorer(logits, y_val)
+                else:
+                    raise ValueError("Invalid query method")
+                rank = torch.argsort(scores, descending=True)
+                top_k = rank[:self.sharing_strategy.num_queries]
+                top_k = top_k[scores[top_k] >
+                              self.sharing_strategy.query_score_threshold]
+                X_queries[t] = X_val[top_k].cpu()
+                y_queries[t] = y_val[top_k].cpu()
+                y_pred_queries[t] = y_pred[top_k].cpu()
+                score_queries[t] = scores[top_k].cpu()
+
+        if was_training:
+            self.net.train()
+        if debug_return:
+            return X_queries, y_queries, y_pred_queries, score_queries
+        return X_queries
 
     def receive(self, sender_id, data, data_type):
         if data_type == "query":

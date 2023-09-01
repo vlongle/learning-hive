@@ -1,4 +1,6 @@
 name: recv_data
-num_coms_per_round: 1
+num_coms_per_round: 2
 num_queries: 10
 num_data_neighbors: 5
+scorer: cross_entropy
+query_score_threshold: 0.0

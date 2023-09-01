@@ -128,12 +128,15 @@ def eval_net_task(net, task, testloader):
 
 @torch.inference_mode()
 def eval_net(net, testloaders):
+    was_training = net.training
     net.eval()
     test_acc = {}
     for task, loader in testloaders.items():
         test_acc[task] = eval_net_task(net, task, loader)
 
     test_acc['avg'] = sum(test_acc.values()) / len(test_acc)
+    if was_training:
+        net.train()
     return test_acc
 
 

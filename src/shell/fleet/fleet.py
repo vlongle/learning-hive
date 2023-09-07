@@ -52,6 +52,9 @@ class Agent:
         self.neighbors = neighbors
 
     def train(self, task_id):
+        import pdb
+        pdb.set_trace()
+
         trainloader = (
             torch.utils.data.DataLoader(self.dataset.trainset[task_id],
                                         batch_size=self.batch_size,

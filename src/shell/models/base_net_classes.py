@@ -90,6 +90,9 @@ class SoftOrderingNet(CompositionalNet):
         self.softmax = nn.Softmax(dim=0)
 
     def init_ordering(self):
+        """
+        Initialize the structure for initial tasks.
+        """
         if self.init_ordering_mode == 'one_module_per_task':
             assert self.num_init_tasks == self.depth, \
                 'Initializing one module per task requires the number of initialization tasks to be the same as the depth'
@@ -99,6 +102,7 @@ class SoftOrderingNet(CompositionalNet):
                     torch.ones(self.depth, self.depth)
                 self.structure[t].data[t, :] = 1
         elif self.init_ordering_mode == 'random_onehot':
+            # make sure that each module is initialized at least once
             while True:
                 initialized_modules = set()
                 for t in range(self.num_init_tasks):

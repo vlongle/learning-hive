@@ -43,6 +43,7 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.dropout = nn.Dropout(dropout)
         self.random_linear_projection = nn.Linear(
             self.i_size[0] * self.i_size[0], self.size)
+
         # freeze the random linear projection (preprocessing)
         for param in self.random_linear_projection.parameters():
             param.requires_grad = False

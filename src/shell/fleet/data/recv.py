@@ -13,6 +13,7 @@ import torch.nn.functional as F
 import torch
 import ray
 from shell.fleet.fleet import Agent
+from torchmetrics.functional import pairwise_cosine_similarity
 
 """
 Receiver-first procedure.
@@ -98,34 +99,86 @@ class RecvDataAgent(Agent):
         self.scorer = SCORER_FN_LOOKUP[self.sharing_strategy.scorer]
         self.scorer_type = SCORER_TYPE_LOOKUP[self.sharing_strategy.scorer]
 
+    # @torch.inference_mode()
+    # def compute_ball(self, metric="l2"):
+    #     # TODO: metric cosine is not supported in sklearn smhhh.
+    #     was_training = self.net.training
+    #     self.net.eval()
+    #     self.ball_trees = {}
+    #     # get all the data from the replay buffer to compute the ball tree
+    #     for t, replay in self.agent.replay_buffers.items():
+    #         X = replay.tensors[0].to(self.net.device)  # (B, C, H, W)
+    #         X_embed = self.net.encode(X, task_id=t)  # (B, hidden_dim)
+    #         X_embed = X_embed.cpu().detach().numpy()
+    #         self.ball_trees[t] = BallTree(X_embed, metric=metric)
+    #     if was_training:
+    #         self.net.train()
+
+    # def nearest_neighbors(self, X, n_neighbors: int):
+    #     """
+    #     Get the nearest neighbors to X in the dataset.
+    #     """
+    #     # we have self.replay_buffers[tasks] = (X, y)
+    #     task_neighbors = {}
+    #     for t, ball_tree in self.ball_trees.items():
+    #         # use self.ball_trees[task_id] to get the nearest neighbors
+    #         # to X in the dataset
+    #         dist, ind = ball_tree.query(
+    #             X, k=n_neighbors)
+    #         task_neighbors[t] = (dist, ind)
+    #     return task_neighbors
+
     @torch.inference_mode()
-    def compute_ball(self, metric="l2"):
-        # TODO: metric cosine is not supported in sklearn smhhh.
+    def nearest_neighbors(self, X, neighbors: int):
+        """
+        First, go through every task in the replay buffer and compute
+        the cosine similarity scores between X and the data in the replay buffer.
+
+        At the end, take the top `neighbors` number of data points
+        """
+        sims = []
+        X_reps = []
         was_training = self.net.training
-        self.net.eval()
-        self.ball_trees = {}
-        # get all the data from the replay buffer to compute the ball tree
+        X = X.to(self.net.device)
         for t, replay in self.agent.replay_buffers.items():
-            X = replay.tensors[0].to(self.net.device)  # (B, C, H, W)
             X_embed = self.net.encode(X, task_id=t)  # (B, hidden_dim)
-            X_embed = X_embed.cpu().detach().numpy()
-            self.ball_trees[t] = BallTree(X_embed, metric=metric)
+            X_rep = replay.tensors[0].to(self.net.device)
+            X_rep_embed = self.net.encode(X_rep,
+                                          task_id=t)  # (B, hidden_dim)
+
+            print(X_embed.shape)
+            print(X_rep_embed.shape)
+            # sim = F.cosine_similarity(X_embed, X_rep_embed)
+            sim = pairwise_cosine_similarity(X_embed, X_rep_embed)
+            print('sim', sim.shape)
+            # sim = F.cosine_similarity(
+            #     X_embed.unsqueeze(1), X_rep_embed.unsqueeze(0), dim=-1)
+            # print
+            sims.append(sim)
+            X_reps.append(X_rep)
+
+        sims = torch.cat(sims, dim=1)
+        print('sims:', sims.shape)
+        X_reps = torch.cat(X_reps, dim=0)
+        print('X_reps:', X_reps.shape)
+        # get the top `neighbors` number of data points
+        # # for each query, there are now some `neighbors chosen` now
+        # # extract them to X_neighbors of shape (N, n_neighbor, c, h, w)
+        # # where N = no. of queries
+        # X_neighbors = []
+        # for i in range(X.shape[0]):
+        #     X_neighbors.append(X_reps[top_k[i]])
+
+        # X_reps = torch.cat(X_reps, dim=0)
+        # print('X_reps:', X_reps.shape)
+        top_k = torch.topk(sims, k=neighbors, dim=1).indices
+        X_neighbors = X_reps[top_k.flatten()]
+        # reshape to (N, n_neighbor, c, h, w)
+        X_neighbors = X_neighbors.reshape(
+            X.shape[0], neighbors, *X.shape[1:])
         if was_training:
             self.net.train()
-
-    def nearest_neighbors(self, X, n_neighbors: int):
-        """
-        Get the nearest neighbors to X in the dataset.
-        """
-        # we have self.replay_buffers[tasks] = (X, y)
-        task_neighbors = {}
-        for t, ball_tree in self.ball_trees.items():
-            # use self.ball_trees[task_id] to get the nearest neighbors
-            # to X in the dataset
-            dist, ind = ball_tree.query(
-                X, k=n_neighbors)
-            task_neighbors[t] = (dist, ind)
-        return task_neighbors
+        return X_neighbors
 
     def get_valset(self, tasks):
         # NOTE: TODO: probably should get the query fromm the replay buffer instead
@@ -147,6 +200,8 @@ class RecvDataAgent(Agent):
         If mode="all", get the query for all tasks up to `task_id`,
         If mode="current", get the query for the current task only.
 
+        TODO: NOTE: right now, each task gets equal no. of queries but
+        we might want to make that dependent on the actual score.
         """
 
         was_training = self.net.training

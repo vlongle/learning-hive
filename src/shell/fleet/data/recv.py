@@ -99,14 +99,16 @@ class RecvDataAgent(Agent):
         self.scorer_type = SCORER_TYPE_LOOKUP[self.sharing_strategy.scorer]
 
     @torch.inference_mode()
-    def compute_ball(self, metric="cosine"):
+    def compute_ball(self, metric="l2"):
+        # TODO: metric cosine is not supported in sklearn smhhh.
         was_training = self.net.training
         self.net.eval()
         self.ball_trees = {}
         # get all the data from the replay buffer to compute the ball tree
         for t, replay in self.agent.replay_buffers.items():
-            X = replay.tensors[0]  # (B, C, H, W)
+            X = replay.tensors[0].to(self.net.device)  # (B, C, H, W)
             X_embed = self.net.encode(X, task_id=t)  # (B, hidden_dim)
+            X_embed = X_embed.cpu().detach().numpy()
             self.ball_trees[t] = BallTree(X_embed, metric=metric)
         if was_training:
             self.net.train()
@@ -125,22 +127,8 @@ class RecvDataAgent(Agent):
             task_neighbors[t] = (dist, ind)
         return task_neighbors
 
-    @torch.inference_mode()
-    def compute_query(self, task_id, mode="all", debug_return=False):
-        """
-        Compute query using a validation
-
-        If mode="all", get the query for all tasks up to `task_id`,
-        If mode="current", get the query for the current task only.
-        """
-        was_training = self.net.training
-        if mode == "all":
-            tasks = range(task_id + 1)
-        elif mode == "current":
-            tasks = [task_id]
-        else:
-            raise ValueError(f"Invalid mode {mode}")
-
+    def get_valset(self, tasks):
+        # NOTE: TODO: probably should get the query fromm the replay buffer instead
         X_vals = {
             t: self.dataset.valset[t].tensors[0]
             for t in tasks
@@ -149,10 +137,33 @@ class RecvDataAgent(Agent):
             t: self.dataset.valset[t].tensors[1]
             for t in tasks
         }
+        return X_vals, y_vals
+
+    @torch.inference_mode()
+    def compute_query(self, task_id, mode="all", debug_return=False):
+        """
+        Compute query using a validation
+
+        If mode="all", get the query for all tasks up to `task_id`,
+        If mode="current", get the query for the current task only.
+
+        """
+
+        was_training = self.net.training
+        if mode == "all":
+            tasks = range(task_id + 1)
+        elif mode == "current":
+            tasks = [task_id]
+        else:
+            raise ValueError(f"Invalid mode {mode}")
+
         X_queries = {}
         y_queries = {}
         y_pred_queries = {}
         score_queries = {}
+
+        X_vals, y_vals = self.get_valset(tasks)
+
         with torch.inference_mode():
             for t in tasks:
                 X_val = X_vals[t].to(self.net.device)
@@ -183,18 +194,24 @@ class RecvDataAgent(Agent):
     def receive(self, sender_id, data, data_type):
         if data_type == "query":
             # add query to buffer
-            self.buffer_query[sender_id] = data
+            self.incoming_query[sender_id] = data
         elif data_type == "data":
             # add data to buffer
-            self.buffer_data[sender_id] = data
+            self.incoming_data[sender_id] = data
         else:
             raise ValueError("Invalid data type")
 
     def remove_outliers(self):
         pass
 
-    def compute_data(self, query):
+    def compute_data(self):
         # Get relevant data for the query
+        # and populate self.data
+        print(self.incoming_query)
+        for requester, query in self.incoming_query.items():
+            self.data[requester] = self.similarity_search(query)
+
+    def similarity_search(self):
         pass
 
     def learn_from_recv_data(self):
@@ -202,6 +219,10 @@ class RecvDataAgent(Agent):
         pass
 
     def prepare_communicate(self, task_id, communication_round):
+        if communication_round == 0:
+            self.incoming_query, self.incoming_data = {}, {}
+        if task_id < self.agent.net.num_init_tasks - 1:
+            return
         if communication_round == 0:
             self.query = self.compute_query(task_id)
         elif communication_round == 1:
@@ -211,19 +232,25 @@ class RecvDataAgent(Agent):
 
     # potentially parallelizable
     def communicate(self, task_id, communication_round):
+        if task_id < self.agent.net.num_init_tasks - 1:
+            # NOTE: don't communicate for the first few tasks to
+            # allow agents some initital training to find their weakness
+            return
         if communication_round == 0:
             # send query to neighbors
             for neighbor in self.neighbors:
                 neighbor.receive(self.node_id, self.query, "query")
         elif communication_round == 1:
             # send data to the requester
-            for requester in self.buffer_query:
+            for requester in self.incoming_query:
                 requester.receive(
                     self.node_id, self.data[requester], "data")
         else:
             raise ValueError(f"Invalid round number {communication_round}")
 
     def process_communicate(self, task_id, communication_round):
+        if task_id < self.agent.net.num_init_tasks - 1:
+            return
         if communication_round == 0:
             pass
         elif communication_round == 1:
@@ -240,7 +267,7 @@ class ParallelRecvDataAgent(RecvDataAgent):
                 neighbor.remote.receive(self.node_id, self.query, "query")
         elif communication_round == 1:
             # send data to the requester
-            for requester in self.buffer_query:
+            for requester in self.incoming_query:
                 requester.remote.receive(
                     self.node_id, self.data[requester], "data")
         else:

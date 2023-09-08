@@ -24,13 +24,15 @@ class GradFleet(Fleet):
     def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs,
                  fake_dataset):
         self.num_init_tasks = net_kwargs["num_init_tasks"]
-        # replace net_kwargs["num_init_tasks"] with -1 as we will do joint training on the init tasks.
+        # NOTE: We create a fake agent to jointly train all agents in the same initial tasks. Then,
+        # we pretend that all agents have no initial tasks, and proceed with individual local training
 
         self.fake_agent = AgentCls(69420, seed, fake_dataset, NetCls, LearnerCls,
                                    deepcopy(net_kwargs), deepcopy(
                                        agent_kwargs),
                                    deepcopy(train_kwargs), deepcopy(sharing_strategy))
 
+        # replace net_kwargs["num_init_tasks"] with -1 as we will do joint training on the init tasks.
         net_kwargs["num_init_tasks"] = -1
         net_kwargs["init_ordering_mode"] = "uniform"
         super().__init__(graph, seed, datasets, sharing_strategy, AgentCls,

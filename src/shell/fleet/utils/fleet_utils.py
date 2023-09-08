@@ -10,6 +10,8 @@ from shell.fleet.fleet import Fleet, ParallelFleet, ParallelAgent, Agent
 from shell.fleet.grad.monograd import ModelSyncAgent, ParallelModelSyncAgent
 from shell.fleet.grad.gradient_fleet import GradFleet, ParallelGradFleet
 from shell.fleet.grad.modgrad import ModGrad, ParallelModGrad
+from shell.fleet.data.data_fleet import DataFleet, ParallelDataFleet
+from shell.fleet.data.recv import RecvDataAgent, ParallelRecvDataAgent
 
 
 FLEET_CLS = {
@@ -21,15 +23,13 @@ FLEET_CLS = {
         True: ParallelGradFleet,
         False: GradFleet,
     },
+    "recv_data": {
+        True: ParallelDataFleet,
+        False: DataFleet,
+    },
+    # "sender_data": {},
+    # "modmod": {},
 }
-
-
-def get_fleet(sharing_strategy, parallel=True):
-    try:
-        return FLEET_CLS[sharing_strategy.name][parallel]
-    except KeyError:
-        raise NotImplementedError(
-            f"sharing strategy {sharing_strategy.name} with option parallel={parallel} not implemented")
 
 
 AGENT_CLS = {
@@ -43,8 +43,8 @@ AGENT_CLS = {
             False: Agent
         },
     },
-    "gradient":
-    {"monolithic":
+    "gradient": {
+        "monolithic":
         {
             True: ParallelModelSyncAgent,
             False: ModelSyncAgent
@@ -54,8 +54,26 @@ AGENT_CLS = {
             True: ParallelModGrad,
             False: ModGrad,
         },
-     },
+    },
+    "recv_data": {
+        "monolithic": {
+            True: ParallelRecvDataAgent,
+            False: RecvDataAgent,
+        },
+        "modular": {
+            True: ParallelRecvDataAgent,
+            False: RecvDataAgent,
+        },
+    },
 }
+
+
+def get_fleet(sharing_strategy, parallel=True):
+    try:
+        return FLEET_CLS[sharing_strategy.name][parallel]
+    except KeyError:
+        raise NotImplementedError(
+            f"sharing strategy {sharing_strategy.name} with option parallel={parallel} not implemented")
 
 
 def get_agent_cls(sharing_strategy, algo, parallel=True):

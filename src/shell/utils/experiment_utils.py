@@ -99,6 +99,7 @@ def setup_experiment(cfg: DictConfig):
 def load_net(cfg, NetCls, net_cfg, agent_id, task_id, num_added_components=None):
     save_dir = os.path.join(cfg['agent']['save_dir'],
                             f'agent_{agent_id}', f'task_{task_id}')
+    print('save_dir', save_dir)
     net = NetCls(**net_cfg)
     # TODO: how to know how many components to add?
     if num_added_components is not None:

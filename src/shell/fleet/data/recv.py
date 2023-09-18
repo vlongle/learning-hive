@@ -136,8 +136,111 @@ class RecvDataAgent(Agent):
         """
 
     @torch.inference_mode()
-    def nearest_neighbors(self, X, neighbors: int, tasks=None):
+    def compute_embedding_dist(self, X1, X2, task_id):
+        self.net.eval()
+        X1_embed = self.net.encode(X1.to(self.net.device), task_id=task_id) # (B, hidden_dim)
+        X2_embed = self.net.encode(X2.to(self.net.device), task_id=task_id)
+        sim = pairwise_cosine_similarity(X1_embed, X2_embed)
+        return sim.cpu()
+
+    def compute_raw_dist(self, X1, X2, task_id=None):
+        # make sure X1.shape == X2.shape
+        # if X1.shape is nnnot [N, d] then flatten it
+        if len(X1.shape) > 2:
+            X1 = X1.reshape(X1.shape[0], -1)
+            X2 = X2.reshape(X2.shape[0], -1)
+        sim = pairwise_cosine_similarity(X1, X2)
+        return sim
+
+    @torch.inference_mode()
+    def compute_similarity(self, qX, computer=None, chosen_tasks=None):
+        if computer is None:
+            computer = self.compute_embedding_dist
+
+        sims = []
+        Xs, ys, tasks = [], [], []
+        
+        replay_buffers = self.agent.replay_buffers
+        if chosen_tasks is not None:
+            replay_buffers = {t: replay_buffers[t] for t in chosen_tasks}
+
+        for t, replay in replay_buffers.items():
+            Xt = replay.tensors[0]
+            yt = replay.tensors[1]
+            sim = computer(qX, Xt, t)
+            sims.append(sim)
+            Xs.append(Xt)
+            ys.append(yt)
+            tasks.append(torch.ones(Xt.shape[0], dtype=torch.long) * t)
+
+        sims = torch.cat(sims, dim=1)
+        Xs = torch.cat(Xs, dim=0)
+        ys = torch.cat(ys, dim=0)
+        tasks = torch.cat(tasks, dim=0)
+
+        return sims, Xs, ys, tasks
+
+    @torch.inference_mode()
+    def extract_topk_from_similarity(self, sims, Xs, ys, tasks, neighbors, candidate_tasks=None):
+        if candidate_tasks is not None:
+            mask = torch.ones_like(sims) * -1e10
+            for i, task_group in enumerate(candidate_tasks):
+                mask[i, task_group] = 1
+            sims = sims * mask
+
+        top_k = torch.topk(sims, k=neighbors, dim=1).indices
+
+        X_neighbors = Xs[top_k.flatten()]
+        Y_neighbors = ys[top_k.flatten()]
+        task_neighbors = tasks[top_k.flatten()]
+
+        # reshape to (N, n_neighbor, c, h, w)
+        X_neighbors = X_neighbors.reshape(
+            sims.shape[0], neighbors, *Xs.shape[1:])
+        Y_neighbors = Y_neighbors.reshape(sims.shape[0], neighbors)
+        task_neighbors = task_neighbors.reshape(sims.shape[0], neighbors)
+
+        return X_neighbors, Y_neighbors, task_neighbors
+
+    def new_nearest_neighbors(self, qX, n_neighbors, n_filter_neighbors):
         """
+        Pre-filter with raw pixel comparison and then refine with embeddings.
+        """
+        # 1. Pre-filter using raw pixel comparison
+        sims_prefilter, Xs, ys, tasks = self.compute_similarity(
+            qX, 
+            computer=self.compute_raw_dist
+        )
+        _, _, task_neighbors_prefilter = self.extract_topk_from_similarity(
+            sims_prefilter, Xs, ys, tasks, 
+            neighbors=n_filter_neighbors
+        )
+
+        # Convert to list of task indices for each query point
+        task_lists = [tasks[indices].tolist() for indices in task_neighbors_prefilter]
+
+        # 2. Compute similarity using embedding method
+        sims, _, _, _ = self.compute_similarity(qX, computer=self.compute_embedding_dist)
+
+        # 3. Extract top neighbors considering the pre-filtered tasks
+        X_neighbors, _, _ = self.extract_topk_from_similarity(
+            sims, Xs, ys, tasks, 
+            neighbors=n_neighbors, 
+            candidate_tasks=task_lists
+        )
+
+        return X_neighbors
+
+
+
+
+
+    def nearest_neighbors(self, qX, neighbors: int, computer=None, debug=False, chosen_tasks=None):
+        """
+        NOTE: old algorithm without the pre-filtering step. Kept here for reference.
+
+
+
         First, go through every task in the replay buffer and compute
         the cosine similarity scores between X and the data in the replay buffer.
 
@@ -148,54 +251,53 @@ class RecvDataAgent(Agent):
 
         Return: X_neighbors of shape (N, n_neighbor, C, H, W)
         """
-        sims = []
-        X_reps = []
-        was_training = self.net.training
-        X = X.to(self.net.device)
-        replay_buffers = self.agent.replay_buffers
-        if tasks is not None:
-            replay_buffers = {t: replay_buffers[t] for t in tasks}
-        for t, replay in replay_buffers.items():
-            X_embed = self.net.encode(X, task_id=t)  # (B, hidden_dim)
-            X_rep = replay.tensors[0].to(self.net.device)
-            X_rep_embed = self.net.encode(X_rep,
-                                          task_id=t)  # (B, hidden_dim)
+        if computer is None:
+            computer = self.compute_embedding_dist
 
-            # print(X_embed.shape)
-            # print(X_rep_embed.shape)
-            # sim = F.cosine_similarity(X_embed, X_rep_embed)
-            sim = pairwise_cosine_similarity(X_embed, X_rep_embed)
-            # print('sim', sim.shape)
-            # sim = F.cosine_similarity(
-            #     X_embed.unsqueeze(1), X_rep_embed.unsqueeze(0), dim=-1)
-            # print
+        sims = []
+        Xs, ys, tasks = [], [], []
+        was_training = self.net.training
+        qX = qX.to(self.net.device)
+
+
+
+        replay_buffers = self.agent.replay_buffers
+        if chosen_tasks is not None:
+            replay_buffers = {t: replay_buffers[t] for t in chosen_tasks}
+
+        for t, replay in replay_buffers.items():
+            Xt = replay.tensors[0]
+            yt = replay.tensors[1]
+            sim = computer(qX, Xt, t)
             sims.append(sim)
-            X_reps.append(X_rep)
+            Xs.append(Xt)
+            ys.append(yt)
+            tasks.append(torch.ones(Xt.shape[0], dtype=torch.long) * t)
 
         sims = torch.cat(sims, dim=1)
         # print('sims:', sims.shape)
-        X_reps = torch.cat(X_reps, dim=0)
-        # print('X_reps:', X_reps.shape)
-        # get the top `neighbors` number of data points
-        # # for each query, there are now some `neighbors chosen` now
-        # # extract them to X_neighbors of shape (N, n_neighbor, c, h, w)
-        # # where N = no. of queries
-        # X_neighbors = []
-        # for i in range(X.shape[0]):
-        #     X_neighbors.append(X_reps[top_k[i]])
+        Xs = torch.cat(Xs, dim=0)
+        ys = torch.cat(ys, dim=0)
+        tasks = torch.cat(tasks, dim=0)
 
-        # X_reps = torch.cat(X_reps, dim=0)
-        # print('X_reps:', X_reps.shape)
         top_k = torch.topk(sims, k=neighbors, dim=1).indices
-        X_neighbors = X_reps[top_k.flatten()]
+        X_neighbors = Xs[top_k.flatten()]
+        Y_neighbors = ys[top_k.flatten()]
+        task_neighbors = tasks[top_k.flatten()]
+
         # reshape to (N, n_neighbor, c, h, w)
         X_neighbors = X_neighbors.reshape(
-            X.shape[0], neighbors, *X.shape[1:])
+            qX.shape[0], neighbors, *qX.shape[1:])
+        Y_neighbors = Y_neighbors.reshape(
+            qX.shape[0], neighbors)
+        task_neighbors = task_neighbors.reshape(
+            qX.shape[0], neighbors)
         if was_training:
             self.net.train()
+        
+        if debug:
+            return X_neighbors, Y_neighbors, task_neighbors
         return X_neighbors
-
-
 
     def get_valset(self, tasks):
         # NOTE: TODO: probably should get the query fromm the replay buffer instead
@@ -263,6 +365,9 @@ class RecvDataAgent(Agent):
             return X_queries, y_queries, y_pred_queries, score_queries
         return X_queries
 
+    
+
+
     def receive(self, sender_id, data, data_type):
         if data_type == "query":
             # add query to buffer
@@ -273,8 +378,6 @@ class RecvDataAgent(Agent):
         else:
             raise ValueError("Invalid data type")
 
-    def remove_outliers(self):
-        pass
 
     def compute_data(self):
         # Get relevant data for the query

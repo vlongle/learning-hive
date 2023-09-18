@@ -168,6 +168,8 @@ if __name__ == "__main__":
     #     "root_save_dir": "cifar_epochs_500_mild_dropout_memory_64_data_300_results",
     # }
 
+
     run_experiment(config, strict=False)
     end = time.time()
     print(f"Experiment runs took {datetime.timedelta(seconds=end-start)}")
+

@@ -39,23 +39,25 @@ class TopologyGenerator:
                 G.remove_edge(edge[0], edge[1])
         return G
 
-    @classmethod
+    @staticmethod
     def save_graph(G: nx.Graph, filename: str):
         with open(filename, "wb") as f:
             pickle.dump(G, f)
 
-    @classmethod
+    @staticmethod
     def load_graph(filename: str):
         with open(filename, "rb") as f:
             G = pickle.load(f)
         return G
 
-    @classmethod
+    @staticmethod
     def plot_graph(G: nx.Graph,
                    node_color="#1f78b4", edge_color="#bfbfbf",
                    node_size=500, font_size=16,
                    font_family="sans-serif", edge_width=1,
-                   layout="spring", draw_labels=True):
+                   layout="spring", draw_labels=False,
+                   save_path=None):
+        plt.clf()
         if layout == "spring":
             pos = nx.spring_layout(G)
         elif layout == "circular":
@@ -69,4 +71,8 @@ class TopologyGenerator:
             nx.draw_networkx_labels(
                 G, pos, font_size=font_size, font_family=font_family)
         plt.axis("off")
-        plt.show()
+
+        if save_path:
+            plt.savefig(save_path)
+        else:
+            plt.show()

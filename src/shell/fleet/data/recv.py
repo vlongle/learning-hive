@@ -128,29 +128,44 @@ class RecvDataAgent(Agent):
     #         task_neighbors[t] = (dist, ind)
     #     return task_neighbors
 
+    def pre_filter(self, X, neighbors: int):
+        """
+        compute the similarity between X and the data in the replay buffer
+        using cosine similarity on the raw image pixels as a pre-filtering
+        step. Then, for each task
+        """
+
     @torch.inference_mode()
-    def nearest_neighbors(self, X, neighbors: int):
+    def nearest_neighbors(self, X, neighbors: int, tasks=None):
         """
         First, go through every task in the replay buffer and compute
         the cosine similarity scores between X and the data in the replay buffer.
 
         At the end, take the top `neighbors` number of data points
+
+
+        X.shape = (N, C, H, W)
+
+        Return: X_neighbors of shape (N, n_neighbor, C, H, W)
         """
         sims = []
         X_reps = []
         was_training = self.net.training
         X = X.to(self.net.device)
-        for t, replay in self.agent.replay_buffers.items():
+        replay_buffers = self.agent.replay_buffers
+        if tasks is not None:
+            replay_buffers = {t: replay_buffers[t] for t in tasks}
+        for t, replay in replay_buffers.items():
             X_embed = self.net.encode(X, task_id=t)  # (B, hidden_dim)
             X_rep = replay.tensors[0].to(self.net.device)
             X_rep_embed = self.net.encode(X_rep,
                                           task_id=t)  # (B, hidden_dim)
 
-            print(X_embed.shape)
-            print(X_rep_embed.shape)
+            # print(X_embed.shape)
+            # print(X_rep_embed.shape)
             # sim = F.cosine_similarity(X_embed, X_rep_embed)
             sim = pairwise_cosine_similarity(X_embed, X_rep_embed)
-            print('sim', sim.shape)
+            # print('sim', sim.shape)
             # sim = F.cosine_similarity(
             #     X_embed.unsqueeze(1), X_rep_embed.unsqueeze(0), dim=-1)
             # print
@@ -158,9 +173,9 @@ class RecvDataAgent(Agent):
             X_reps.append(X_rep)
 
         sims = torch.cat(sims, dim=1)
-        print('sims:', sims.shape)
+        # print('sims:', sims.shape)
         X_reps = torch.cat(X_reps, dim=0)
-        print('X_reps:', X_reps.shape)
+        # print('X_reps:', X_reps.shape)
         # get the top `neighbors` number of data points
         # # for each query, there are now some `neighbors chosen` now
         # # extract them to X_neighbors of shape (N, n_neighbor, c, h, w)
@@ -179,6 +194,8 @@ class RecvDataAgent(Agent):
         if was_training:
             self.net.train()
         return X_neighbors
+
+
 
     def get_valset(self, tasks):
         # NOTE: TODO: probably should get the query fromm the replay buffer instead

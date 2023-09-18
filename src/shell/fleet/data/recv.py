@@ -182,11 +182,36 @@ class RecvDataAgent(Agent):
 
     @torch.inference_mode()
     def extract_topk_from_similarity(self, sims, Xs, ys, tasks, neighbors, candidate_tasks=None):
+        """
+        candidate_tasks.shape = [N, n_filter_neighbors] where N is the number of
+        query points and n_filter_neighbors is the number of neighbors to consider
+
+        Xs.shape = [N, ...]
+
+        tasks.shape = [M] where M is the number of data points in the replay buffer
+
+        sims.shape = [N, M] where sims[i, j] is the similarity between query point i
+        and data point j
+        """
         if candidate_tasks is not None:
-            mask = torch.ones_like(sims) * -1e10
-            for i, task_group in enumerate(candidate_tasks):
-                mask[i, task_group] = 1
-            sims = sims * mask
+            # Step 1: Reshape task_neighbors_prefilter
+            expanded_prefilter = candidate_tasks.unsqueeze(-1) # Shape: [N, n_filter_neighbors, 1]
+
+            # Step 2: Expand tasks
+            expanded_tasks = tasks.unsqueeze(0).unsqueeze(0) # Shape: [1, 1, M]
+
+            # Step 3: Use broadcasting to compare the two tensors
+            comparison_result = expanded_prefilter == expanded_tasks # Shape: [N, n_filter_neighbors, M]
+
+            # Step 4: Aggregate along the n_filter_neighbors dimension
+            mask = comparison_result.any(dim=1).float() # Shape: [N, M], valid task is 1, invalid task is 0
+
+            # Step 5: articially lower the score for data from non-candidate tasks
+            invalid_mask = (1 - mask).bool()
+            sims = torch.where(invalid_mask, torch.tensor(-float('inf'), device=sims.device), sims)
+
+
+
 
         top_k = torch.topk(sims, k=neighbors, dim=1).indices
 
@@ -217,7 +242,7 @@ class RecvDataAgent(Agent):
         )
 
         # Convert to list of task indices for each query point
-        task_lists = [tasks[indices].tolist() for indices in task_neighbors_prefilter]
+        # task_lists = [tasks[indices].tolist() for indices in task_neighbors_prefilter]
 
         # 2. Compute similarity using embedding method
         sims, _, _, _ = self.compute_similarity(qX, computer=self.compute_embedding_dist)
@@ -226,7 +251,8 @@ class RecvDataAgent(Agent):
         X_neighbors, _, _ = self.extract_topk_from_similarity(
             sims, Xs, ys, tasks, 
             neighbors=n_neighbors, 
-            candidate_tasks=task_lists
+            # candidate_tasks=task_lists,
+            candidate_tasks=task_neighbors_prefilter,
         )
 
         return X_neighbors
@@ -240,7 +266,7 @@ class RecvDataAgent(Agent):
         NOTE: old algorithm without the pre-filtering step. Kept here for reference.
 
 
-
+        
         First, go through every task in the replay buffer and compute
         the cosine similarity scores between X and the data in the replay buffer.
 

@@ -9,3 +9,4 @@ src/shell/datasets/*/
 **wo_replacement/
 *.csv
 *.gz
+.DS_Store

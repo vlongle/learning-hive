@@ -149,6 +149,34 @@ def utilize_global_labels(data, source_class_sequence, target_class_sequence, nu
     return local_label_data
 
 
+
+import random
+
+class RandomFlippedDataset(torch.utils.data.Dataset):
+    def __init__(self, dataset, flip_probability, num_classes):
+        """
+        dataset: Input dataset with data points (X, y)
+        flip_probability: Probability of flipping the true label of a data point
+        num_classes: Total number of possible classes (to choose a random label if flipping)
+        """
+        self.dataset = dataset
+        self.flip_probability = flip_probability
+        self.num_classes = num_classes
+
+    def __getitem__(self, index):
+        X, y, task_id = self.dataset[index]
+
+        # With a probability of flip_probability, change the label to a random one
+        if random.random() < self.flip_probability:
+            y = random.randint(0, self.num_classes - 1)
+
+        return X, y, task_id
+
+    def __len__(self):
+        return len(self.dataset)
+
+
+
 @evaluate_data
 def label_free_utilize(data, agent, task_id):
     """

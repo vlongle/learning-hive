@@ -24,6 +24,9 @@ very bad.
 import logging
 import numpy as np
 import torch
+import torch.nn.functional as F
+
+
 def evaluate_data(func):
     def wrapper(data, agent, task_id):
         cur_task = len(agent.agent.replay_buffers) - 1
@@ -176,21 +179,166 @@ class RandomFlippedDataset(torch.utils.data.Dataset):
         return len(self.dataset)
 
 
+"""
+Pseudo-labeling using source consistency
+and then applies confidence
 
-@evaluate_data
-def label_free_utilize(data, agent, task_id):
-    """
-    Data should be a mono dataset
-    """
-    pass
+1. Compute Predictions: For each target task, use its decoder to predict labels for X_source.
+2. Determine Consistency: For each target task's predictions, determine the mode (most common label). The consistency score is the fraction of the predicted labels that match the mode.
+3. Rank Decoders: Rank the decoders based on the consistency score. The higher the consistency score, the more likely the class in X_source was present during the training of that task.
+
+"""
+# def rank_and_pseudo_label(agent, X_source):
+#     task_scores = []
+    
+#     for task_id in range(agent.num_tasks):
+#         outputs = agent.predict(X_source, task_id)
+#         _, predicted_class = outputs.max(dim=1)
+        
+#         # Find the mode of the predicted_class
+#         mode_label = torch.mode(predicted_class).values.item()
+#         mode_label_count = (predicted_class == mode_label).sum().item()
+        
+#         # Consistency score: how frequently the mode occurs.
+#         consistency_score = mode_label_count / len(predicted_class)
+#         task_scores.append((task_id, consistency_score, mode_label))
+        
+#     # Sort tasks by their consistency score
+#     sorted_tasks = sorted(task_scores, key=lambda x: x[1], reverse=True)
+    
+#     # Most consistent task details
+#     best_task_id, _, best_task_mode_label = sorted_tasks[0]
+    
+#     # For confidence, get the softmax scores from the best task's predictions
+#     outputs_best_task = agent.predict(X_source, best_task_id)
+#     confidences = torch.nn.functional.softmax(outputs_best_task, dim=1)
+    
+#     # Get the confidence values of the best task mode label
+#     confidences_best_label = confidences[:, best_task_mode_label]
+
+#     # Generate pseudo-labels: all images get the mode label of the best task's predictions
+#     pseudo_labels = torch.full((len(X_source),), best_task_mode_label, dtype=torch.long)
+
+#     return pseudo_labels, confidences_best_label, best_task_id
+
+@torch.inference_mode()
+def rank_and_pseudo_label(agent, X_source):
+    '''
+    A bit problematic.
+    '''
+    total_tasks = agent.dataset.num_tasks
+    num_classes_per_task = agent.dataset.num_classes_per_task
+    label_confidence_matrix = []
+    label_count_matrix = []
+    was_training = agent.net.training
+
+    # Set network to eval mode
+    agent.net.eval()
+
+    # Accumulate results from all task decoders
+    for task_id in range(total_tasks):
+        predictions = agent.net(X_source.to(agent.net.device), task_id)
+        
+        # Get the predicted labels and their confidences
+        predicted_labels = torch.argmax(predictions, dim=1).cpu()
+        confidences = torch.max(F.softmax(predictions, dim=1), dim=1)[0].cpu()
+        print("task_id", task_id)
+        print("predicted_labels", predicted_labels)
+        print('\n\n')
+
+        # Accumulate label counts
+        label_counts = torch.bincount(predicted_labels, minlength=num_classes_per_task)
+        label_count_matrix.append(label_counts)
+
+        # Sum up the confidences for each unique label
+        summed_confidences = torch.zeros(num_classes_per_task)
+        for i in range(num_classes_per_task):
+            summed_confidences[i] = confidences[predicted_labels == i].sum()
+        label_confidence_matrix.append(summed_confidences)
+
+    # Convert lists to tensors for further operations
+    label_count_matrix = torch.stack(label_count_matrix)
+    label_confidence_matrix = torch.stack(label_confidence_matrix)
+
+    # Get average confidences
+    avg_confidences = label_confidence_matrix / (label_count_matrix + 1e-10)  # Avoid division by zero
+
+    # # Rank task decoders based on mode consistency and confidence
+    total_scores = label_count_matrix + avg_confidences
+    # # best_task_id = torch.argmax(total_scores.sum(dim=1))
+    # total_scores = avg_confidences
+
+    max_scores, max_indices = total_scores.max(dim=1)
+    best_task_id = torch.argmax(max_scores)
+
+    best_label = torch.argmax(total_scores[best_task_id])
+
+    # Debugging information
+    debug_info = {
+        "predicted_label_matrix": label_count_matrix,
+        "confidences_matrix": avg_confidences,
+        "total_scores": total_scores,
+    }
+
+    if was_training:
+        agent.net.train()
+
+    return best_task_id, best_label, debug_info
 
 
-@evaluate_data
-def pseudo_label_utilize(data, agent, task_id):
+
+
+
+
+def pseudo_label(agent, X_source, threshold=0.9):
     """
-    Data should be a mono dataset
+    Returns pseudo-labeled data based on the most consistent decoder of the agent.
+
+    Parameters:
+    - agent: The agent used for predictions.
+    - X_source: The source data to be pseudo-labeled.
+    - threshold: The minimum confidence required to keep a pseudo-label.
+
+    Returns:
+    - X_ret: Source data that passed the confidence threshold.
+    - y_target: Pseudo-labels for X_ret.
+    - task_target_id: The id of the most consistent decoder.
     """
-    pass
+
+    # Using the previous function to rank tasks and obtain pseudo-labels
+    task_rankings, task_labels, confidences = rank_and_pseudo_label(agent, X_source)
+
+    # Identifying the top-ranked task and its associated labels and confidences
+    top_task_id = task_rankings[0]
+    top_task_labels = task_labels[top_task_id]
+    top_task_confidences = confidences[top_task_id]
+
+    # Applying confidence thresholding
+    mask = top_task_confidences > threshold
+    X_ret = X_source[mask]
+    y_target = top_task_labels[mask]
+    task_target_id = torch.full(y_target.shape, top_task_id, dtype=torch.int64)
+
+    return X_ret, y_target, task_target_id
+
+
+
+
+
+# @evaluate_data
+# def label_free_utilize(data, agent, task_id):
+#     """
+#     Data should be a mono dataset
+#     """
+#     pass
+
+
+# @evaluate_data
+# def pseudo_label_utilize(data, agent, task_id):
+#     """
+#     Data should be a mono dataset
+#     """
+#     pass
 
 
 

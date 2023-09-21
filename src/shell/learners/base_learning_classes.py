@@ -276,7 +276,7 @@ class CompositionalLearner(Learner):
 class CompositionalDynamicLearner(CompositionalLearner):
     def train(self, trainloader, task_id, valloader,
               component_update_freq=100, num_epochs=100, save_freq=1, testloaders=None,
-              train_mode=None):
+              train_mode=None, num_candidate_modules=None):
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
@@ -297,9 +297,19 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.net.freeze_modules()
             self.net.freeze_structure()     # freeze structure for all tasks
             # freeze original modules and structure
-            self.net.add_tmp_module(task_id)
-            self.optimizer.add_param_group(
-                {'params': self.net.components[-1].parameters()})
+
+            # self.net.add_tmp_module(task_id)
+            # self.optimizer.add_param_group(
+            #     {'params': self.net.components[-1].parameters()})
+
+            if num_candidate_modules is None:
+                num_candidate_modules = 1
+            print("NUM_CANDIDATE_MODULES", num_candidate_modules)
+            self.net.add_tmp_modules(task_id, num_candidate_modules)
+            for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
+                self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
+
+
 
             if hasattr(self, 'preconditioner'):
                 self.preconditioner.add_module(self.net.components[-1])
@@ -320,12 +330,18 @@ class CompositionalDynamicLearner(CompositionalLearner):
                             X = torch.cat([X[0], X[1]], dim=0)
                         X = X.to(self.net.device, non_blocking=True)
                         Y = Y.to(self.net.device, non_blocking=True)
+
+                        # with new module
                         self.update_structure(
                             X, Y, task_id, train_mode=train_mode)
-                        self.net.hide_tmp_module()
+                        # self.net.hide_tmp_module()
+                        self.net.hide_tmp_modulev2()
+
+                        # without new module
                         self.update_structure(
                             X, Y, task_id, train_mode=train_mode)
-                        self.net.recover_hidden_module()
+                        # self.net.recover_hidden_module()
+                        self.net.recover_hidden_modulev2()
                         iter_cnt += 1
                 if i % save_freq == 0 or i == num_epochs - 1:
                     self.save_data(i + 1, task_id, testloaders,
@@ -336,36 +352,80 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.update_multitask_cost(trainloader, task_id)
 
     def conditionally_add_module(self, valloader, task_id):
-        test_loss = self.test_loss
-        test_acc = self.test_acc
-
-        self.test_loss, self.test_acc = self.evaluate({task_id: valloader})
-        update_loss, no_update_loss = self.test_loss[task_id]
-        update_acc, no_update_acc = self.test_acc[task_id]
-        logging.info(
-            'W/update: {}, WO/update: {}'.format(update_acc, no_update_acc))
-        if no_update_acc == 0 or (update_acc - no_update_acc) / no_update_acc > self.improvement_threshold:
-            add_new_module = True
-            logging.info('Keeping new module. Total: {}'.format(
-                self.net.num_components))
-        else:
+        performances = {}  # relative improvement for each candidate
+        # Set the active index to the first candidate module
+        self.net.active_candidate_index = self.net.candidate_indices[0]
+        for idx in self.net.candidate_indices:
+            self.test_loss, self.test_acc = self.evaluate({task_id: valloader})
+            update_acc, no_update_acc = self.test_acc[task_id]
+            logging.info(
+                'candidate {}: W/update: {}, WO/update: {}'.format(idx, update_acc, no_update_acc))
+            performances[idx] = (update_acc - no_update_acc) / no_update_acc 
+        
+        # Decide the best candidate based on relative improvement
+        best_candidate_idx = max(performances, key=performances.get)
+        best_improvement = performances[best_candidate_idx]
+        
+        # Check if the improvement is greater than the threshold, and if not, remove all candidates
+        if best_improvement <= self.improvement_threshold:
+            logging.info('Not keeping any new modules. Total: {}'.format(self.net.num_components))
+            self.net.remove_tmp_modulev2(self.net.candidate_indices)
             add_new_module = False
-            self.net.remove_tmp_module()
-            logging.info('Not keeping new module. Total: {}'.format(
-                self.net.num_components))
-
+        else:
+            # Keep the best candidate and remove others
+            exclude_indices = [idx for idx in self.net.candidate_indices if idx != best_candidate_idx]
+            self.net.remove_tmp_modulev2(exclude_indices)
+            logging.info('Keeping new module. Total: {}'.format(self.net.num_components))
+            add_new_module = True
+        
         self.dynamic_record.write(
             {
                 'task_id': task_id,
-                'update_acc': update_acc,
-                'no_update_acc': no_update_acc,
+                'best_candidate_idx': best_candidate_idx,
+                'best_improvement': best_improvement,
                 'num_components': self.net.num_components,
                 'add_new_module': add_new_module,
             }
         )
+        
         self.dynamic_record.save()
-        self.test_loss = test_loss
-        self.test_acc = test_acc
+
+
+        
+
+
+    # def conditionally_add_module(self, valloader, task_id):
+    #     test_loss = self.test_loss
+    #     test_acc = self.test_acc
+
+    #     self.test_loss, self.test_acc = self.evaluate({task_id: valloader})
+    #     update_loss, no_update_loss = self.test_loss[task_id]
+    #     update_acc, no_update_acc = self.test_acc[task_id]
+    #     logging.info(
+    #         'W/update: {}, WO/update: {}'.format(update_acc, no_update_acc))
+    #     if no_update_acc == 0 or (update_acc - no_update_acc) / no_update_acc > self.improvement_threshold:
+    #         add_new_module = True
+    #         logging.info('Keeping new module. Total: {}'.format(
+    #             self.net.num_components))
+    #     else:
+    #         add_new_module = False
+    #         self.net.remove_tmp_module()
+    #         logging.info('Not keeping new module. Total: {}'.format(
+    #             self.net.num_components))
+
+    #     self.dynamic_record.write(
+    #         {
+    #             'task_id': task_id,
+    #             'update_acc': update_acc,
+    #             'no_update_acc': no_update_acc,
+    #             'num_components': self.net.num_components,
+    #             'add_new_module': add_new_module,
+    #         }
+    #     )
+    #     self.dynamic_record.save()
+    #     self.test_loss = test_loss
+    #     self.test_acc = test_acc
+
 
     def evaluate(self, testloaders, eval_no_update=True, mode=None):
         was_training = self.net.training
@@ -389,8 +449,10 @@ class CompositionalDynamicLearner(CompositionalLearner):
                     a += (Y_hat.argmax(dim=1) == Y).sum().item()
                     # a += ((Y_hat > 0) == (Y == 1)
                     #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
+                # NOTE: only go to this loop for task above the num_init_tasks
                 if eval_no_update and task == self.T - 1 and self.T > self.net.num_init_tasks:
-                    self.net.hide_tmp_module()
+                    # self.net.hide_tmp_module()
+                    self.net.hide_tmp_modulev2()
                     l1 = 0.
                     a1 = 0.
                     for X, Y in loader:
@@ -403,7 +465,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         #        if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
                     test_loss[task] = (l / n, l1 / n)
                     test_acc[task] = (a / n, a1 / n)
-                    self.net.recover_hidden_module()
+                    # self.net.recover_hidden_module()
+                    self.net.recover_hidden_modulev2()
                     # print(
                     #     f"dropout test_acc {self.test_acc[task]}, structure {self.net.structure[task]}")
                     # print(

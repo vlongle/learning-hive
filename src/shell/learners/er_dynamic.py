@@ -223,7 +223,8 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
 
             l = 0.
             n = 0
-            self.net.hide_tmp_module()
+            # self.net.hide_tmp_module()
+            self.net.hide_tmp_modulev2()
             for task_id_tmp in all_t:
                 Yt = Y[t == task_id_tmp]
                 if self.use_contrastive:
@@ -243,7 +244,8 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
             self.optimizer.zero_grad()
             l.backward()
             self.optimizer.step()
-            self.net.recover_hidden_module()
+            # self.net.recover_hidden_module()
+            self.net.recover_hidden_modulev2()
 
         # NEW: ====================
         # if self.use_contrastive:

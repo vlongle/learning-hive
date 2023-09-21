@@ -342,6 +342,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                             X, Y, task_id, train_mode=train_mode)
                         # self.net.recover_hidden_module()
                         self.net.recover_hidden_modulev2()
+                        self.net.select_active_module()  # select the next module in round-robin
                         iter_cnt += 1
                 if i % save_freq == 0 or i == num_epochs - 1:
                     self.save_data(i + 1, task_id, testloaders,
@@ -354,13 +355,15 @@ class CompositionalDynamicLearner(CompositionalLearner):
     def conditionally_add_module(self, valloader, task_id):
         performances = {}  # relative improvement for each candidate
         # Set the active index to the first candidate module
-        self.net.active_candidate_index = self.net.candidate_indices[0]
+        self.net.select_active_module(self.net.candidate_indices[0])  # reset active module to the first one
+
         for idx in self.net.candidate_indices:
             self.test_loss, self.test_acc = self.evaluate({task_id: valloader})
             update_acc, no_update_acc = self.test_acc[task_id]
             logging.info(
                 'candidate {}: W/update: {}, WO/update: {}'.format(idx, update_acc, no_update_acc))
             performances[idx] = (update_acc - no_update_acc) / no_update_acc 
+            self.net.select_active_module()  # select the next module in round-robin
         
         # Decide the best candidate based on relative improvement
         best_candidate_idx = max(performances, key=performances.get)
@@ -368,8 +371,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
         
         # Check if the improvement is greater than the threshold, and if not, remove all candidates
         if best_improvement <= self.improvement_threshold:
-            logging.info('Not keeping any new modules. Total: {}'.format(self.net.num_components))
             self.net.remove_tmp_modulev2(self.net.candidate_indices)
+            logging.info('Not keeping any new modules. Total: {}'.format(self.net.num_components))
             add_new_module = False
         else:
             # Keep the best candidate and remove others
@@ -450,7 +453,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                     # a += ((Y_hat > 0) == (Y == 1)
                     #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
                 # NOTE: only go to this loop for task above the num_init_tasks
-                if eval_no_update and task == self.T - 1 and self.T > self.net.num_init_tasks:
+                if (eval_no_update and task == self.T - 1 and self.T > self.net.num_init_tasks) and self.net.last_active_candidate_index:
                     # self.net.hide_tmp_module()
                     self.net.hide_tmp_modulev2()
                     l1 = 0.

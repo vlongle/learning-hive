@@ -40,9 +40,9 @@ class MLPSoftLLDynamic(SoftOrderingNet):
 
         self.components = nn.ModuleList()
 
-        self.candidate_modules = nn.ModuleList()
         self.active_candidate_index = None  # Initialize as no active candidate modules
         self.candidate_indices = []  # To hold indices of candidate modules in self.components
+        self.last_active_candidate_index = None
 
 
 
@@ -51,7 +51,6 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.random_linear_projection = nn.Linear(
             self.i_size[0] * self.i_size[0], self.size)
         
-        self.candidate_indices = []  # To hold indices of candidate modules in self.components
 
         # freeze the random linear projection (preprocessing)
         for param in self.random_linear_projection.parameters():
@@ -87,6 +86,7 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.active_candidate_index = None  # Initialize as no active candidate modules
         self.candidate_indices = []  # To hold indices of candidate modules in self.components
         
+        # print('BEFORE ADDING TMP_MODULES', self.structure)
         for _ in range(num_modules):
             if self.num_components < self.max_components:
                 for t in range(self.num_tasks):
@@ -101,6 +101,7 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                     
                 self.num_components += 1
 
+        # print('AFTER ADDING TMP_MODULES', self.structure)
 
  
     def hide_tmp_module(self):
@@ -115,15 +116,32 @@ class MLPSoftLLDynamic(SoftOrderingNet):
     def recover_hidden_module(self):
         self.num_components += 1
     
+    def get_next_active_candidate_index(self):
+        # round-robin selection
+        if not self.candidate_indices or not self.last_active_candidate_index:
+            return None
+        idx = self.candidate_indices.index(self.last_active_candidate_index)
+        return self.candidate_indices[(idx + 1) % len(self.candidate_indices)]
+
+    # def recover_hidden_modulev2(self):
+    #     if self.candidate_indices:
+    #         if self.last_active_candidate_index is None:
+    #             self.active_candidate_index = self.candidate_indices[0]
+    #         else:
+    #             # Find the next active candidate index in a round-robin manner
+    #             idx = self.candidate_indices.index(self.last_active_candidate_index)
+    #             self.active_candidate_index = self.candidate_indices[(idx + 1) % len(self.candidate_indices)]
+    #         self.last_active_candidate_index = self.active_candidate_index
+
     def recover_hidden_modulev2(self):
-        if self.candidate_indices:
-            if self.last_active_candidate_index is None:
-                self.active_candidate_index = self.candidate_indices[0]
-            else:
-                # Find the next active candidate index in a round-robin manner
-                idx = self.candidate_indices.index(self.last_active_candidate_index)
-                self.active_candidate_index = self.candidate_indices[(idx + 1) % len(self.candidate_indices)]
-            self.last_active_candidate_index = self.active_candidate_index
+        self.active_candidate_index = self.last_active_candidate_index
+    
+
+    def select_active_module(self, index=None):
+        if index is not None:
+            self.active_candidate_index = index
+        else:
+            self.active_candidate_index = self.get_next_active_candidate_index()
 
 
     def remove_tmp_module(self):
@@ -132,18 +150,62 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.components = self.components[:-1]
         self.num_components = len(self.components)
 
-    def remove_tmp_modulev2(self, excluded_candidate_list):
-        for idx in sorted(excluded_candidate_list, reverse=True):  # Sort in reverse to avoid index shifting
-            if idx < len(self.candidate_indices):
-                # Update components and structure data
-                del self.components[self.candidate_indices[idx]]
-                for s in self.structure:
-                    s.data = torch.cat((s.data[:self.candidate_indices[idx], :], s.data[self.candidate_indices[idx] + 1:, :]), dim=0)
+    # def remove_tmp_modulev2(self, excluded_candidate_list):
+    #     print("exclude list", excluded_candidate_list)
+    #     for idx in sorted(excluded_candidate_list, reverse=True):  # Sort in reverse to avoid index shifting
+    #         print("idx:", idx)
+    #         if idx < len(self.candidate_indices):
+    #             # Update components and structure data
+    #             del self.components[self.candidate_indices[idx]]
+    #             for s in self.structure:
+    #                 s.data = torch.cat((s.data[:self.candidate_indices[idx], :], s.data[self.candidate_indices[idx] + 1:, :]), dim=0)
                 
-                # Update candidate indices
-                del self.candidate_indices[idx]
-                self.num_components -= 1
+    #             # Update candidate indices
+    #             del self.candidate_indices[idx]
+    #             self.num_components -= 1
 
+    #     # reset all the round-robin variables
+    #     self.active_candidate_index = None  # Initialize as no active candidate modules
+    #     self.candidate_indices = []  # To hold indices of candidate modules in self.components
+    #     self.last_active_candidate_index = None
+
+
+
+    def remove_tmp_modulev2(self, excluded_candidate_list):
+        # Create a new ModuleList and add components that are not in the excluded list
+        new_components = nn.ModuleList()
+        for idx, component in enumerate(self.components):
+            if idx not in self.candidate_indices or idx not in excluded_candidate_list:
+                new_components.append(component)
+
+        # Create a new ParameterList and add structure elements that are not in the excluded list
+        new_structure = nn.ParameterList()
+        for t in range(self.num_tasks):
+            rows_to_keep = [idx for idx in range(self.num_components) if idx not in excluded_candidate_list]
+            new_structure.append(self.structure[t].data[rows_to_keep, :])  # Keeping rows not in the excluded_candidate_list
+        # for idx, structure in enumerate(self.structure):
+        #     if idx not in self.candidate_indices or idx not in excluded_candidate_list:
+        #         new_structure.append(structure)
+
+        self.num_components -= len(excluded_candidate_list)
+        # print('BEFORE', self.components, self.structure)
+        self.components = self.components[:self.num_components]
+        for s in self.structure:
+            s.data = s.data[:self.num_components, :]
+        # print('AFTER', self.components, self.structure)
+        # print('NEW', new_components, new_structure)
+
+        # Copy the state_dict of new components and structure to the original ones
+        self.components.load_state_dict(new_components.state_dict())
+        self.structure.load_state_dict(new_structure.state_dict())
+
+        # Update candidate_indices and num_components
+        
+        # Reset the round-robin variables
+        self.active_candidate_index = None
+        self.last_active_candidate_index = None
+        self.candidate_indices = []
+        
 
     def preprocess(self, X):
         # if X shape is (b, c, h, w) then flatten to (b, c*h*w)

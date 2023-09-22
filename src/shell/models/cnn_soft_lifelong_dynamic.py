@@ -114,13 +114,31 @@ class CNNSoftLLDynamic(SoftOrderingNet):
             X = X_tmp
         X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])
         return X
+    
+    def encodev2(self, X, task_id):
+        X = self.transform(X)
+        c = X.shape[1]
+        s = self.softmax(self.structure[task_id][:self.num_components, :])
+        X = F.pad(X, (0, 0, 0, 0, 0, self.channels-c, 0, 0))
+        for k in range(self.depth):
+            X_tmp = 0.
+            for j in range(self.num_components):
+                if j not in self.candidate_indices or j == self.active_candidate_index:  # Allow only active candidate
+                    conv = self.components[j]
+                    X_tmp += s[j, k] * \
+                        self.dropout(self.relu(self.maxpool(conv(X))))
+            X = X_tmp
+        X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])
+        return X
 
     def forward(self, X, task_id):
-        X = self.encode(X, task_id)
+        # X = self.encode(X, task_id)
+        X = self.encodev2(X, task_id)
         return self.decoder[task_id](X)
 
     def contrastive_embedding(self, X, task_id):
-        X = self.encode(X, task_id)
+        # X = self.encode(X, task_id)
+        X = self.encodev2(X, task_id)
         X = self.projector[task_id](X)  # (N, 128)
         X = F.normalize(X, dim=1)
         return X

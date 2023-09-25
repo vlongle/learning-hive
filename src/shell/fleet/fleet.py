@@ -147,7 +147,8 @@ class ParallelAgent(Agent):
 
 
 class Fleet:
-    def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
+    def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, 
+                 agent_kwargs, train_kwargs):
         self.graph = graph
         self.sharing_strategy = sharing_strategy
         self.num_coms_per_round = self.sharing_strategy.num_coms_per_round

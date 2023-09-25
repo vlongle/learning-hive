@@ -64,6 +64,7 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         super().__init__(net, save_dir,  improvement_threshold=improvement_threshold,
                          use_contrastive=use_contrastive, dataset_name=dataset_name)
         self.replay_buffers = {}
+        self.shared_replay_buffers = {} # received from neighbors
         self.aug_replay_buffers = {}
         self.memory_loaders = {}
         self.memory_size = memory_size

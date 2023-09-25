@@ -14,6 +14,7 @@ import torch
 import ray
 from shell.fleet.fleet import Agent
 from torchmetrics.functional import pairwise_cosine_similarity
+from shell.utils.replay_buffers import ReplayBufferReservoir
 
 """
 Receiver-first procedure.
@@ -227,7 +228,8 @@ class RecvDataAgent(Agent):
 
         return X_neighbors, Y_neighbors, task_neighbors
 
-    def new_nearest_neighbors(self, qX, n_neighbors, n_filter_neighbors):
+    def new_nearest_neighbors(self, qX, n_neighbors, n_filter_neighbors,
+                              debug=False):
         """
         Pre-filter with raw pixel comparison and then refine with embeddings.
         """
@@ -236,7 +238,7 @@ class RecvDataAgent(Agent):
             qX, 
             computer=self.compute_raw_dist
         )
-        _, _, task_neighbors_prefilter = self.extract_topk_from_similarity(
+        X_n_prefilter, y_n_prefilter, task_neighbors_prefilter = self.extract_topk_from_similarity(
             sims_prefilter, Xs, ys, tasks, 
             neighbors=n_filter_neighbors
         )
@@ -254,7 +256,9 @@ class RecvDataAgent(Agent):
             # candidate_tasks=task_lists,
             candidate_tasks=task_neighbors_prefilter,
         )
-
+        
+        if debug:
+            return X_neighbors, X_n_prefilter
         return X_neighbors
 
 
@@ -389,7 +393,7 @@ class RecvDataAgent(Agent):
             self.net.train()
         if debug_return:
             return X_queries, y_queries, y_pred_queries, score_queries
-        return X_queries
+        return X_queries, y_queries
 
     
 
@@ -408,16 +412,46 @@ class RecvDataAgent(Agent):
     def compute_data(self):
         # Get relevant data for the query
         # and populate self.data
-        print(self.incoming_query)
+        self.data = {}
         for requester, query in self.incoming_query.items():
-            self.data[requester] = self.similarity_search(query)
+            # query is a dict of task_id -> X
+            concat_query = torch.cat(list(query.values()), dim=0) # concat_query = size (N, C, H, W)
+            data = self.new_nearest_neighbors(concat_query,
+                                             self.sharing_strategy.num_data_neighbors,
+                                             self.sharing_strategy.num_filter_neighbors)
+            # data size = (N, n_neighbor, C, H, W)
+            # put the data back into a dict
+            structured_data = {}
+            start_idx = 0
+            for task_id, X in query.items():
+                end_idx = start_idx + X.size(0)  # Assuming the 0th dimension is the size N
+                structured_data[task_id] = data[start_idx:end_idx]
+                start_idx = end_idx  # Update start_idx for the next iteration
 
-    def similarity_search(self):
-        pass
+            self.data[requester] = structured_data
+            
 
     def learn_from_recv_data(self):
         # get the data and now learn from it
-        pass
+        for neighbor_id, neighbor_data in self.incoming_data.items():
+            for task_id, task_data in neighbor_data.items():
+                # task_data.shape = (N, n_neighbor, C, H, W)
+                if task_id not in self.agent.shared_replay_buffers:
+                    self.agent.shared_replay_buffers[task_id] = ReplayBufferReservoir(
+                        self.sharing_strategy.shared_memory_size, task_id)
+                Y = self.query_y[task_id]  # Y.shape = (N)
+                n_neighbor = task_data.shape[1]  # Extracting n_neighbor from task_data shape
+                
+                # Expanding Y to shape (N, n_neighbor) 
+                # and then flattening it to (N*n_neighbor,)
+                Y_expanded = Y.unsqueeze(1).expand(-1, n_neighbor).reshape(-1)
+                
+                # Flattening task_data to (N*n_neighbor, C, H, W)
+                X_flattened = task_data.reshape(-1, *task_data.shape[2:])
+                
+                # Storing flattened X and Y into the replay buffer
+                self.agent.shared_replay_buffers[task_id].push(X_flattened, Y_expanded)
+    
 
     def prepare_communicate(self, task_id, communication_round):
         if communication_round == 0:
@@ -425,7 +459,9 @@ class RecvDataAgent(Agent):
         if task_id < self.agent.net.num_init_tasks - 1:
             return
         if communication_round == 0:
-            self.query = self.compute_query(task_id)
+            X, y = self.compute_query(task_id)
+            self.query = X
+            self.query_y = y
         elif communication_round == 1:
             self.compute_data()
         else:
@@ -443,9 +479,12 @@ class RecvDataAgent(Agent):
                 neighbor.receive(self.node_id, self.query, "query")
         elif communication_round == 1:
             # send data to the requester
-            for requester in self.incoming_query:
-                requester.receive(
-                    self.node_id, self.data[requester], "data")
+            # for requester in self.incoming_query:
+            #     self.neighbors[requester].receive(
+            #         self.node_id, self.data[requester], "data")
+            for neighbor in self.neighbors:
+                neighbor.receive(
+                    self.node_id, self.data[neighbor.node_id], "data")
         else:
             raise ValueError(f"Invalid round number {communication_round}")
 
@@ -458,7 +497,6 @@ class RecvDataAgent(Agent):
             self.learn_from_recv_data()
         else:
             raise ValueError("Invalid round number")
-
 
 class ParallelRecvDataAgent(RecvDataAgent):
     def communicate(self, task_id, communication_round):

@@ -391,7 +391,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
             # Keep the best candidate and remove others
             exclude_indices = [idx for idx in self.net.candidate_indices if idx != best_candidate_idx]
             self.net.remove_tmp_modulev2(exclude_indices)
-            logging.info('Keeping new module. Total: {}'.format(self.net.num_components))
+            logging.info('Keeping new module {}. Total: {}'.format(best_candidate_idx, 
+                                                                   self.net.num_components))
             add_new_module = True
         
         self.dynamic_record.write(

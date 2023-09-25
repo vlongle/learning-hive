@@ -235,7 +235,7 @@ class Learner():
                 self.test_loss.values()) / len(self.test_loss)
 
         for task in self.test_loss:
-            line = '\ttask: {}\tloss: {:.3f}\tacc: {:.3f}'.format(
+            line = '\ttask: {}\tloss: {:.8f}\tacc: {:.3f}'.format(
                 task, self.test_loss[task], self.test_acc[task])
             logging.info(line)
             record.write(
@@ -276,7 +276,8 @@ class CompositionalLearner(Learner):
 class CompositionalDynamicLearner(CompositionalLearner):
     def train(self, trainloader, task_id, valloader,
               component_update_freq=100, num_epochs=100, save_freq=1, testloaders=None,
-              train_mode=None, num_candidate_modules=None):
+              train_mode=None, num_candidate_modules=None, module_list=None,
+                remove_modules=True):
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
@@ -304,11 +305,17 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
             if num_candidate_modules is None:
                 num_candidate_modules = 1
-            print("NUM_CANDIDATE_MODULES", num_candidate_modules)
+
+            if module_list is None:
+                module_list = []
+            else:
+                num_candidate_modules = len(module_list) + 1
+
+            print("NUM_CANDIDATE_MODULES", num_candidate_modules, 'len(module_list)', len(module_list))
             self.net.add_tmp_modules(task_id, num_candidate_modules)
+            self.net.receive_modules(task_id, module_list)
             for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
                 self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
-
 
 
             if hasattr(self, 'preconditioner'):
@@ -347,23 +354,29 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 if i % save_freq == 0 or i == num_epochs - 1:
                     self.save_data(i + 1, task_id, testloaders,
                                    mode=train_mode)
-            self.conditionally_add_module(valloader, task_id)
+            if remove_modules:
+                self.conditionally_add_module(valloader, task_id)
             self.save_data(num_epochs + 1, task_id,
                            testloaders, final_save=True, mode=train_mode)
             self.update_multitask_cost(trainloader, task_id)
 
     def conditionally_add_module(self, valloader, task_id):
         performances = {}  # relative improvement for each candidate
+        losses = {}
+
         # Set the active index to the first candidate module
         self.net.select_active_module(self.net.candidate_indices[0])  # reset active module to the first one
 
         for idx in self.net.candidate_indices:
             self.test_loss, self.test_acc = self.evaluate({task_id: valloader})
             update_acc, no_update_acc = self.test_acc[task_id]
-            logging.info(
-                'candidate {}: W/update: {}, WO/update: {}'.format(idx, update_acc, no_update_acc))
             performances[idx] = (update_acc - no_update_acc) / no_update_acc 
+            logging.info(
+                'candidate {}: W/update: {}, WO/update: {}, improv {}'.format(idx, update_acc, no_update_acc,
+                                                                               performances[idx]))
             self.net.select_active_module()  # select the next module in round-robin
+
+            losses[idx] = self.test_loss[task_id]
         
         # Decide the best candidate based on relative improvement
         best_candidate_idx = max(performances, key=performances.get)
@@ -392,6 +405,9 @@ class CompositionalDynamicLearner(CompositionalLearner):
         )
         
         self.dynamic_record.save()
+
+
+        return performances, losses
 
 
         

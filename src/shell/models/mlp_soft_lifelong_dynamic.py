@@ -101,8 +101,16 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                     
                 self.num_components += 1
 
-        # print('AFTER ADDING TMP_MODULES', self.structure)
-
+    def receive_modules(self, task_id, module_list):
+        # Number of temporary modules added in the last step
+        num_tmp_modules = len(self.candidate_indices)
+        
+        assert len(module_list) <= num_tmp_modules, 'Number of modules received must be less than or equal to the number of temporary modules'
+        # Loop over the temporary modules, excluding the last one
+        for i in range(len(module_list)):
+            tmp_module_idx = self.candidate_indices[i]
+            # Replacing the state_dict of the temporary module with the corresponding one in the module_list
+            self.components[tmp_module_idx].load_state_dict(module_list[i].state_dict())
  
     def hide_tmp_module(self):
         self.num_components -= 1
@@ -123,16 +131,6 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         idx = self.candidate_indices.index(self.last_active_candidate_index)
         return self.candidate_indices[(idx + 1) % len(self.candidate_indices)]
 
-    # def recover_hidden_modulev2(self):
-    #     if self.candidate_indices:
-    #         if self.last_active_candidate_index is None:
-    #             self.active_candidate_index = self.candidate_indices[0]
-    #         else:
-    #             # Find the next active candidate index in a round-robin manner
-    #             idx = self.candidate_indices.index(self.last_active_candidate_index)
-    #             self.active_candidate_index = self.candidate_indices[(idx + 1) % len(self.candidate_indices)]
-    #         self.last_active_candidate_index = self.active_candidate_index
-
     def recover_hidden_modulev2(self):
         self.active_candidate_index = self.last_active_candidate_index
     
@@ -150,24 +148,6 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.components = self.components[:-1]
         self.num_components = len(self.components)
 
-    # def remove_tmp_modulev2(self, excluded_candidate_list):
-    #     print("exclude list", excluded_candidate_list)
-    #     for idx in sorted(excluded_candidate_list, reverse=True):  # Sort in reverse to avoid index shifting
-    #         print("idx:", idx)
-    #         if idx < len(self.candidate_indices):
-    #             # Update components and structure data
-    #             del self.components[self.candidate_indices[idx]]
-    #             for s in self.structure:
-    #                 s.data = torch.cat((s.data[:self.candidate_indices[idx], :], s.data[self.candidate_indices[idx] + 1:, :]), dim=0)
-                
-    #             # Update candidate indices
-    #             del self.candidate_indices[idx]
-    #             self.num_components -= 1
-
-    #     # reset all the round-robin variables
-    #     self.active_candidate_index = None  # Initialize as no active candidate modules
-    #     self.candidate_indices = []  # To hold indices of candidate modules in self.components
-    #     self.last_active_candidate_index = None
 
 
 
@@ -188,12 +168,10 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         #         new_structure.append(structure)
 
         self.num_components -= len(excluded_candidate_list)
-        # print('BEFORE', self.components, self.structure)
         self.components = self.components[:self.num_components]
         for s in self.structure:
             s.data = s.data[:self.num_components, :]
-        # print('AFTER', self.components, self.structure)
-        # print('NEW', new_components, new_structure)
+
 
         # Copy the state_dict of new components and structure to the original ones
         self.components.load_state_dict(new_components.state_dict())

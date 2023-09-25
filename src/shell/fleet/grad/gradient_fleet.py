@@ -19,7 +19,8 @@ TODO: be careful and check for dedup ect...
 Actually, should write Python tests for these...
 """
 
-
+# NOTE: BUG: this might be a bug, we need to set the structure
+# for new task to one hot!
 class GradFleet(Fleet):
     def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs,
                  fake_dataset):

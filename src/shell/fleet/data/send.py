@@ -12,6 +12,7 @@ import torch
 from shell.fleet.data.send_exploration import *
 from shell.fleet.data.data_utilize import *
 from torch.utils.data.dataset import ConcatDataset
+from torch.utils.data import Subset
 from shell.datasets.datasets import get_custom_tensordataset
 
 class SendDataAgent(Agent):
@@ -42,9 +43,14 @@ class RecommenderHeads(nn.Module):
         super().__init__()
         self.regressors = nn.ModuleDict()
         for neighbor in neighbors:
-            self.regressors[neighbor.node_id] = nn.Linear(input_size, output_size)
+            self.regressors[str(neighbor.node_id)] = nn.Linear(input_size, output_size)
+        
+        self.device = device
         self.to(device)
         self.regressor_optim = torch.optim.Adam(self.parameters())
+    
+    def forward(self, X, neighbor_id):
+        return self.regressors[str(neighbor_id)](X)
 
 
 
@@ -65,21 +71,16 @@ class SendDataAgent(SendDataAgent):
 
 
     def init_recommendation_engine(self):
-        # init the feedback prediction (regressor)
-        # self.regressors = {}
-        # self.eps = {}
-        # for neighbor in self.neighbors:
-        #     regressor = nn.Linear(
-        #         self.net.get_hidden_size(), 1)
-        #     self.regressors[neighbor.node_id] = regressor
-        #     self.eps[neighbor.node_id] = self.sharing_strategy.init_eps
         self.recommender = RecommenderHeads(input_size=self.net.get_hidden_size(),
                 neighbors=self.neighbors)
 
         # init exploration strategy
         self.exploration = get_exploration(self.sharing_strategy.exploration_strategy)(
-            num_slates=len(self.neighbors)
+          self.neighbors, self.sharing_strategy
         )
+
+        self.regression_loss = nn.MSELoss()
+        self.outgoing_data = {}
     
     def get_task_candidate_data(self, task_id):
         """
@@ -87,16 +88,15 @@ class SendDataAgent(SendDataAgent):
         Otherwise, if the current task is task_id, get the data from training set
         Return a dataset with (X, Y, task_id)
         """
-        # if self.agent.T == task_id-1:
-        if self.agent.T == task_id:
+        if task_id == self.agent.T - 1:
             XY = self.dataset.trainset[task_id].tensors
         else:
-            print('getting from replay', task_id)
             XY = self.agent.replay_buffers[task_id].tensors
         
         dataset = torch.utils.data.TensorDataset(*XY)
-        # add the task_id as the last tensor
-        dataset.tensors = dataset.tensors + (torch.full((len(dataset),), task_id, dtype=int),)
+        # add the task_id as the last tensor. Replay buffer already has this feature
+        if task_id == self.agent.T - 1:
+            dataset.tensors = dataset.tensors + (torch.full((len(dataset),), task_id, dtype=int),)
         return get_custom_tensordataset(dataset.tensors,
                                         name=self.agent.dataset_name,
                                         use_contrastive=self.agent.use_contrastive,)
@@ -112,7 +112,6 @@ class SendDataAgent(SendDataAgent):
         
         data = []
         for task_id in tasks:
-            print('neighbor_id', neighbor_id, 'task_id', task_id)
             data.append(self.get_task_candidate_data(task_id))
 
         data = ConcatDataset(data)
@@ -154,12 +153,23 @@ class SendDataAgent(SendDataAgent):
             Utility function to concatenate the `indx` tensors 
             from all datasets in a ConcatDataset
             """
-            first_tensors = [ds.tensors[indx] for ds in concat_dataset.datasets]
-            return torch.cat(first_tensors, dim=0)  # Modify accordingly if a different dimension is intended
-
+            indx_tensors = [ds.tensors[indx] for ds in concat_dataset.datasets]
+            return torch.cat(indx_tensors, dim=0)  # Modify accordingly if a different dimension is intended
         scores = self.get_pred_scores(concat_tensors(dataset), task_id, neighbor_id)
-        selected_data = self.exploration.get_action(dataset, scores)
-        return selected_data
+        selected_data_idx = self.exploration.get_action(scores.detach().cpu(), neighbor_id,
+                                                        self.sharing_strategy.bandwidth)
+
+        selected_subset = Subset(dataset, selected_data_idx)
+
+        # save these info 
+        self.outgoing_data[neighbor_id] = selected_subset
+        return {
+            "data": selected_subset,
+            "metadata": {
+                "class_sequence": self.dataset.class_sequence,
+            }
+        }
+
 
     def get_pred_scores(self, X,
                             task_id,
@@ -168,7 +178,7 @@ class SendDataAgent(SendDataAgent):
         X_encode = self.net.encode(X.to(self.net.device), task_id)
         if detach:
             X_encode = X_encode.detach()
-        Y_pred = self.regressors[neighbor_id](X_encode)
+        Y_pred = self.recommender(X_encode, neighbor_id).squeeze()
         return Y_pred
 
     def compute_recommendation_loss(self,  X, Y,
@@ -191,9 +201,60 @@ class SendDataAgent(SendDataAgent):
         """
         pass
 
-    def process_feedback(self):
+
+    def process_feedback(self, gt_scores, neighbor_id):
         """
         Update the regressor using the feedback from the neighbors.
         """
-        pass
+        
+        # Assuming you have stored outgoing_data and pred_scores
+        outgoing_data = self.outgoing_data[neighbor_id]
+        assert len(outgoing_data) == len(gt_scores), f"len(outgoing_data)={len(outgoing_data)} != len(gt_scores)={len(gt_scores)}"
+        
+        data_loader = torch.utils.data.DataLoader(outgoing_data, batch_size=64, shuffle=True)
 
+        optimizer = self.recommender.regressor_optim
+        
+        start_idx = 0
+        for X, _, t in data_loader:
+            if isinstance(X, list):
+                # contrastive two views
+                X = torch.cat([X[0], X[1]], dim=0)
+            loss = 0.
+            batch_size = len(X)
+            Y = gt_scores[start_idx:start_idx + batch_size]  # Extract the corresponding batch from gt_scores
+            start_idx += batch_size  # Move the start index for the next batch
+        
+
+
+            if self.agent.use_contrastive:
+                Xhaf = X[:len(X)//2]
+                Xother = X[len(X)//2:]
+
+            for task_id in torch.unique(t):
+                print(t == task_id)
+                if self.agent.use_contrastive:
+                    # use the original view to train
+                    # the recommender
+                    Xt_haf = Xhaf[t == task_id]
+                    Xt_other = Xother[t == task_id]
+                    Xt = Xt_haf
+                else:
+                    Xt = X[t == task_id]
+
+                Yt = Y[t == task_id]
+
+                Xt = Xt.to(self.recommender.device)
+                Yt = Yt.to(self.recommender.device)
+
+                loss += self.compute_recommendation_loss(Xt, Yt,
+                                                        task_id,
+                                                        neighbor_id)
+            
+            # Backward and optimize
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+        
+        # Clear the stored data and scores as they have been used for training now
+        self.outgoing_data[neighbor_id] = None

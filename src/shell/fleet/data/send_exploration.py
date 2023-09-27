@@ -1,104 +1,90 @@
-from abc import abstractmethod
+import random
+from typing import Dict, Optional, List
+
 import numpy as np
-from typing import (
-    Optional,
-    Dict,
-)
-
-
 class ExplorationStrategy:
-    @abstractmethod
-    def get_action(self, observations: np.ndarray, Q_values: np.ndarray):
+    def get_action(self, scores, neighbor_id):
+        raise NotImplementedError
+        
+    def update(self, neighbor_id):
         pass
 
-    @abstractmethod
-    def update(self, observations: np.ndarray, actions: np.ndarray):
-        pass
+class EpsilonGreedyWholeBatch(ExplorationStrategy):
+    def __init__(self, neighbors, sharing_strategy=None):
+        self.min_epsilon = sharing_strategy.get('min_epsilon', 0.1) if sharing_strategy else 0.1
+        self.eps_decay_rate = sharing_strategy.get('eps_decay_rate', 0.99) if sharing_strategy else 0.99
+        self.init_epsilon = sharing_strategy.get('init_epsilon', 1.0) if sharing_strategy else 1.0
+        self.epsilons = {neighbor.node_id: self.init_epsilon for neighbor in neighbors}
 
-class UniformEpsilonExploration(ExplorationStrategy):
-    def __init__(self, num_slates, cfg: Optional[Dict] = {}) -> None:
-        self.num_slates = num_slates
-        self.epsilon = cfg.get("epsilon", 2.0)
-        self.min_epislon = cfg.get("min_epislon", 0.01)
-        self.decay_factor = cfg.get("decay_factor", 0.9)
-        self.exploit_factor = cfg.get("exploit_factor", 1.0)
-        print("epsilon {}, min_epislon {}, decay_factor {}, exploit_factor {}".format(
-            self.epsilon, self.min_epislon, self.decay_factor, self.exploit_factor))
-        self.step = 0
+    def get_action(self, scores, neighbor_id, num_points=1):
+        epsilon = self.epsilons.get(neighbor_id, 1.0)
+        scores = np.array(scores)
+        num_available_points = len(scores)
 
-    def get_action(self, observations: np.ndarray, Q_values: np.ndarray):
-        # HACK: initially we should send a lot of data to get a good estimate of Q
-        # if self.step <= 50:
-        #     num_slates = self.num_slates * 2
-        # else:
-        #     num_slates = self.num_slates
-        num_slates = min(self.num_slates, observations.shape[0])
-        explore_factor = self.epsilon
-        weights = explore_factor + Q_values
-        # replace nan by 1
-        # clamp weights to >= 0
-        # HACK: should probably takes exp(weights) and then normalize
-        # since clamping to 0 means that negative rewards / Qs will never be picked
-        # again, which is appropriate in this oracle preference but might not be true
-        # in general (e.g., test improvement)
-        # weights = np.maximum(weights, 0)
-        weights = (weights / self.epsilon) * self.exploit_factor
-        # numerically stable softmax
-        weights = np.exp(weights - np.max(weights))
-        probs = weights / np.sum(weights)
-        # sample without replacement if there's enough non-zero weights for num_slates
-        # otherwise, send all non-zero weights
-        if np.sum(weights > 0) < num_slates:
-            print("sending all non-zero weights")
-            action = np.nonzero(weights)[0]
-            print()
-            # if action is empty, then all weights are 0, so just a random batch
-            # (equally likely to be any batch)
-            if action.shape[0] == 0:
-                action = np.random.choice(
-                    np.arange(observations.shape[0]), num_slates)
+        if random.random() < epsilon:
+            # Exploration: Randomly choose unique indices
+            selected_indices = np.random.choice(num_available_points, size=min(num_points, num_available_points), replace=False)
         else:
-            action = np.random.choice(
-                observations.shape[0], num_slates, p=probs, replace=False)
-        return action
+            # Exploitation: Choose the indices of the top scores
+            selected_indices = np.argpartition(-scores, min(num_points, num_available_points))[:min(num_points, num_available_points)]
+        
+        return list(selected_indices)
+        
+    def update(self, neighbor_id):
+        # Decaying the epsilon value for the provided neighbor_id
+        old_epsilon = self.epsilons.get(neighbor_id, 1.0)
+        new_epsilon = max(self.min_epsilon, old_epsilon * self.eps_decay_rate)
+        self.epsilons[neighbor_id] = new_epsilon
 
-    def update(self, observations: np.ndarray, actions: np.ndarray):
-        print("step {} epsilon {}".format(self.step, self.epsilon))
-        self.epsilon = max(self.min_epislon,
-                           self.epsilon * self.decay_factor)
-        self.step += 1
+
+class EpsilonGreedy(EpsilonGreedyWholeBatch):
+    def get_action(self, scores, neighbor_id, num_points=1):
+        epsilon = self.epsilons.get(neighbor_id, 1.0)
+        
+        scores = np.array(scores)
+        explore_count = np.random.binomial(n=num_points, p=epsilon)  
+        
+        # Get explore_indices, selected randomly from the range of scores
+        explore_indices = np.random.choice(len(scores), explore_count, replace=False)
+        
+        # Remaining indices are the indices that are left after removing explore_indices
+        remaining_indices = np.setdiff1d(np.arange(len(scores)), explore_indices)
+        exploit_count = num_points - explore_count
+        
+        # For exploit, we select the indices of the highest scores among the remaining indices
+        if exploit_count > 0 and len(remaining_indices) > 0:
+            sorted_indices = np.argsort(scores[remaining_indices])[::-1]  # Sort in descending order
+            exploit_indices = remaining_indices[sorted_indices[:exploit_count]]
+        else:
+            exploit_indices = np.array([], dtype=int)  # Empty array if there is no index to exploit
+        
+        
+
+        selected_indices = np.concatenate((explore_indices, exploit_indices))
+        
+        return selected_indices.tolist()
+
+
+class PureExploitation(ExplorationStrategy):
+    def get_action(self, scores, neighbor_id, num_points=1):
+        actions = sorted(range(len(scores)), key=lambda x: scores[x], reverse=True)[:num_points]
+        return actions
 
 
 class RandomRouting(ExplorationStrategy):
-    def __init__(self, num_tasks, num_cls, num_slates, cfg={}):
-        self.num_slates = num_slates
-
-    def get_action(self, observations: np.ndarray, Q_values: np.ndarray):
-        num_slates = min(self.num_slates, observations.shape[0])
-        return np.random.choice(
-            observations.shape[0], num_slates, replace=False)
-
-    def update(self, observations: np.ndarray, actions: np.ndarray):
-        pass
+    def get_action(self, scores, neighbor_id, num_points=1):
+        actions = random.sample(range(len(scores)), min(num_points, len(scores)))
+        return actions
 
 
-class PureExploitative(ExplorationStrategy):
-    def __init__(self, num_tasks, num_cls, num_slates, cfg={}):
-        self.num_slates = num_slates
-
-    def get_action(self, observations: np.ndarray, Q_values: np.ndarray):
-        num_slates = min(self.num_slates, observations.shape[0])
-        return np.argsort(Q_values)[-num_slates:]
-
-    def update(self, observations: np.ndarray, actions: np.ndarray):
-        pass
-
-def get_exploration(strategy):
-    if strategy == "uniform_epsilon":
-        return UniformEpsilonExploration
-    elif strategy == "random_routing":
+def get_exploration(strategy_name):
+    if strategy_name == 'epsilon_greedy':
+        return EpsilonGreedy
+    elif strategy_name == 'epsilon_greedy_whole_batch':
+        return EpsilonGreedyWholeBatch
+    elif strategy_name == 'pure_exploitation':
+        return PureExploitation
+    elif strategy_name == 'random_routing':
         return RandomRouting
-    elif strategy == "pure_exploitative":
-        return PureExploitative
     else:
-        raise ValueError("Unknown exploration strategy {}".format(strategy))
+        raise ValueError(f"Invalid exploration strategy {strategy_name}")

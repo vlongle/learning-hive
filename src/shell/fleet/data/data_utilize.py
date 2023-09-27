@@ -347,3 +347,4 @@ def filter_dataset_by_label(dataset, target_label):
     labels = dataset.tensors[1]
     mask = labels == target_label
     return torch.utils.data.TensorDataset(*[t[mask] for t in dataset.tensors])
+

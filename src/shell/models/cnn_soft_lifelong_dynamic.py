@@ -100,6 +100,9 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         self.components = self.components[:-1]
         self.num_components = len(self.components)
 
+    def get_hidden_size(self):
+        return self.size
+
     def encode(self, X, task_id):
         X = self.transform(X)
         c = X.shape[1]

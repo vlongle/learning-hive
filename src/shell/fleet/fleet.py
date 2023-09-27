@@ -260,6 +260,8 @@ class ParallelFleet:
             # attention, then the message is lost. Truly decen agent would have to have a
             # while True loop and implement some more complicated logic.
             for agent in self.agents:
+                # sequential, because ray.get is blocking to get the result from one
+                # agent before moving to the next.
                 ray.get(agent.communicate.remote(task_id, communication_round))
 
             ray.get([agent.process_communicate.remote(task_id, communication_round)

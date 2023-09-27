@@ -330,7 +330,7 @@ class RecvDataAgent(Agent):
         return X_neighbors
 
     def get_valset(self, tasks):
-        # NOTE: TODO: probably should get the query fromm the replay buffer instead
+        # NOTE: TODO: probably should get the query from the replay buffer instead
         X_vals = {
             t: self.dataset.valset[t].tensors[0]
             for t in tasks
@@ -451,6 +451,8 @@ class RecvDataAgent(Agent):
                 
                 # Storing flattened X and Y into the replay buffer
                 self.agent.shared_replay_buffers[task_id].push(X_flattened, Y_expanded)
+        
+        ## TODO: start learning now!
     
 
     def prepare_communicate(self, task_id, communication_round):

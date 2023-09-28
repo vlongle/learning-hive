@@ -6,7 +6,6 @@ Author: Long Le (vlongle@seas.upenn.edu)
 
 Copyright (c) 2023 Long Le
 '''
-
 from copy import deepcopy
 import logging
 import ray
@@ -14,14 +13,13 @@ from shell.fleet.fleet import Fleet, ParallelFleet
 import networkx as nx
 from shell.fleet.utils.model_sharing_utils import exclude_model
 
-"""
-TODO: be careful and check for dedup ect...
-Actually, should write Python tests for these...
-"""
 
-# NOTE: BUG: this might be a bug, we need to set the structure
-# for new task to one hot!
 class GradFleet(Fleet):
+    """
+    TODO: rename GradFleet to something else.
+    This class is used to train agents on the same initial tasks, and then proceed with individual local training.
+    This is used for both sharing weights (grad) and modules (mod)
+    """
     def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs,
                  fake_dataset):
         self.num_init_tasks = net_kwargs["num_init_tasks"]

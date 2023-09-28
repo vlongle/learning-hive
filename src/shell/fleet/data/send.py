@@ -18,14 +18,15 @@ from shell.datasets.datasets import get_custom_tensordataset
 class SendDataAgent(Agent):
     def prepare_communicate(self, task_id, communication_round):
         if communication_round % 2 == 0:
-            self.prepare_data()
+            for neighbor in self.neighbors:
+                self.prepare_data(task_id, neighbor.node_id)
         else:
             self.prepare_feedback()
     
     def communicate(self, task_id, communication_round):
         if communication_round % 2 == 0:
             for neighbor in self.neighbors:
-                neighbor.receive(self.node_id, self.data, "data")
+                neighbor.receive(self.node_id, self.outgoing_data[neighbor.node_id], "data")
         else:
             for neighbor in self.neighbors:
                 neighbor.receive(self.node_id, self.feedback, "feedback")
@@ -70,6 +71,15 @@ class SendDataAgent(SendDataAgent):
 
 
 
+    def receive(self, sender_id, data, data_type):
+        if data_type == "feedback":
+            self.incoming_feedback[sender_id] = data
+        elif data_type == "data":
+            self.incoming_data[sender_id] = data
+        else:
+            raise ValueError("Invalid data type")
+
+
     def init_recommendation_engine(self):
         self.recommender = RecommenderHeads(input_size=self.net.get_hidden_size(),
                 neighbors=self.neighbors)
@@ -81,6 +91,8 @@ class SendDataAgent(SendDataAgent):
 
         self.regression_loss = nn.MSELoss()
         self.outgoing_data = {}
+        self.incoming_feedback = {}
+        self.incoming_data = {}
     
     def get_task_candidate_data(self, task_id):
         """
@@ -200,6 +212,12 @@ class SendDataAgent(SendDataAgent):
         Then return the feedback
         """
         pass
+    
+    def prepare_feedback(self, neighbor_id):
+        # process_data should already does this.
+        dataset = self.incoming_data[neighbor_id]
+        pass
+
 
 
     def process_feedback(self, gt_scores, neighbor_id):

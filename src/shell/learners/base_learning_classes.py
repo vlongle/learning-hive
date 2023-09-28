@@ -139,13 +139,12 @@ class Learner():
     def train(self, *args, **kwargs):
         raise NotImplementedError('Training loop is algorithm specific')
 
-    def init_train(self, trainloader, task_id, num_epochs, save_freq=1, testloaders=None):
+    def init_train(self, trainloader, task_id, start_epoch, num_epochs, save_freq=1, testloaders=None):
         if self.init_trainloaders is None:
             self.init_trainloaders = {}
         self.init_trainloaders[task_id] = trainloader
         if len(self.init_trainloaders) == self.net.num_init_tasks:
-            iter_cnt = 0
-            for i in range(num_epochs):
+            for i in range(start_epoch, num_epochs + start_epoch):
                 for XY_all in zip_longest(*self.init_trainloaders.values()):
                     for task, XY in zip(self.init_trainloaders.keys(), XY_all):
                         if XY is not None:
@@ -156,7 +155,6 @@ class Learner():
                             X = X.to(self.net.device, non_blocking=True)
                             Y = Y.to(self.net.device, non_blocking=True)
                             self.gradient_step(X, Y, task)
-                            iter_cnt += 1
                 if i % save_freq == 0 or i == num_epochs - 1:
                     self.save_data(i + 1, task_id, testloaders)
 
@@ -165,7 +163,7 @@ class Learner():
             for task, loader in self.init_trainloaders.items():
                 self.update_multitask_cost(loader, task)
         else:
-            self.save_data(0, task_id,
+            self.save_data(start_epoch, task_id,
                            testloaders, final_save=True)
 
     def evaluate(self, testloaders, mode=None, eval_no_update=True):

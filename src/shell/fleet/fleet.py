@@ -19,7 +19,6 @@ from copy import deepcopy
 
 SEED_SCALE = 1000
 
-
 class Agent:
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
 
@@ -51,7 +50,7 @@ class Agent:
     def add_neighbors(self, neighbors: Iterable[ray.actor.ActorHandle]):
         self.neighbors = neighbors
 
-    def train(self, task_id):
+    def train(self, task_id, start_epoch=0, communication_frequency=None):
         trainloader = (
             torch.utils.data.DataLoader(self.dataset.trainset[task_id],
                                         batch_size=self.batch_size,
@@ -86,9 +85,17 @@ class Agent:
                 train_kwargs["num_epochs"] = num_epochs
             if component_update_freq is not None:
                 train_kwargs["component_update_freq"] = component_update_freq
+        
+        if communication_frequency is None:
+            communication_frequency = train_kwargs['num_epochs'] - start_epoch
+        
+        end_epoch = min(start_epoch + communication_frequency, train_kwargs['num_epochs'] )
+        adjusted_num_epochs = end_epoch - start_epoch  
+
+        train_kwargs["num_epochs"] = adjusted_num_epochs
 
         self.agent.train(trainloader, task_id, testloaders=testloaders,
-                         valloader=valloader, **train_kwargs)
+                         valloader=valloader, start_epoch=start_epoch, **train_kwargs)
 
     def eval(self, task_id):
         testloaders = {task: torch.utils.data.DataLoader(testset,
@@ -156,6 +163,8 @@ class Fleet:
         self.create_agents(seed, datasets, AgentCls, NetCls, LearnerCls,
                            net_kwargs, agent_kwargs, train_kwargs)
         self.add_neighbors()
+        self.num_epochs = train_kwargs["num_epochs"]
+        self.comm_freq = sharing_strategy.get("comm_freq", self.num_epochs)
         logging.info("Fleet initialized")
 
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs,
@@ -175,6 +184,7 @@ class Fleet:
                     self.agents[0].net.random_linear_projection.state_dict())
         logging.info(f"Created fleet with {len(self.agents)} agents")
 
+
     def add_neighbors(self):
         logging.info("Adding neighbors...")
         # adding neighbors
@@ -187,6 +197,14 @@ class Fleet:
     def train(self, task_id):
         for agent in self.agents:
             agent.train(task_id)
+
+    def train_and_comm(self, task_id):
+        for start_epoch in range(0, self.num_epochs, self.comm_freq):
+            for agent in self.agents:
+                agent.train(task_id, start_epoch, self.comm_freq)
+            self.communicate(task_id)
+
+
 
     def communicate(self, task_id):
         for communication_round in range(self.num_coms_per_round):

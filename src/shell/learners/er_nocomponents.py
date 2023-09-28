@@ -26,18 +26,21 @@ class NoComponentsER(Learner):
         self.memory_loaders = {}
         self.memory_size = memory_size
 
-    def train(self, trainloader, task_id, component_update_freq=100, num_epochs=100, save_freq=1, testloaders=None, valloader=None,
+    def train(self, trainloader, task_id, component_update_freq=100, 
+              start_epoch=0, num_epochs=100, save_freq=1, testloaders=None, valloader=None,
               eval_bool=True, train_mode=None,
               record=None):
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
-        self.save_data(0, task_id, testloaders,
+        self.save_data(start_epoch, task_id, testloaders,
                        mode=train_mode,
                        record=record)  # zeroshot eval
+        ## INIT TRAINING
         if self.T <= self.net.num_init_tasks:
-            self.init_train(trainloader, task_id, num_epochs,
+            self.init_train(trainloader, task_id, start_epoch, num_epochs,
                             save_freq, testloaders)
+        ## CONTINUAL TRAINING
         else:
             # assume that trainloader.dataset is already a customTensorDataset
             tmp_dataset = copy.copy(trainloader.dataset)
@@ -52,21 +55,21 @@ class NoComponentsER(Learner):
                                                       num_workers=0,
                                                       pin_memory=True
                                                       )
-            self._train(mega_loader, num_epochs, task_id,
+            self._train(mega_loader, start_epoch, num_epochs, task_id,
                         testloaders, save_freq, eval_bool, train_mode=train_mode)
             self.save_data(num_epochs + 1, task_id,
                            testloaders, final_save=True, mode=train_mode,
                            record=record)  # final eval
             self.update_multitask_cost(trainloader, task_id)
 
-    def _train(self, mega_loader, num_epochs, task_id, testloaders, save_freq=1, eval_bool=True,
+    def _train(self, mega_loader, start_epoch, num_epochs, task_id, testloaders, save_freq=1, eval_bool=True,
                train_mode=None,
                record=None):
         # prev_reduction = self.loss.reduction
         # self.loss.reduction = 'sum'     # make sure the loss is summed over instances
         prev_reduction = self.get_loss_reduction()
         self.set_loss_reduction('sum')
-        for i in range(num_epochs):
+        for i in range(start_epoch, num_epochs + start_epoch):
             for X, Y, t in mega_loader:
                 if isinstance(X, list):
                     # contrastive two views

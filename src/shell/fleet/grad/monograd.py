@@ -106,6 +106,7 @@ class ModelSyncAgent(Agent):
     def aggregate_models(self):
         # get model from neighbors
         # average all the models together!
+        logging.info("AGGREGATING MODELS...")
         stuff_added = defaultdict(int)
         for model in self.incoming_models.values():
             for name, param in model.items():
@@ -134,6 +135,7 @@ class ModelSyncAgent(Agent):
                                                   num_workers=0,
                                                   pin_memory=True
                                                   )
+        logging.info("RETRAINING...")
         self.agent._train(mega_loader, num_epochs, task_id,
                           testloaders, save_freq, eval_bool,
                           record=self.retrain_record)
@@ -143,28 +145,28 @@ class ModelSyncAgent(Agent):
             self.log(task_id, communication_round)
         self.aggregate_models()
 
-        # Monograd: retrain on local tasks using experience replay
-        testloaders = {task: torch.utils.data.DataLoader(testset,
-                                                         batch_size=128,
-                                                         shuffle=False,
-                                                         num_workers=0,
-                                                         pin_memory=True,
-                                                         ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
+        # # Monograd: retrain on local tasks using experience replay
+        # testloaders = {task: torch.utils.data.DataLoader(testset,
+        #                                                  batch_size=128,
+        #                                                  shuffle=False,
+        #                                                  num_workers=0,
+        #                                                  pin_memory=True,
+        #                                                  ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
 
-        self.agent.save_data(0,
-                             task_id, testloaders, final_save=False,
-                             record=self.retrain_record)  # zeroshot
-        # TODO: the epoch here is not incremented with respect to the previous communication round.
-        self.retrain(
-            self.sharing_strategy.retrain.num_epochs, task_id, testloaders, save_freq=1, eval_bool=True,
-        )
+        # self.agent.save_data(0,
+        #                      task_id, testloaders, final_save=False,
+        #                      record=self.retrain_record)  # zeroshot
+        # # TODO: the epoch here is not incremented with respect to the previous communication round.
+        # self.retrain(
+        #     self.sharing_strategy.retrain.num_epochs, task_id, testloaders, save_freq=1, eval_bool=True,
+        # )
 
-        self.agent.save_data(self.sharing_strategy.retrain.num_epochs+1,
-                             task_id, testloaders, final_save=True,
-                             record=self.retrain_record,
-                             save_dir=os.path.join(
-                                 self.agent.save_dir, "retrain"),
-                             )  # save final model
+        # self.agent.save_data(self.sharing_strategy.retrain.num_epochs+1,
+        #                      task_id, testloaders, final_save=True,
+        #                      record=self.retrain_record,
+        #                      save_dir=os.path.join(
+        #                          self.agent.save_dir, "retrain"),
+        #                      )  # save final model
 
     def replace_model(self, new_model, strict=True):
         # print("replacing model with strict:", strict)

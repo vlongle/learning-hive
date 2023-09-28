@@ -35,8 +35,10 @@ def main(cfg: DictConfig) -> None:
                      train_kwargs=train_cfg, **fleet_additional_cfg)
 
     for task_id in range(cfg.dataset.num_tasks):
-        fleet.train(task_id)
-        fleet.communicate(task_id)
+        # fleet.train(task_id)
+        # fleet.communicate(task_id)
+
+        fleet.train_and_comm(task_id)
 
     end = time.time()
     logging.info(f"Run took {datetime.timedelta(seconds=end-start)}")

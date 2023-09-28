@@ -229,7 +229,8 @@ class ParallelFleet:
         self.create_agents(seed, datasets, AgentCls, NetCls, LearnerCls,
                            net_kwargs, agent_kwargs, train_kwargs)
         self.add_neighbors()
-
+        self.num_epochs = train_kwargs["num_epochs"]
+        self.comm_freq = sharing_strategy.get("comm_freq", self.num_epochs)
         logging.info("Fleet initialized")
 
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
@@ -266,6 +267,12 @@ class ParallelFleet:
     def train(self, task_id):
         # parallelize training
         ray.get([agent.train.remote(task_id) for agent in self.agents])
+
+    
+    def train_and_comm(self, task_id):
+        for start_epoch in range(0, self.num_epochs, self.comm_freq):
+            ray.get([agent.train.remote(task_id, start_epoch, self.comm_freq) for agent in self.agents])
+            self.communicate(task_id)
 
     def communicate(self, task_id):
         for communication_round in range(self.num_coms_per_round):

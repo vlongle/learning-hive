@@ -273,13 +273,13 @@ class CompositionalLearner(Learner):
 
 class CompositionalDynamicLearner(CompositionalLearner):
     def train(self, trainloader, task_id, valloader,
-              component_update_freq=100, num_epochs=100, save_freq=1, testloaders=None,
+              component_update_freq=100, start_epoch=0, num_epochs=100, save_freq=1, testloaders=None,
               train_mode=None, num_candidate_modules=None, module_list=None,
                 remove_modules=True):
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
-        self.save_data(0, task_id, testloaders, mode=train_mode)
+        self.save_data(start_epoch, task_id, testloaders, mode=train_mode)
         if self.T <= self.net.num_init_tasks:
             # NOTE: doesn't need to freeze_structure because one_hot structure
             # will be fixed anyway. We need the decoder to change for
@@ -290,7 +290,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
             # for all the tasks!
             self.net.freeze_linear_weights()
             # self.net.freeze_structure()
-            self.init_train(trainloader, task_id, num_epochs,
+            self.init_train(trainloader, task_id, start_epoch, num_epochs,
                             save_freq, testloaders)
         else:
             self.net.freeze_modules()
@@ -324,7 +324,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.net.unfreeze_structure(task_id=task_id)
             iter_cnt = 0
 
-            for i in range(num_epochs):
+            for i in range(start_epoch, num_epochs + start_epoch):
                 if (i + 1) % component_update_freq == 0:
                     self.update_modules(
                         trainloader, task_id, train_mode=train_mode)

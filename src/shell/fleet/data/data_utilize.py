@@ -156,7 +156,8 @@ def utilize_global_labels(data, source_class_sequence, target_class_sequence, nu
 import random
 
 class RandomFlippedDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset, flip_probability, num_classes):
+    def __init__(self, dataset, flip_probability, num_classes,
+                 jerk=False):
         """
         dataset: Input dataset with data points (X, y)
         flip_probability: Probability of flipping the true label of a data point
@@ -165,13 +166,21 @@ class RandomFlippedDataset(torch.utils.data.Dataset):
         self.dataset = dataset
         self.flip_probability = flip_probability
         self.num_classes = num_classes
+        self.jerk = jerk
 
     def __getitem__(self, index):
         X, y, task_id = self.dataset[index]
 
         # With a probability of flip_probability, change the label to a random one
+        # if jerk is True, then the new label must be different from the old one
         if random.random() < self.flip_probability:
-            y = random.randint(0, self.num_classes - 1)
+            if self.jerk:
+                # TODO
+                possible_labels = [label for label in range(self.num_classes) if label != y]
+                # Choose a random label from the generated list
+                y = random.choice(possible_labels)
+            else:
+                y = random.randint(0, self.num_classes - 1)
 
         return X, y, task_id
 

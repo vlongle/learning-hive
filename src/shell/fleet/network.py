@@ -31,6 +31,19 @@ class TopologyGenerator:
     def generate_random(self):
         G = nx.erdos_renyi_graph(self.num_nodes, p=1-self.edge_drop_prob)
         return G
+    
+    def generate_connected_random(self):
+        # Step 1: Create a random spanning tree to ensure connectivity
+        G = nx.random_tree(self.num_nodes)
+        
+        # Step 2: Add additional edges with probability p=1-edge_drop_prob
+        for i in range(self.num_nodes):
+            for j in range(i+1, self.num_nodes):  # avoid duplicate edges and self-loops
+                if not G.has_edge(i, j) and random.random() <= (1 - self.edge_drop_prob):
+                    G.add_edge(i, j)
+                    
+        return G
+
 
     def __drop_edges(self, G: nx.Graph):
         edges = list(G.edges())

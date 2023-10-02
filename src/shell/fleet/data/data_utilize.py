@@ -295,10 +295,6 @@ def rank_and_pseudo_label(agent, X_source):
     return best_task_id, best_label, debug_info
 
 
-
-
-
-
 def pseudo_label(agent, X_source, threshold=0.9):
     """
     Returns pseudo-labeled data based on the most consistent decoder of the agent.
@@ -331,9 +327,6 @@ def pseudo_label(agent, X_source, threshold=0.9):
     return X_ret, y_target, task_target_id
 
 
-
-
-
 # @evaluate_data
 # def label_free_utilize(data, agent, task_id):
 #     """
@@ -356,4 +349,3 @@ def filter_dataset_by_label(dataset, target_label):
     labels = dataset.tensors[1]
     mask = labels == target_label
     return torch.utils.data.TensorDataset(*[t[mask] for t in dataset.tensors])
-

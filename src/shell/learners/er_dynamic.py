@@ -282,9 +282,14 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
             (torch.full((len(tmp_dataset),), task_id, dtype=int),)
        
 
+        self.make_shared_memory_loaders(batch_size=trainloader.batch_size)
+
         mega_dataset = ConcatDataset(
             [get_custom_tensordataset(loader.dataset.tensors, name=self.dataset_name,
-                                      use_contrastive=self.use_contrastive) for loader in self.memory_loaders.values()] + [tmp_dataset])
+                                      use_contrastive=self.use_contrastive) for loader in self.memory_loaders.values()] + [tmp_dataset]
+            + [get_custom_tensordataset(loader.dataset.tensors, name=self.dataset_name,
+                                        use_contrastive=self.use_contrastive) for loader in self.shared_memory_loaders.values()]
+            )
 
         batch_size = trainloader.batch_size
 
@@ -381,6 +386,7 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                 self.aug_replay_buffers[task_id].push(X_aug, Y)
 
             self.replay_buffers[task_id].push(X, Y)
+
         self.memory_loaders[task_id] = (
             torch.utils.data.DataLoader(self.replay_buffers[task_id],
                                         batch_size=trainloader.batch_size,

@@ -46,9 +46,18 @@ class NoComponentsER(Learner):
             tmp_dataset = copy.copy(trainloader.dataset)
             tmp_dataset.tensors = tmp_dataset.tensors + \
                 (torch.full((len(tmp_dataset),), task_id, dtype=int),)
+            # mega_dataset = ConcatDataset(
+                # [get_custom_tensordataset(loader.dataset.tensors, name=self.dataset_name,
+                #                           use_contrastive=self.use_contrastive) for loader in self.memory_loaders.values()] + [tmp_dataset])
+
+            self.make_shared_memory_loaders(batch_size=trainloader.batch_size)
+
             mega_dataset = ConcatDataset(
-                [get_custom_tensordataset(loader.dataset.tensors, name=self.dataset_name,
-                                          use_contrastive=self.use_contrastive) for loader in self.memory_loaders.values()] + [tmp_dataset])
+            [get_custom_tensordataset(loader.dataset.tensors, name=self.dataset_name,
+                                      use_contrastive=self.use_contrastive) for loader in self.memory_loaders.values()] + [tmp_dataset]
+            + [get_custom_tensordataset(loader.dataset.tensors, name=self.dataset_name,
+                                        use_contrastive=self.use_contrastive) for loader in self.shared_memory_loaders.values()]
+            )
             mega_loader = torch.utils.data.DataLoader(mega_dataset,
                                                       batch_size=trainloader.batch_size,
                                                       shuffle=True,

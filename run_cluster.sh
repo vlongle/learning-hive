@@ -1,5 +1,5 @@
 #!/bin/bash
-srun --gpus=2\
+srun --gpus=4\
  --nodes=1\
  --cpus-per-gpu=8\
  --mem-per-cpu=4G\

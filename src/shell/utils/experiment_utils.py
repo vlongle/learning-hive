@@ -182,7 +182,7 @@ def get_all_combinations(config, strict=True):
 def run_experiment(config, strict=True):
     """
     Generate all the combinations from config
-    and run them in *sequence*.
+    and run them in *parallel?*.
     """
     script_path = os.path.join("experiments", "run.py")
 

@@ -62,8 +62,9 @@ class Learner():
         # return torch.stack([self.train_transform(x) for x in X])
 
     def make_shared_memory_loaders(self, batch_size=32):
+        self.shared_memory_loaders = {}
         for task_id in self.shared_replay_buffers.keys():
-            self.memory_loaders[task_id] = (
+            self.shared_memory_loaders[task_id] = (
                 torch.utils.data.DataLoader(self.shared_replay_buffers[task_id],
                                             batch_size=batch_size,
                                             shuffle=True,

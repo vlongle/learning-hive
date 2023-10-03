@@ -51,9 +51,9 @@ if __name__ == "__main__":
     # small debug experiment
     config = {
         "algo": ["monolithic"],
-        "seed": [0, 1, 2, 3],
-        # "seed": 0,
-        "parallel": True,
+        "seed": 0,
+        # "parallel": True,
+        "parallel": False,
         "num_agents": 2,
         "dataset": "mnist",
         "dataset.num_trains_per_class": 64,
@@ -65,15 +65,17 @@ if __name__ == "__main__":
         "net.depth": 4,
         "num_init_tasks": 4,
         "net.dropout": 0.0,
-        "train.num_epochs": 100,
-        "train.init_num_epochs": 100,
-        "train.component_update_freq": 100,
+        "train.num_epochs": 20,
+        "train.init_num_epochs": 20,
+        "train.component_update_freq": 20,
+        "train.init_component_update_freq": 20,
         "train.save_freq": 1,
-        "root_save_dir": "recv_results",
+        "root_save_dir": "experiment_results/recv_results",
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
         "sharing_strategy": "recv_data",
-        "dataset": ["mnist", "kmnist", "fashionmnist"],
+        # "dataset": ["mnist", "kmnist", "fashionmnist"],
+        "dataset": "mnist",
     }
     run_experiment(config, strict=False)
     end = time.time()

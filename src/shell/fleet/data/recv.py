@@ -21,6 +21,15 @@ Receiver-first procedure.
 Scorers return higher scores for more valuable instances (need to train more on).
 """
 
+"""
+TODO:
+1) return debug stuff.
+2) maybe thresholding to throw away trash
+3) Use original source labels and just learn contrastive.
+
+
+4) Maybe BUG??? compute_raw_dist should exactly be the same given the same query,
+"""
 
 # ====================
 # Unsupervised methods
@@ -100,42 +109,6 @@ class RecvDataAgent(Agent):
         self.scorer = SCORER_FN_LOOKUP[self.sharing_strategy.scorer]
         self.scorer_type = SCORER_TYPE_LOOKUP[self.sharing_strategy.scorer]
 
-    # @torch.inference_mode()
-    # def compute_ball(self, metric="l2"):
-    #     # TODO: metric cosine is not supported in sklearn smhhh.
-    #     was_training = self.net.training
-    #     self.net.eval()
-    #     self.ball_trees = {}
-    #     # get all the data from the replay buffer to compute the ball tree
-    #     for t, replay in self.agent.replay_buffers.items():
-    #         X = replay.tensors[0].to(self.net.device)  # (B, C, H, W)
-    #         X_embed = self.net.encode(X, task_id=t)  # (B, hidden_dim)
-    #         X_embed = X_embed.cpu().detach().numpy()
-    #         self.ball_trees[t] = BallTree(X_embed, metric=metric)
-    #     if was_training:
-    #         self.net.train()
-
-    # def nearest_neighbors(self, X, n_neighbors: int):
-    #     """
-    #     Get the nearest neighbors to X in the dataset.
-    #     """
-    #     # we have self.replay_buffers[tasks] = (X, y)
-    #     task_neighbors = {}
-    #     for t, ball_tree in self.ball_trees.items():
-    #         # use self.ball_trees[task_id] to get the nearest neighbors
-    #         # to X in the dataset
-    #         dist, ind = ball_tree.query(
-    #             X, k=n_neighbors)
-    #         task_neighbors[t] = (dist, ind)
-    #     return task_neighbors
-
-    def pre_filter(self, X, neighbors: int):
-        """
-        compute the similarity between X and the data in the replay buffer
-        using cosine similarity on the raw image pixels as a pre-filtering
-        step. Then, for each task
-        """
-
     @torch.inference_mode()
     def compute_embedding_dist(self, X1, X2, task_id):
         self.net.eval()
@@ -143,6 +116,14 @@ class RecvDataAgent(Agent):
         X2_embed = self.net.encode(X2.to(self.net.device), task_id=task_id)
         sim = pairwise_cosine_similarity(X1_embed, X2_embed)
         return sim.cpu()
+
+    # @torch.inference_mode()
+    # def compute_embedding_dist(self, X1, X2, task_id):
+    #     self.net.eval()
+    #     X1_embed = self.net.encode(X1.to(self.net.device), task_id=task_id) # (B, hidden_dim)
+    #     X2_embed = self.net.encode(X2.to(self.net.device), task_id=task_id)
+    #     sim = torch.cdist(X1_embed, X2_embed)
+    #     return sim.cpu()
 
     def compute_raw_dist(self, X1, X2, task_id=None):
         # make sure X1.shape == X2.shape
@@ -152,9 +133,29 @@ class RecvDataAgent(Agent):
             X2 = X2.reshape(X2.shape[0], -1)
         sim = pairwise_cosine_similarity(X1, X2)
         return sim
+    
+    # def compute_raw_dist(self, X1, X2, task_id=None):
+    #     # make sure X1.shape == X2.shape
+    #     # if X1.shape is not [N, d] then flatten it
+    #     if len(X1.shape) > 2:
+    #         X1 = X1.reshape(X1.shape[0], -1)
+    #         X2 = X2.reshape(X2.shape[0], -1)
+        
+    #     # Compute the L2 distance
+    #     dist = torch.cdist(X1, X2)
+    #     return dist
 
     @torch.inference_mode()
     def compute_similarity(self, qX, computer=None, chosen_tasks=None):
+        """
+        Loop through all the data of each task that we currently have
+        and compute the similarity with qX. Return the considered
+        data as a concat X, Y, and task tensors, and similarity scores.
+
+        For current task, consider the training set. For previous task,
+        we don't have access to the training data anymore only the replay
+        buffer.
+        """
         if computer is None:
             computer = self.compute_embedding_dist
 
@@ -166,8 +167,12 @@ class RecvDataAgent(Agent):
             replay_buffers = {t: replay_buffers[t] for t in chosen_tasks}
 
         for t, replay in replay_buffers.items():
-            Xt = replay.tensors[0]
-            yt = replay.tensors[1]
+            if t == self.agent.T - 1:
+                # current task
+                Xt, yt = self.dataset.trainset[t].tensors
+            else:
+                Xt = replay.tensors[0]
+                yt = replay.tensors[1]
             sim = computer(qX, Xt, t)
             sims.append(sim)
             Xs.append(Xt)
@@ -189,7 +194,8 @@ class RecvDataAgent(Agent):
 
         Xs.shape = [N, ...]
 
-        tasks.shape = [M] where M is the number of data points in the replay buffer
+        tasks.shape = [M] where M is the number of candidate data points (e.g., data from various
+        task buffers or the current training task)
 
         sims.shape = [N, M] where sims[i, j] is the similarity between query point i
         and data point j
@@ -238,6 +244,7 @@ class RecvDataAgent(Agent):
             qX, 
             computer=self.compute_raw_dist
         )
+        # print("tasks.shape:", tasks.shape, "Xs:", Xs.shape, "ys:", ys.shape, "sims_prefilter:", sims_prefilter.shape)
         X_n_prefilter, y_n_prefilter, task_neighbors_prefilter = self.extract_topk_from_similarity(
             sims_prefilter, Xs, ys, tasks, 
             neighbors=n_filter_neighbors
@@ -431,7 +438,7 @@ class RecvDataAgent(Agent):
             self.data[requester] = structured_data
             
 
-    def learn_from_recv_data(self):
+    def add_incoming_data(self):
         # get the data and now learn from it
         for neighbor_id, neighbor_data in self.incoming_data.items():
             for task_id, task_data in neighbor_data.items():
@@ -496,7 +503,7 @@ class RecvDataAgent(Agent):
         if communication_round == 0:
             pass
         elif communication_round == 1:
-            self.learn_from_recv_data()
+            self.add_incoming_data()
         else:
             raise ValueError("Invalid round number")
 

@@ -76,15 +76,6 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         for param in self.random_linear_projection.parameters():
             param.requires_grad = False
 
-    def add_tmp_module(self, task_id):
-        if self.num_components < self.max_components:
-            for t in range(self.num_tasks):
-                self.structure[t].data = torch.cat((self.structure[t].data, torch.full(
-                    (1, self.depth), -np.inf if t < task_id else 1, device=self.device)), dim=0)
-            fc = nn.Linear(self.size, self.size).to(self.device)
-            self.components.append(fc)
-            self.num_components += 1
-
     def add_tmp_modules(self, task_id, num_modules):
         self.active_candidate_index = None  # Initialize as no active candidate modules
         self.candidate_indices = []  # To hold indices of candidate modules in self.components
@@ -114,19 +105,13 @@ class MLPSoftLLDynamic(SoftOrderingNet):
             tmp_module_idx = self.candidate_indices[i]
             # Replacing the state_dict of the temporary module with the corresponding one in the module_list
             self.components[tmp_module_idx].load_state_dict(module_list[i].state_dict())
- 
-    def hide_tmp_module(self):
-        self.num_components -= 1
+
 
     def hide_tmp_modulev2(self):
         if self.active_candidate_index is not None:
             self.last_active_candidate_index = self.active_candidate_index
         self.active_candidate_index = None  # Deactivating any active candidate module
 
-
-    def recover_hidden_module(self):
-        self.num_components += 1
-    
     def get_next_active_candidate_index(self):
         # round-robin selection
         if not self.candidate_indices or not self.last_active_candidate_index:
@@ -143,16 +128,6 @@ class MLPSoftLLDynamic(SoftOrderingNet):
             self.active_candidate_index = index
         else:
             self.active_candidate_index = self.get_next_active_candidate_index()
-
-
-    def remove_tmp_module(self):
-        for s in self.structure:
-            s.data = s.data[:-1, :]
-        self.components = self.components[:-1]
-        self.num_components = len(self.components)
-
-
-
 
     def remove_tmp_modulev2(self, excluded_candidate_list):
         # Create a new ModuleList and add components that are not in the excluded list
@@ -194,20 +169,8 @@ class MLPSoftLLDynamic(SoftOrderingNet):
             X = X.view(X.shape[0], -1)
         return self.random_linear_projection(X)
 
+
     def encode(self, X, task_id):
-        X = self.preprocess(X)
-        n = X.shape[0]
-        s = self.softmax(self.structure[task_id][:self.num_components, :])
-        for k in range(self.depth):
-            X_tmp = torch.zeros_like(X)
-            for j in range(self.num_components):
-                fc = self.components[j]
-                X_tmp += s[j, k] * self.dropout(self.relu(fc(X)))
-            X = X_tmp
-        return X
-
-
-    def encodev2(self, X, task_id):
         X = self.preprocess(X)
         s = self.softmax(self.structure[task_id][:self.num_components, :])
         for k in range(self.depth):
@@ -226,10 +189,10 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         NOTE: not currently using any projector!
         """
         # X = self.encode(X, task_id)
-        X = self.encodev2(X, task_id)
+        X = self.encode(X, task_id)
         return X
 
     def forward(self, X, task_id):
         # X = self.encode(X, task_id)
-        X = self.encodev2(X, task_id)
+        X = self.encode(X, task_id)
         return self.decoder[task_id](X)

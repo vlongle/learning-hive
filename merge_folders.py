@@ -2,8 +2,8 @@ import shutil
 import os
 
 # Set the paths for the two folders
-vanilla_results_path = "vanilla_results"
-vanilla_more_seeds_results_path = "vanilla_more_seeds_results"
+vanilla_results_path = "experiment_results/vanilla_results"
+vanilla_more_seeds_results_path = "experiment_results/vanilla_more_trials"
 
 # Get a list of all the job names in the vanilla_more_seeds_results folder
 job_names = os.listdir(vanilla_more_seeds_results_path)

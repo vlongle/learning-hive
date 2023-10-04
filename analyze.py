@@ -25,7 +25,11 @@ import os
 import re
 from shell.utils.metric import Metric
 from  shell.utils.record import Record
-result_dir = "cifar_lasttry_im_done_results"
+# result_dir = "cifar_lasttry_im_done_results"
+# result_dir = "experiment_results/vanilla"
+result_dir = "experiment_results/vanilla_small"
+# result_dir = "experiment_results/vanilla_more_trials"
+# result_dir = "experiment_results/vanilla_tune_fashionmnist"
 # result_dir = "vanilla_results_wo_replacement_2"
 # result_dir = "vanilla_results_wo_replacement"
 # result_dir = "vanilla_results_wo_replacement_2"
@@ -57,8 +61,8 @@ record = Record(f"{result_dir}.csv")
 # pattern = r".*modular_numtrain_300_contrastive/.*"
 # pattern = r".*modular_numtrain_300/.*"
 # pattern = r".*modular_numtrain_256/.*"
-pattern = r".*256.*"
-# pattern = r".*64"
+# pattern = r".*256.*"
+pattern = r".*64"
 # pattern = r".*fashion"
 
 num_init_tasks = 4  # vanilla_results

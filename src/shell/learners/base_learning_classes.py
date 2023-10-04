@@ -320,7 +320,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
             else:
                 num_candidate_modules = len(module_list) + 1
 
-            print("NUM_CANDIDATE_MODULES", num_candidate_modules, 'len(module_list)', len(module_list))
+            # print("NUM_CANDIDATE_MODULES", num_candidate_modules, 'len(module_list)', len(module_list))
             self.net.add_tmp_modules(task_id, num_candidate_modules)
             self.net.receive_modules(task_id, module_list)
             for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components

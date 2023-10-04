@@ -78,47 +78,89 @@ class CNNSoftLLDynamic(SoftOrderingNet):
             ) for t in range(self.num_tasks)])
         self.to(self.device)
 
-    def add_tmp_module(self, task_id):
-        if self.num_components < self.max_components:
-            for t in range(self.num_tasks):
-                self.structure[t].data = torch.cat((self.structure[t].data, torch.full(
-                    (1, self.depth), -np.inf if t < task_id else 1, device=self.device)), dim=0)
-            conv = nn.Conv2d(self.channels, self.channels,
+
+
+    def add_tmp_modules(self, task_id, num_modules):
+            self.active_candidate_index = None  # Initialize as no active candidate modules
+            self.candidate_indices = []  # To hold indices of candidate modules in self.components
+            
+            # print('BEFORE ADDING TMP_MODULES', self.structure)
+            for _ in range(num_modules):
+                if self.num_components < self.max_components:
+                    for t in range(self.num_tasks):
+                        self.structure[t].data = torch.cat((self.structure[t].data, torch.full(
+                            (1, self.depth), -np.inf if t < task_id else 1, device=self.device)), dim=0)
+                    conv = nn.Conv2d(self.channels, self.channels,
                              self.conv_kernel, padding=self.padding).to(self.device)
-            self.components.append(conv)
-            self.num_components += 1
+                    self.components.append(conv)
+                    self.candidate_indices.append(self.num_components)
+                    
+                    if self.active_candidate_index is None:  # Activate the first candidate by default
+                        self.active_candidate_index = self.num_components
+                        
+                    self.num_components += 1
 
-    def hide_tmp_module(self):
-        self.num_components -= 1
 
-    def recover_hidden_module(self):
-        self.num_components += 1
+    def hide_tmp_modulev2(self):
+        if self.active_candidate_index is not None:
+            self.last_active_candidate_index = self.active_candidate_index
+        self.active_candidate_index = None  # Deactivating any active candidate module
 
-    def remove_tmp_module(self):
+    def get_next_active_candidate_index(self):
+        # round-robin selection
+        if not self.candidate_indices or not self.last_active_candidate_index:
+            return None
+        idx = self.candidate_indices.index(self.last_active_candidate_index)
+        return self.candidate_indices[(idx + 1) % len(self.candidate_indices)]
+
+    def recover_hidden_modulev2(self):
+        self.active_candidate_index = self.last_active_candidate_index
+    
+
+    def select_active_module(self, index=None):
+        if index is not None:
+            self.active_candidate_index = index
+        else:
+            self.active_candidate_index = self.get_next_active_candidate_index()
+
+    def remove_tmp_modulev2(self, excluded_candidate_list):
+        # Create a new ModuleList and add components that are not in the excluded list
+        new_components = nn.ModuleList()
+        for idx, component in enumerate(self.components):
+            if idx not in self.candidate_indices or idx not in excluded_candidate_list:
+                new_components.append(component)
+
+        # Create a new ParameterList and add structure elements that are not in the excluded list
+        new_structure = nn.ParameterList()
+        for t in range(self.num_tasks):
+            rows_to_keep = [idx for idx in range(self.num_components) if idx not in excluded_candidate_list]
+            new_structure.append(self.structure[t].data[rows_to_keep, :])  # Keeping rows not in the excluded_candidate_list
+        # for idx, structure in enumerate(self.structure):
+        #     if idx not in self.candidate_indices or idx not in excluded_candidate_list:
+        #         new_structure.append(structure)
+
+        self.num_components -= len(excluded_candidate_list)
+        self.components = self.components[:self.num_components]
         for s in self.structure:
-            s.data = s.data[:-1, :]
-        self.components = self.components[:-1]
-        self.num_components = len(self.components)
+            s.data = s.data[:self.num_components, :]
+
+
+        # Copy the state_dict of new components and structure to the original ones
+        self.components.load_state_dict(new_components.state_dict())
+        self.structure.load_state_dict(new_structure.state_dict())
+
+        # Update candidate_indices and num_components
+        
+        # Reset the round-robin variables
+        self.active_candidate_index = None
+        self.last_active_candidate_index = None
+        self.candidate_indices = []
 
     def get_hidden_size(self):
         return self.size
 
-    def encode(self, X, task_id):
-        X = self.transform(X)
-        c = X.shape[1]
-        s = self.softmax(self.structure[task_id][:self.num_components, :])
-        X = F.pad(X, (0, 0, 0, 0, 0, self.channels-c, 0, 0))
-        for k in range(self.depth):
-            X_tmp = 0.
-            for j in range(self.num_components):
-                conv = self.components[j]
-                X_tmp += s[j, k] * \
-                    self.dropout(self.relu(self.maxpool(conv(X))))
-            X = X_tmp
-        X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])
-        return X
     
-    def encodev2(self, X, task_id):
+    def encode(self, X, task_id):
         X = self.transform(X)
         c = X.shape[1]
         s = self.softmax(self.structure[task_id][:self.num_components, :])
@@ -135,13 +177,11 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         return X
 
     def forward(self, X, task_id):
-        # X = self.encode(X, task_id)
-        X = self.encodev2(X, task_id)
+        X = self.encode(X, task_id)
         return self.decoder[task_id](X)
 
     def contrastive_embedding(self, X, task_id):
-        # X = self.encode(X, task_id)
-        X = self.encodev2(X, task_id)
+        X = self.encode(X, task_id)
         X = self.projector[task_id](X)  # (N, 128)
         X = F.normalize(X, dim=1)
         return X

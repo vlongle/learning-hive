@@ -1,0 +1,1205 @@
+/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/hydra/_internal/defaults_list.py:251: UserWarning: In 'config': Defaults list is missing `_self_`. See https://hydra.cc/docs/1.2/upgrades/1.0_to_1.1/default_composition_order for more information
+  warnings.warn(msg, UserWarning)
+{'train': {'component_update_freq': 100, 'num_epochs': 100, 'init_component_update_freq': 10, 'init_num_epochs': 10, 'save_freq': 20}, 'dataset': {'dataset_name': 'cifar100', 'num_tasks': 4, 'num_classes_per_task': 5, 'with_replacement': False, 'num_trains_per_class': 256, 'num_vals_per_class': -1, 'remap_labels': True}, 'net': {'name': 'cnn', 'depth': 4, 'channels': 50, 'conv_kernel': 3, 'maxpool_kernel': 2, 'padding': 1, 'dropout': 0.0}, 'sharing_strategy': {'name': 'no_sharing', 'num_coms_per_round': 0}, 'seed': 0, 'algo': 'monolithic', 'job_name': 'cifar100_monolithic_numtrain_256_contrastive', 'num_agents': 8, 'root_save_dir': 'cifar_results', 'parallel': True, 'num_init_tasks': 4, 'agent': {'save_dir': '${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}', 'batch_size': 1024, 'memory_size': 32, 'improvement_threshold': 0.05, 'use_contrastive': True}}
+[2023-10-04 18:24:46,450][root][INFO] - Class sequence: [97 66 33 19 34  3 12  2 13 92 80  5 27 60 36 11  9 25 31 87 58 44 94 95
+ 64 61 62 86 79 98 93 51 22 59 26 37 83 73 78  1 30 55 85 47 41 20 63 43
+ 90 88 21 40 15 75  4  0 52 23 35 53 84 69 16 10 71 81  6 91 56 76 38 50
+ 57 74 49 18 24 39 48 99  8 65 89 67 54 32 42 14 68 45 96 77 46 28 72 17
+ 29 82  7 70]
+[2023-10-04 18:24:46,464][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:24:46,519][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:24:46,539][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:24:46,560][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:24:47,058][root][INFO] - Class sequence: [13 55 29 67 64 47 58 19 30 38 15 16 34 35 73 96 25 89 63  5 44 21 28 60
+ 80 86 36 95 83 40  2 24 37 61 62 57 53 79 27 82 65  4 22 45 78 33 32  9
+ 90 56 46 48  7 59 41 93 98 69 51 74 68 72 71 39 54 18 91 76 70 11 10 99
+ 77 52 87 31  6  1 84 43 85 42 12 94 26 88 17 49 75 92  8 97 66 50  0 23
+ 20 81 14  3]
+[2023-10-04 18:24:47,074][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:24:47,098][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:24:47,119][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:24:47,146][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:24:47,639][root][INFO] - Class sequence: [11 37 44 67 45 66 96  1 88  4  2 84 22 50 29 28 41 82 25  5  9 77 13 17
+ 48 76 93 81 73 91 14 94 24 32 75 19 71 10 55 63 58 33 83 18 21  6 26 52
+ 68  3 78 57 80 15 59 99 86 95 92 30  0  8 53 49 35 31 16 61 60 47 98 40
+ 46 34 97 56 12 74 51 43 27 70 20 90 64 36 72 65 62 42 69  7 89 38 39 79
+ 85 23 87 54]
+[2023-10-04 18:24:47,656][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:24:47,676][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:24:47,700][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:24:47,721][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:24:48,214][root][INFO] - Class sequence: [63  2 24 65 38 56 94 61 75 55 25 96 86 32 11 64 30 67 80 27 41 52 20  0
+ 97 50 40 43 36 17 33 34 53 29 44 16 84 15 90 62 18 51 79 88 95 49 35 76
+ 59 31  8 14 68  9 71  6 73  5 66 28 72  1 13 93 60 12 78 26 98  4 46 39
+  3 48 37 69 70 87 83 91 42 47 45 81 92 19 74 89 22 10 82 23 77 85 99 58
+ 21 54  7 57]
+[2023-10-04 18:24:48,230][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:24:48,256][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:24:48,277][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:24:48,297][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:24:48,795][root][INFO] - Class sequence: [ 6 30 52 18 83 48  1 71 97 53  5 31 72 49 11 40 59 27 14 75 63 41 93 74
+ 44  7 77 87 33 51 28 43 24 69 54 42 19 17 68  8  3 73 46 22  4 92 76 89
+ 78 56 61 91 50 67 45  0 36 99 79 64 96 21 29 32 98 70 88 57 39 47 12 81
+ 10  2 25 37 60 20 16 86  9 62 55 58 94 23 13 35 90 80 34 84 15 95 82 85
+ 65 26 38 66]
+[2023-10-04 18:24:48,813][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:24:48,833][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:24:48,853][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:24:48,874][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:24:49,375][root][INFO] - Class sequence: [31  6 72  5 12 20 71 70 26 66 52 42  2 47 56 86 21 33 76 16 80 98 97 79
+ 10 84 55  8 23 83 77 68 93 25 27 90 24 43 91 40 96 28  7 49 35 15 48 50
+ 18 53  0 92 58 34 95 32  9 64 11 60 73 14 39 19 51 88 99 29 13 87 41 69
+ 37  4  3 63 67 65 59 62 54 36 61 94 89 75 74 30 78 46 85 22 17 81 57 44
+ 45 82 38  1]
+[2023-10-04 18:24:49,392][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:24:49,414][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:24:49,441][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:24:49,461][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:24:49,945][root][INFO] - Class sequence: [ 6 82 28 87 50 48  2  1 85 73 62 18 67 45 79 71 44 70  7 35 33 22  3 84
+ 14 58 24 91 83 72 59 90 41 51 43 25 29 92 63 56 46 47 26  0 39 17 34 97
+ 30 53 36 64 81 93 57 20 55 60 31 12 11 54  4 94 49 68 78 38 98 10 19 66
+ 96 37  9 69 76 13 89  8 74 23 15  5 52 61 95 65 32 21 42 40 27 16 99 77
+ 75 88 80 86]
+[2023-10-04 18:24:49,959][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:24:49,979][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:24:49,999][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:24:50,019][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:24:50,510][root][INFO] - Class sequence: [66 65 15 81 88 34 41  4 33 29 76 82 38 94 85 57 86 11 95 78 77 67 53 75
+ 27 99 91 21 32  6 60 96 44 46 70 68 74 63 72 35 56  2 62 31 13  1 42  9
+ 80 58 83 25 97 17 73 16 37 71 54 52 93 48 19 47 98  7 45 14 23 18 40 64
+ 69  5 87 59 61 22 43 10 26 90 89  8 79 55 49 24 20 92 50  3  0 51 30 36
+ 28 39 84 12]
+[2023-10-04 18:24:50,525][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:24:50,545][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:24:50,566][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:24:50,587][root][INFO] - task 3 :(1280, 3, 32, 32)
+i_size 32
+num_classes 5
+net_cfg {'name': 'cnn', 'depth': 4, 'channels': 50, 'conv_kernel': 3, 'maxpool_kernel': 2, 'padding': 1, 'dropout': 0.0, 'i_size': 32, 'num_classes': 5, 'num_tasks': 4, 'num_init_tasks': 4, 'use_contrastive': True}
+<class 'shell.learners.er_nocomponents.NoComponentsER'>
+[2023-10-04 18:24:50,616][root][INFO] - No. gpus per agent: 0.25
+2023-10-04 18:24:53,193	INFO worker.py:1544 -- Started a local Ray instance. View the dashboard at [1m[32m127.0.0.1:8265 [39m[22m
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:Agent: node_id: 0, seed: 0
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:Agent: node_id: 1, seed: 1000
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:Agent: node_id: 2, seed: 2000
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:Agent: node_id: 3, seed: 3000
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:Agent: node_id: 4, seed: 4000
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:Agent: node_id: 5, seed: 5000
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:Agent: node_id: 6, seed: 6000
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:Agent: node_id: 7, seed: 7000
+[2023-10-04 18:25:12,421][root][INFO] - Created fleet with 8 agents
+[2023-10-04 18:25:12,422][root][INFO] - Adding neighbors...
+[2023-10-04 18:25:12,438][root][INFO] - Fleet initialized
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: avg	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: avg	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: avg	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: avg	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: avg	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: avg	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: avg	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: avg	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: avg	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: avg	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: avg	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: avg	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: avg	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: avg	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: avg	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: avg	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 1	loss: 1.61001880	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: avg	loss: 1.61068491	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 1	loss: 1.60884808	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: avg	loss: 1.60904715	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 1	loss: 1.60874774	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 1	loss: 1.60967743	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: avg	loss: 1.60976883	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 1	loss: 1.60890717	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: avg	loss: 1.60929150	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: avg	loss: 1.60968774	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 1	loss: 1.60929034	acc: 0.208
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: avg	loss: 1.61009821	acc: 0.202
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 1	loss: 1.61061859	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: avg	loss: 1.61099200	acc: 0.199
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 1	loss: 1.61084247	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: avg	loss: 1.61073520	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 1	loss: 1.60967743	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: avg	loss: 1.60976883	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 1	loss: 1.60890717	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: avg	loss: 1.60968774	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 1	loss: 1.61001880	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: avg	loss: 1.61068491	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 1	loss: 1.60884808	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: avg	loss: 1.60904715	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 1	loss: 1.61061859	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: avg	loss: 1.61099200	acc: 0.199
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 1	loss: 1.60874774	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: avg	loss: 1.60929150	acc: 0.200
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 1	loss: 1.61084247	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: avg	loss: 1.61073520	acc: 0.200
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 1	loss: 1.60929034	acc: 0.208
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: avg	loss: 1.61009821	acc: 0.202
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 1	loss: 1.60967743	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 2	loss: 1.61018677	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: avg	loss: 1.60990814	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 1	loss: 1.61084247	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 2	loss: 1.61060657	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: avg	loss: 1.61069232	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 1	loss: 1.60890717	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 2	loss: 1.61051886	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: avg	loss: 1.60996478	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 1	loss: 1.61001880	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 2	loss: 1.60934241	acc: 0.202
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: avg	loss: 1.61023741	acc: 0.201
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 1	loss: 1.60929034	acc: 0.208
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 2	loss: 1.61053772	acc: 0.198
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: avg	loss: 1.61024471	acc: 0.201
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 1	loss: 1.60884808	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 2	loss: 1.60994348	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: avg	loss: 1.60934593	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 1	loss: 1.61061859	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 2	loss: 1.61042322	acc: 0.126
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: avg	loss: 1.61080241	acc: 0.175
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 1	loss: 1.60874774	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 2	loss: 1.61162537	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: avg	loss: 1.61006946	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 1	loss: 1.60890717	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 2	loss: 1.61051886	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: avg	loss: 1.60996478	acc: 0.200
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 1	loss: 1.60929034	acc: 0.208
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 2	loss: 1.61053772	acc: 0.198
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 1	loss: 1.61061859	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 2	loss: 1.61042322	acc: 0.126
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: avg	loss: 1.61080241	acc: 0.175
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 1	loss: 1.60967743	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 2	loss: 1.61018677	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: avg	loss: 1.60990814	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 1	loss: 1.61084247	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 2	loss: 1.61060657	acc: 0.200
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: avg	loss: 1.61024471	acc: 0.201
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 1	loss: 1.60884808	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 2	loss: 1.60994348	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: avg	loss: 1.60934593	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: avg	loss: 1.61069232	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 1	loss: 1.61001880	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 2	loss: 1.60934241	acc: 0.202
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: avg	loss: 1.61023741	acc: 0.201
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 1	loss: 1.60874774	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 2	loss: 1.61162537	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: avg	loss: 1.61006946	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 1	loss: 1.60967743	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 2	loss: 1.61018677	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 3	loss: 1.61073206	acc: 0.196
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: avg	loss: 1.61011412	acc: 0.199
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 1	loss: 1.61084247	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 2	loss: 1.61060657	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 3	loss: 1.61005756	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: avg	loss: 1.61053363	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 1	loss: 1.61061859	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 2	loss: 1.61042322	acc: 0.126
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 3	loss: 1.61010278	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: avg	loss: 1.61062750	acc: 0.181
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 1	loss: 1.60874774	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 2	loss: 1.61162537	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 3	loss: 1.61067120	acc: 0.202
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: avg	loss: 1.61021989	acc: 0.201
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 1	loss: 1.60929034	acc: 0.208
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 2	loss: 1.61053772	acc: 0.198
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 3	loss: 1.61007666	acc: 0.200
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: avg	loss: 1.61020270	acc: 0.201
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 1	loss: 1.60890717	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 2	loss: 1.61051886	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 3	loss: 1.60988818	acc: 0.182
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: avg	loss: 1.60994563	acc: 0.196
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 1	loss: 1.61001880	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 2	loss: 1.60934241	acc: 0.202
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 3	loss: 1.61053528	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: avg	loss: 1.61031187	acc: 0.201
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 1	loss: 1.60884808	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 2	loss: 1.60994348	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 3	loss: 1.60996997	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: avg	loss: 1.60950194	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 0	loss: 1.61155438	acc: 0.196
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 1	loss: 1.61058844	acc: 0.112
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 2	loss: 1.61042871	acc: 0.204
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 3	loss: 1.61151630	acc: 0.200
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: avg	loss: 1.61102196	acc: 0.178
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 0	loss: 1.61128052	acc: 0.200
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 1	loss: 1.61367285	acc: 0.174
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 2	loss: 1.60825513	acc: 0.220
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 3	loss: 1.60859338	acc: 0.224
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: avg	loss: 1.61045047	acc: 0.204
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 0	loss: 1.61684894	acc: 0.138
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 1	loss: 1.59499341	acc: 0.206
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 2	loss: 1.60436700	acc: 0.210
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 3	loss: 1.61187811	acc: 0.256
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: avg	loss: 1.60702187	acc: 0.202
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 0	loss: 1.60980457	acc: 0.208
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 1	loss: 1.61020526	acc: 0.216
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 2	loss: 1.60971387	acc: 0.200
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 3	loss: 1.61165454	acc: 0.180
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: avg	loss: 1.61034456	acc: 0.201
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 0	loss: 1.60615973	acc: 0.200
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 1	loss: 1.60480164	acc: 0.232
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 2	loss: 1.60939557	acc: 0.204
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 3	loss: 1.61175653	acc: 0.178
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: avg	loss: 1.60802837	acc: 0.204
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 0	loss: 1.61333618	acc: 0.182
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 1	loss: 1.61028351	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 2	loss: 1.60947754	acc: 0.216
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 3	loss: 1.60946899	acc: 0.200
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: avg	loss: 1.61064156	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 0	loss: 1.60429645	acc: 0.220
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 1	loss: 1.60009253	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 2	loss: 1.61150897	acc: 0.200
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 3	loss: 1.60288464	acc: 0.316
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: avg	loss: 1.60469565	acc: 0.234
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 0	loss: 1.61897675	acc: 0.288
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 1	loss: 1.60630994	acc: 0.192
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 2	loss: 1.61422638	acc: 0.204
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 3	loss: 1.60651660	acc: 0.200
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: avg	loss: 1.61150742	acc: 0.221
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 0	loss: 1.57494684	acc: 0.386
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 1	loss: 1.54193103	acc: 0.310
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 2	loss: 1.57158606	acc: 0.348
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 3	loss: 1.55393188	acc: 0.400
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: avg	loss: 1.56059895	acc: 0.361
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 0	loss: 1.59858673	acc: 0.206
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 1	loss: 1.55899603	acc: 0.206
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 2	loss: 1.56642700	acc: 0.208
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 3	loss: 1.59830511	acc: 0.230
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: avg	loss: 1.58057872	acc: 0.212
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 0	loss: 1.57494684	acc: 0.386
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 1	loss: 1.54193103	acc: 0.310
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 2	loss: 1.57158606	acc: 0.348
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: 3	loss: 1.55393188	acc: 0.400
+[2m[36m(ParallelAgent pid=2659487)[0m INFO:root:	task: avg	loss: 1.56059895	acc: 0.361
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 0	loss: 1.56995416	acc: 0.394
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 1	loss: 1.55806720	acc: 0.338
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 0	loss: 1.56736188	acc: 0.266
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 1	loss: 1.56522412	acc: 0.288
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 2	loss: 1.55256012	acc: 0.266
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 3	loss: 1.55614423	acc: 0.216
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: avg	loss: 1.56032259	acc: 0.259
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 2	loss: 1.55695886	acc: 0.390
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 3	loss: 1.58609290	acc: 0.260
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: avg	loss: 1.56776828	acc: 0.345
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 0	loss: 1.59946503	acc: 0.320
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 1	loss: 1.59735785	acc: 0.286
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 2	loss: 1.52857410	acc: 0.202
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 3	loss: 1.55960486	acc: 0.272
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: avg	loss: 1.57125046	acc: 0.270
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 0	loss: 1.59858673	acc: 0.206
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 1	loss: 1.55899603	acc: 0.206
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 2	loss: 1.56642700	acc: 0.208
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: 3	loss: 1.59830511	acc: 0.230
+[2m[36m(ParallelAgent pid=2659236)[0m INFO:root:	task: avg	loss: 1.58057872	acc: 0.212
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 0	loss: 1.58137317	acc: 0.326
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 1	loss: 1.58050409	acc: 0.202
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 2	loss: 1.60605414	acc: 0.198
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 3	loss: 1.56566370	acc: 0.298
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: avg	loss: 1.58339877	acc: 0.256
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 0	loss: 1.56995416	acc: 0.394
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 1	loss: 1.55806720	acc: 0.338
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 2	loss: 1.55695886	acc: 0.390
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: 3	loss: 1.58609290	acc: 0.260
+[2m[36m(ParallelAgent pid=2659237)[0m INFO:root:	task: avg	loss: 1.56776828	acc: 0.345
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 0	loss: 1.56736188	acc: 0.266
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 1	loss: 1.56522412	acc: 0.288
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 2	loss: 1.55256012	acc: 0.266
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: 3	loss: 1.55614423	acc: 0.216
+[2m[36m(ParallelAgent pid=2659613)[0m INFO:root:	task: avg	loss: 1.56032259	acc: 0.259
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 0	loss: 1.54367084	acc: 0.410
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 1	loss: 1.53633118	acc: 0.326
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 2	loss: 1.55977417	acc: 0.218
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 3	loss: 1.57635834	acc: 0.338
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: avg	loss: 1.55403363	acc: 0.323
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 0	loss: 1.59946503	acc: 0.320
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 1	loss: 1.59735785	acc: 0.286
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 2	loss: 1.52857410	acc: 0.202
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: 3	loss: 1.55960486	acc: 0.272
+[2m[36m(ParallelAgent pid=2659674)[0m INFO:root:	task: avg	loss: 1.57125046	acc: 0.270
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 0	loss: 1.58137317	acc: 0.326
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 1	loss: 1.58050409	acc: 0.202
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 2	loss: 1.60605414	acc: 0.198
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: 3	loss: 1.56566370	acc: 0.298
+[2m[36m(ParallelAgent pid=2659238)[0m INFO:root:	task: avg	loss: 1.58339877	acc: 0.256
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 0	loss: 1.59285352	acc: 0.238
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 1	loss: 1.57589459	acc: 0.228
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 2	loss: 1.58707007	acc: 0.278
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 3	loss: 1.56618903	acc: 0.356
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: avg	loss: 1.58050180	acc: 0.275
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 0	loss: 1.54367084	acc: 0.410
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 1	loss: 1.53633118	acc: 0.326
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 2	loss: 1.55977417	acc: 0.218
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: 3	loss: 1.57635834	acc: 0.338
+[2m[36m(ParallelAgent pid=2659362)[0m INFO:root:	task: avg	loss: 1.55403363	acc: 0.323
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 0	loss: 1.59285352	acc: 0.238
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 1	loss: 1.57589459	acc: 0.228
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 2	loss: 1.58707007	acc: 0.278
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: 3	loss: 1.56618903	acc: 0.356
+[2m[36m(ParallelAgent pid=2659239)[0m INFO:root:	task: avg	loss: 1.58050180	acc: 0.275
+[2023-10-04 18:26:28,941][root][INFO] - Run took 0:01:43.088130
+/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/hydra/_internal/defaults_list.py:251: UserWarning: In 'config': Defaults list is missing `_self_`. See https://hydra.cc/docs/1.2/upgrades/1.0_to_1.1/default_composition_order for more information
+  warnings.warn(msg, UserWarning)
+{'train': {'component_update_freq': 100, 'num_epochs': 100, 'init_component_update_freq': 10, 'init_num_epochs': 10, 'save_freq': 20}, 'dataset': {'dataset_name': 'cifar100', 'num_tasks': 4, 'num_classes_per_task': 5, 'with_replacement': False, 'num_trains_per_class': 256, 'num_vals_per_class': -1, 'remap_labels': True}, 'net': {'name': 'cnn', 'depth': 4, 'channels': 50, 'conv_kernel': 3, 'maxpool_kernel': 2, 'padding': 1, 'dropout': 0.0}, 'sharing_strategy': {'name': 'no_sharing', 'num_coms_per_round': 0}, 'seed': 0, 'algo': 'monolithic', 'job_name': 'cifar100_monolithic_numtrain_256', 'num_agents': 8, 'root_save_dir': 'cifar_results', 'parallel': True, 'num_init_tasks': 4, 'agent': {'save_dir': '${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}', 'batch_size': 1024, 'memory_size': 32, 'improvement_threshold': 0.05, 'use_contrastive': False}}
+[2023-10-04 18:26:40,670][root][INFO] - Class sequence: [97 66 33 19 34  3 12  2 13 92 80  5 27 60 36 11  9 25 31 87 58 44 94 95
+ 64 61 62 86 79 98 93 51 22 59 26 37 83 73 78  1 30 55 85 47 41 20 63 43
+ 90 88 21 40 15 75  4  0 52 23 35 53 84 69 16 10 71 81  6 91 56 76 38 50
+ 57 74 49 18 24 39 48 99  8 65 89 67 54 32 42 14 68 45 96 77 46 28 72 17
+ 29 82  7 70]
+[2023-10-04 18:26:40,684][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:26:40,733][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:26:40,753][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:26:40,772][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:26:41,253][root][INFO] - Class sequence: [13 55 29 67 64 47 58 19 30 38 15 16 34 35 73 96 25 89 63  5 44 21 28 60
+ 80 86 36 95 83 40  2 24 37 61 62 57 53 79 27 82 65  4 22 45 78 33 32  9
+ 90 56 46 48  7 59 41 93 98 69 51 74 68 72 71 39 54 18 91 76 70 11 10 99
+ 77 52 87 31  6  1 84 43 85 42 12 94 26 88 17 49 75 92  8 97 66 50  0 23
+ 20 81 14  3]
+[2023-10-04 18:26:41,269][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:26:41,288][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:26:41,307][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:26:41,326][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:26:41,804][root][INFO] - Class sequence: [11 37 44 67 45 66 96  1 88  4  2 84 22 50 29 28 41 82 25  5  9 77 13 17
+ 48 76 93 81 73 91 14 94 24 32 75 19 71 10 55 63 58 33 83 18 21  6 26 52
+ 68  3 78 57 80 15 59 99 86 95 92 30  0  8 53 49 35 31 16 61 60 47 98 40
+ 46 34 97 56 12 74 51 43 27 70 20 90 64 36 72 65 62 42 69  7 89 38 39 79
+ 85 23 87 54]
+[2023-10-04 18:26:41,820][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:26:41,839][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:26:41,857][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:26:41,876][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:26:42,357][root][INFO] - Class sequence: [63  2 24 65 38 56 94 61 75 55 25 96 86 32 11 64 30 67 80 27 41 52 20  0
+ 97 50 40 43 36 17 33 34 53 29 44 16 84 15 90 62 18 51 79 88 95 49 35 76
+ 59 31  8 14 68  9 71  6 73  5 66 28 72  1 13 93 60 12 78 26 98  4 46 39
+  3 48 37 69 70 87 83 91 42 47 45 81 92 19 74 89 22 10 82 23 77 85 99 58
+ 21 54  7 57]
+[2023-10-04 18:26:42,372][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:26:42,391][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:26:42,416][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:26:42,441][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:26:42,929][root][INFO] - Class sequence: [ 6 30 52 18 83 48  1 71 97 53  5 31 72 49 11 40 59 27 14 75 63 41 93 74
+ 44  7 77 87 33 51 28 43 24 69 54 42 19 17 68  8  3 73 46 22  4 92 76 89
+ 78 56 61 91 50 67 45  0 36 99 79 64 96 21 29 32 98 70 88 57 39 47 12 81
+ 10  2 25 37 60 20 16 86  9 62 55 58 94 23 13 35 90 80 34 84 15 95 82 85
+ 65 26 38 66]
+[2023-10-04 18:26:42,944][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:26:42,964][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:26:42,982][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:26:43,002][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:26:43,481][root][INFO] - Class sequence: [31  6 72  5 12 20 71 70 26 66 52 42  2 47 56 86 21 33 76 16 80 98 97 79
+ 10 84 55  8 23 83 77 68 93 25 27 90 24 43 91 40 96 28  7 49 35 15 48 50
+ 18 53  0 92 58 34 95 32  9 64 11 60 73 14 39 19 51 88 99 29 13 87 41 69
+ 37  4  3 63 67 65 59 62 54 36 61 94 89 75 74 30 78 46 85 22 17 81 57 44
+ 45 82 38  1]
+[2023-10-04 18:26:43,497][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:26:43,516][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:26:43,542][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:26:43,561][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:26:44,045][root][INFO] - Class sequence: [ 6 82 28 87 50 48  2  1 85 73 62 18 67 45 79 71 44 70  7 35 33 22  3 84
+ 14 58 24 91 83 72 59 90 41 51 43 25 29 92 63 56 46 47 26  0 39 17 34 97
+ 30 53 36 64 81 93 57 20 55 60 31 12 11 54  4 94 49 68 78 38 98 10 19 66
+ 96 37  9 69 76 13 89  8 74 23 15  5 52 61 95 65 32 21 42 40 27 16 99 77
+ 75 88 80 86]
+[2023-10-04 18:26:44,059][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:26:44,080][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:26:44,099][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:26:44,117][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:26:44,597][root][INFO] - Class sequence: [66 65 15 81 88 34 41  4 33 29 76 82 38 94 85 57 86 11 95 78 77 67 53 75
+ 27 99 91 21 32  6 60 96 44 46 70 68 74 63 72 35 56  2 62 31 13  1 42  9
+ 80 58 83 25 97 17 73 16 37 71 54 52 93 48 19 47 98  7 45 14 23 18 40 64
+ 69  5 87 59 61 22 43 10 26 90 89  8 79 55 49 24 20 92 50  3  0 51 30 36
+ 28 39 84 12]
+[2023-10-04 18:26:44,613][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:26:44,632][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:26:44,657][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:26:44,678][root][INFO] - task 3 :(1280, 3, 32, 32)
+i_size 32
+num_classes 5
+net_cfg {'name': 'cnn', 'depth': 4, 'channels': 50, 'conv_kernel': 3, 'maxpool_kernel': 2, 'padding': 1, 'dropout': 0.0, 'i_size': 32, 'num_classes': 5, 'num_tasks': 4, 'num_init_tasks': 4, 'use_contrastive': False}
+<class 'shell.learners.er_nocomponents.NoComponentsER'>
+[2023-10-04 18:26:44,707][root][INFO] - No. gpus per agent: 0.25
+2023-10-04 18:26:47,112	INFO worker.py:1544 -- Started a local Ray instance. View the dashboard at [1m[32m127.0.0.1:8265 [39m[22m
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:Agent: node_id: 0, seed: 0
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:Agent: node_id: 1, seed: 1000
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:Agent: node_id: 2, seed: 2000
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:Agent: node_id: 3, seed: 3000
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:Agent: node_id: 4, seed: 4000
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:Agent: node_id: 6, seed: 6000
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:Agent: node_id: 5, seed: 5000
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:Agent: node_id: 7, seed: 7000
+[2023-10-04 18:27:06,139][root][INFO] - Created fleet with 8 agents
+[2023-10-04 18:27:06,140][root][INFO] - Adding neighbors...
+[2023-10-04 18:27:06,156][root][INFO] - Fleet initialized
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: avg	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: avg	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: avg	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: avg	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: avg	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: avg	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: avg	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: avg	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: avg	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: avg	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: avg	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: avg	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: avg	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: avg	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: avg	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:epochs: 0, training task: 0
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: avg	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 1	loss: 1.61061859	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: avg	loss: 1.61099200	acc: 0.199
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 1	loss: 1.60967743	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: avg	loss: 1.60976883	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 1	loss: 1.61084247	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: avg	loss: 1.61073520	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 1	loss: 1.60890717	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: avg	loss: 1.60968774	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 1	loss: 1.61001880	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: avg	loss: 1.61068491	acc: 0.200
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 1	loss: 1.60929034	acc: 0.208
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: avg	loss: 1.61009821	acc: 0.202
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 1	loss: 1.60884808	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: avg	loss: 1.60904715	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 1	loss: 1.60874774	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: avg	loss: 1.60929150	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 1	loss: 1.61061859	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: avg	loss: 1.61099200	acc: 0.199
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 1	loss: 1.60874774	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: avg	loss: 1.60929150	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 1	loss: 1.60967743	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: avg	loss: 1.60976883	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 1	loss: 1.61084247	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: avg	loss: 1.61073520	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 1	loss: 1.60890717	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: avg	loss: 1.60968774	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 1	loss: 1.61001880	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: avg	loss: 1.61068491	acc: 0.200
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 1	loss: 1.60929034	acc: 0.208
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: avg	loss: 1.61009821	acc: 0.202
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:epochs: 0, training task: 1
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 1	loss: 1.60884808	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: avg	loss: 1.60904715	acc: 0.200
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 1	loss: 1.60929034	acc: 0.208
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 2	loss: 1.61053772	acc: 0.198
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: avg	loss: 1.61024471	acc: 0.201
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 1	loss: 1.61001880	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 2	loss: 1.60934241	acc: 0.202
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: avg	loss: 1.61023741	acc: 0.201
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 1	loss: 1.60967743	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 2	loss: 1.61018677	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: avg	loss: 1.60990814	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 1	loss: 1.61084247	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 1	loss: 1.60890717	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 2	loss: 1.61051886	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: avg	loss: 1.60996478	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 1	loss: 1.60884808	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 2	loss: 1.60994348	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: avg	loss: 1.60934593	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 1	loss: 1.61061859	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 2	loss: 1.61042322	acc: 0.126
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: avg	loss: 1.61080241	acc: 0.175
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 1	loss: 1.60874774	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 2	loss: 1.61162537	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: avg	loss: 1.61006946	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 2	loss: 1.61060657	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: avg	loss: 1.61069232	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 1	loss: 1.60890717	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 2	loss: 1.61051886	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: avg	loss: 1.60996478	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 1	loss: 1.61001880	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 2	loss: 1.60934241	acc: 0.202
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: avg	loss: 1.61023741	acc: 0.201
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 1	loss: 1.60929034	acc: 0.208
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 2	loss: 1.61053772	acc: 0.198
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: avg	loss: 1.61024471	acc: 0.201
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 1	loss: 1.61084247	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 2	loss: 1.61060657	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: avg	loss: 1.61069232	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 1	loss: 1.61061859	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 2	loss: 1.61042322	acc: 0.126
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: avg	loss: 1.61080241	acc: 0.175
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 1	loss: 1.60884808	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 2	loss: 1.60994348	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: avg	loss: 1.60934593	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 1	loss: 1.60874774	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 2	loss: 1.61162537	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:epochs: 0, training task: 2
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 1	loss: 1.60967743	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 2	loss: 1.61018677	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: avg	loss: 1.60990814	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: avg	loss: 1.61006946	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 0	loss: 1.60986023	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 1	loss: 1.60967743	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 2	loss: 1.61018677	acc: 0.200
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 3	loss: 1.61073206	acc: 0.196
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: avg	loss: 1.61011412	acc: 0.199
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 0	loss: 1.61062793	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 1	loss: 1.61084247	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 2	loss: 1.61060657	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 3	loss: 1.61005756	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: avg	loss: 1.61053363	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 0	loss: 1.61046832	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 1	loss: 1.60890717	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 2	loss: 1.61051886	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 3	loss: 1.60988818	acc: 0.182
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: avg	loss: 1.60994563	acc: 0.196
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 0	loss: 1.61135101	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 1	loss: 1.61001880	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 2	loss: 1.60934241	acc: 0.202
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 3	loss: 1.61053528	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: avg	loss: 1.61031187	acc: 0.201
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 0	loss: 1.61090607	acc: 0.196
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 1	loss: 1.60929034	acc: 0.208
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 2	loss: 1.61053772	acc: 0.198
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 3	loss: 1.61007666	acc: 0.200
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: avg	loss: 1.61020270	acc: 0.201
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 0	loss: 1.60924622	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 1	loss: 1.60884808	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 2	loss: 1.60994348	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 3	loss: 1.60996997	acc: 0.200
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: avg	loss: 1.60950194	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 0	loss: 1.61136542	acc: 0.198
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 1	loss: 1.61061859	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 2	loss: 1.61042322	acc: 0.126
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 3	loss: 1.61010278	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: avg	loss: 1.61062750	acc: 0.181
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:epochs: 0, training task: 3
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 0	loss: 1.60983527	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 1	loss: 1.60874774	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 2	loss: 1.61162537	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 3	loss: 1.61067120	acc: 0.202
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: avg	loss: 1.61021989	acc: 0.201
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 0	loss: 1.59842578	acc: 0.270
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 1	loss: 1.59680499	acc: 0.294
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 2	loss: 1.59096289	acc: 0.306
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 3	loss: 1.60547333	acc: 0.214
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: avg	loss: 1.59791675	acc: 0.271
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 0	loss: 1.60285992	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 1	loss: 1.59884381	acc: 0.200
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 2	loss: 1.59961646	acc: 0.256
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 3	loss: 1.60792731	acc: 0.264
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: avg	loss: 1.60231187	acc: 0.230
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 0	loss: 1.59454675	acc: 0.270
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 1	loss: 1.59588409	acc: 0.230
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 2	loss: 1.60618933	acc: 0.200
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 3	loss: 1.59549847	acc: 0.318
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: avg	loss: 1.59802966	acc: 0.255
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 0	loss: 1.58989752	acc: 0.290
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 1	loss: 1.59836310	acc: 0.326
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 2	loss: 1.60228961	acc: 0.200
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 3	loss: 1.60467010	acc: 0.264
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: avg	loss: 1.59880508	acc: 0.270
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 0	loss: 1.57957336	acc: 0.234
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 1	loss: 1.56272845	acc: 0.296
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 2	loss: 1.58370013	acc: 0.344
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 3	loss: 1.57981067	acc: 0.244
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: avg	loss: 1.57645316	acc: 0.279
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 0	loss: 1.59785767	acc: 0.248
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 1	loss: 1.56435443	acc: 0.210
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 2	loss: 1.58744049	acc: 0.200
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 3	loss: 1.59614917	acc: 0.202
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: avg	loss: 1.58645044	acc: 0.215
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 0	loss: 1.58819049	acc: 0.318
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 1	loss: 1.57795007	acc: 0.370
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 2	loss: 1.59749298	acc: 0.220
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 3	loss: 1.60379279	acc: 0.206
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: avg	loss: 1.59185658	acc: 0.278
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:epochs: 1, training task: 3
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 0	loss: 1.59939594	acc: 0.222
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 1	loss: 1.59620435	acc: 0.200
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 2	loss: 1.59937842	acc: 0.228
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 3	loss: 1.60237073	acc: 0.204
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: avg	loss: 1.59933736	acc: 0.213
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 0	loss: 1.21298688	acc: 0.500
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 1	loss: 1.02671509	acc: 0.608
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 2	loss: 1.25012036	acc: 0.516
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 3	loss: 1.30991541	acc: 0.396
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: avg	loss: 1.19993443	acc: 0.505
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 0	loss: 1.35905817	acc: 0.476
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 1	loss: 1.27233209	acc: 0.482
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 2	loss: 0.89355811	acc: 0.640
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 3	loss: 1.04500928	acc: 0.560
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: avg	loss: 1.14248941	acc: 0.539
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 0	loss: 0.77806183	acc: 0.686
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 1	loss: 0.83992874	acc: 0.666
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 2	loss: 1.17224854	acc: 0.530
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 3	loss: 1.20282330	acc: 0.504
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: avg	loss: 0.99826560	acc: 0.597
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 0	loss: 1.24326617	acc: 0.514
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 1	loss: 1.02552530	acc: 0.606
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 2	loss: 1.15901233	acc: 0.498
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 3	loss: 1.26889374	acc: 0.482
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: avg	loss: 1.17417439	acc: 0.525
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 0	loss: 1.15347070	acc: 0.568
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 1	loss: 0.91246390	acc: 0.650
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 2	loss: 1.02105563	acc: 0.604
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 3	loss: 0.96406723	acc: 0.644
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: avg	loss: 1.01276437	acc: 0.617
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 0	loss: 1.07908829	acc: 0.582
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 1	loss: 0.86178519	acc: 0.692
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 2	loss: 1.13659637	acc: 0.526
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 3	loss: 0.96501251	acc: 0.642
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: avg	loss: 1.01062059	acc: 0.611
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 0	loss: 1.23486133	acc: 0.484
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 1	loss: 1.18678101	acc: 0.556
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 2	loss: 1.43534967	acc: 0.394
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 3	loss: 1.08727875	acc: 0.582
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: avg	loss: 1.23606769	acc: 0.504
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:epochs: 10, training task: 3
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 0	loss: 1.31238654	acc: 0.470
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 1	loss: 0.95471127	acc: 0.624
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 2	loss: 1.14345782	acc: 0.538
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 3	loss: 1.29750238	acc: 0.478
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: avg	loss: 1.17701450	acc: 0.527
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 0	loss: 1.21298688	acc: 0.500
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 1	loss: 1.02671509	acc: 0.608
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 2	loss: 1.25012036	acc: 0.516
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: 3	loss: 1.30991541	acc: 0.396
+[2m[36m(ParallelAgent pid=2860974)[0m INFO:root:	task: avg	loss: 1.19993443	acc: 0.505
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 0	loss: 1.35905817	acc: 0.476
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 1	loss: 1.27233209	acc: 0.482
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 2	loss: 0.89355811	acc: 0.640
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: 3	loss: 1.04500928	acc: 0.560
+[2m[36m(ParallelAgent pid=2861408)[0m INFO:root:	task: avg	loss: 1.14248941	acc: 0.539
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 0	loss: 0.77806183	acc: 0.686
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 1	loss: 0.83992874	acc: 0.666
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 2	loss: 1.17224854	acc: 0.530
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: 3	loss: 1.20282330	acc: 0.504
+[2m[36m(ParallelAgent pid=2861033)[0m INFO:root:	task: avg	loss: 0.99826560	acc: 0.597
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 0	loss: 1.24326617	acc: 0.514
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 1	loss: 1.02552530	acc: 0.606
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 2	loss: 1.15901233	acc: 0.498
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: 3	loss: 1.26889374	acc: 0.482
+[2m[36m(ParallelAgent pid=2860972)[0m INFO:root:	task: avg	loss: 1.17417439	acc: 0.525
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 0	loss: 1.15347070	acc: 0.568
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 1	loss: 0.91246390	acc: 0.650
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 2	loss: 1.02105563	acc: 0.604
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: 3	loss: 0.96406723	acc: 0.644
+[2m[36m(ParallelAgent pid=2861158)[0m INFO:root:	task: avg	loss: 1.01276437	acc: 0.617
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 0	loss: 1.07908829	acc: 0.582
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 1	loss: 0.86178519	acc: 0.692
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 2	loss: 1.13659637	acc: 0.526
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: 3	loss: 0.96501251	acc: 0.642
+[2m[36m(ParallelAgent pid=2861283)[0m INFO:root:	task: avg	loss: 1.01062059	acc: 0.611
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 0	loss: 1.31238654	acc: 0.470
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 1	loss: 0.95471127	acc: 0.624
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 2	loss: 1.14345782	acc: 0.538
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: 3	loss: 1.29750238	acc: 0.478
+[2m[36m(ParallelAgent pid=2860971)[0m INFO:root:	task: avg	loss: 1.17701450	acc: 0.527
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:epochs: 11, training task: 3
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 0	loss: 1.23486133	acc: 0.484
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 1	loss: 1.18678101	acc: 0.556
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 2	loss: 1.43534967	acc: 0.394
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: 3	loss: 1.08727875	acc: 0.582
+[2m[36m(ParallelAgent pid=2860973)[0m INFO:root:	task: avg	loss: 1.23606769	acc: 0.504
+[2023-10-04 18:27:31,390][root][INFO] - Run took 0:00:51.224821
+/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/hydra/_internal/defaults_list.py:251: UserWarning: In 'config': Defaults list is missing `_self_`. See https://hydra.cc/docs/1.2/upgrades/1.0_to_1.1/default_composition_order for more information
+  warnings.warn(msg, UserWarning)
+{'train': {'component_update_freq': 100, 'num_epochs': 100, 'init_component_update_freq': 10, 'init_num_epochs': 10, 'save_freq': 20}, 'dataset': {'dataset_name': 'cifar100', 'num_tasks': 4, 'num_classes_per_task': 5, 'with_replacement': False, 'num_trains_per_class': 256, 'num_vals_per_class': -1, 'remap_labels': True}, 'net': {'name': 'cnn', 'depth': 4, 'channels': 50, 'conv_kernel': 3, 'maxpool_kernel': 2, 'padding': 1, 'dropout': 0.0}, 'sharing_strategy': {'name': 'no_sharing', 'num_coms_per_round': 0}, 'seed': 0, 'algo': 'modular', 'job_name': 'cifar100_modular_numtrain_256_contrastive', 'num_agents': 8, 'root_save_dir': 'cifar_results', 'parallel': True, 'num_init_tasks': 4, 'agent': {'save_dir': '${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}', 'batch_size': 1024, 'memory_size': 32, 'improvement_threshold': 0.05, 'use_contrastive': True}}
+[2023-10-04 18:27:42,491][root][INFO] - Class sequence: [97 66 33 19 34  3 12  2 13 92 80  5 27 60 36 11  9 25 31 87 58 44 94 95
+ 64 61 62 86 79 98 93 51 22 59 26 37 83 73 78  1 30 55 85 47 41 20 63 43
+ 90 88 21 40 15 75  4  0 52 23 35 53 84 69 16 10 71 81  6 91 56 76 38 50
+ 57 74 49 18 24 39 48 99  8 65 89 67 54 32 42 14 68 45 96 77 46 28 72 17
+ 29 82  7 70]
+[2023-10-04 18:27:42,505][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:27:42,551][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:27:42,571][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:27:42,593][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:27:43,086][root][INFO] - Class sequence: [13 55 29 67 64 47 58 19 30 38 15 16 34 35 73 96 25 89 63  5 44 21 28 60
+ 80 86 36 95 83 40  2 24 37 61 62 57 53 79 27 82 65  4 22 45 78 33 32  9
+ 90 56 46 48  7 59 41 93 98 69 51 74 68 72 71 39 54 18 91 76 70 11 10 99
+ 77 52 87 31  6  1 84 43 85 42 12 94 26 88 17 49 75 92  8 97 66 50  0 23
+ 20 81 14  3]
+[2023-10-04 18:27:43,102][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:27:43,121][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:27:43,141][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:27:43,161][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:27:43,642][root][INFO] - Class sequence: [11 37 44 67 45 66 96  1 88  4  2 84 22 50 29 28 41 82 25  5  9 77 13 17
+ 48 76 93 81 73 91 14 94 24 32 75 19 71 10 55 63 58 33 83 18 21  6 26 52
+ 68  3 78 57 80 15 59 99 86 95 92 30  0  8 53 49 35 31 16 61 60 47 98 40
+ 46 34 97 56 12 74 51 43 27 70 20 90 64 36 72 65 62 42 69  7 89 38 39 79
+ 85 23 87 54]
+[2023-10-04 18:27:43,658][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:27:43,678][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:27:43,696][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:27:43,722][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:27:44,223][root][INFO] - Class sequence: [63  2 24 65 38 56 94 61 75 55 25 96 86 32 11 64 30 67 80 27 41 52 20  0
+ 97 50 40 43 36 17 33 34 53 29 44 16 84 15 90 62 18 51 79 88 95 49 35 76
+ 59 31  8 14 68  9 71  6 73  5 66 28 72  1 13 93 60 12 78 26 98  4 46 39
+  3 48 37 69 70 87 83 91 42 47 45 81 92 19 74 89 22 10 82 23 77 85 99 58
+ 21 54  7 57]
+[2023-10-04 18:27:44,239][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:27:44,259][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:27:44,279][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:27:44,299][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:27:44,794][root][INFO] - Class sequence: [ 6 30 52 18 83 48  1 71 97 53  5 31 72 49 11 40 59 27 14 75 63 41 93 74
+ 44  7 77 87 33 51 28 43 24 69 54 42 19 17 68  8  3 73 46 22  4 92 76 89
+ 78 56 61 91 50 67 45  0 36 99 79 64 96 21 29 32 98 70 88 57 39 47 12 81
+ 10  2 25 37 60 20 16 86  9 62 55 58 94 23 13 35 90 80 34 84 15 95 82 85
+ 65 26 38 66]
+[2023-10-04 18:27:44,810][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:27:44,829][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:27:44,848][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:27:44,868][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:27:45,367][root][INFO] - Class sequence: [31  6 72  5 12 20 71 70 26 66 52 42  2 47 56 86 21 33 76 16 80 98 97 79
+ 10 84 55  8 23 83 77 68 93 25 27 90 24 43 91 40 96 28  7 49 35 15 48 50
+ 18 53  0 92 58 34 95 32  9 64 11 60 73 14 39 19 51 88 99 29 13 87 41 69
+ 37  4  3 63 67 65 59 62 54 36 61 94 89 75 74 30 78 46 85 22 17 81 57 44
+ 45 82 38  1]
+[2023-10-04 18:27:45,384][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:27:45,409][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:27:45,429][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:27:45,449][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:27:45,939][root][INFO] - Class sequence: [ 6 82 28 87 50 48  2  1 85 73 62 18 67 45 79 71 44 70  7 35 33 22  3 84
+ 14 58 24 91 83 72 59 90 41 51 43 25 29 92 63 56 46 47 26  0 39 17 34 97
+ 30 53 36 64 81 93 57 20 55 60 31 12 11 54  4 94 49 68 78 38 98 10 19 66
+ 96 37  9 69 76 13 89  8 74 23 15  5 52 61 95 65 32 21 42 40 27 16 99 77
+ 75 88 80 86]
+[2023-10-04 18:27:45,954][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:27:45,977][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:27:45,997][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:27:46,017][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:27:46,516][root][INFO] - Class sequence: [66 65 15 81 88 34 41  4 33 29 76 82 38 94 85 57 86 11 95 78 77 67 53 75
+ 27 99 91 21 32  6 60 96 44 46 70 68 74 63 72 35 56  2 62 31 13  1 42  9
+ 80 58 83 25 97 17 73 16 37 71 54 52 93 48 19 47 98  7 45 14 23 18 40 64
+ 69  5 87 59 61 22 43 10 26 90 89  8 79 55 49 24 20 92 50  3  0 51 30 36
+ 28 39 84 12]
+[2023-10-04 18:27:46,534][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:27:46,553][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:27:46,573][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:27:46,592][root][INFO] - task 3 :(1280, 3, 32, 32)
+i_size 32
+num_classes 5
+net_cfg {'name': 'cnn', 'depth': 4, 'channels': 50, 'conv_kernel': 3, 'maxpool_kernel': 2, 'padding': 1, 'dropout': 0.0, 'i_size': 32, 'num_classes': 5, 'num_tasks': 4, 'num_init_tasks': 4, 'use_contrastive': True}
+<class 'shell.learners.er_dynamic.CompositionalDynamicER'>
+[2023-10-04 18:27:46,621][root][INFO] - No. gpus per agent: 0.25
+2023-10-04 18:27:49,206	INFO worker.py:1544 -- Started a local Ray instance. View the dashboard at [1m[32m127.0.0.1:8265 [39m[22m
+[2m[36m(ParallelAgent pid=3059533)[0m INFO:root:Agent: node_id: 0, seed: 0
+[2m[36m(ParallelAgent pid=3059534)[0m INFO:root:Agent: node_id: 1, seed: 1000
+[2m[36m(ParallelAgent pid=3059535)[0m INFO:root:Agent: node_id: 2, seed: 2000
+[2m[36m(ParallelAgent pid=3059536)[0m INFO:root:Agent: node_id: 3, seed: 3000
+[2m[36m(ParallelAgent pid=3059595)[0m INFO:root:Agent: node_id: 4, seed: 4000
+[2m[36m(ParallelAgent pid=3059750)[0m INFO:root:Agent: node_id: 5, seed: 5000
+[2m[36m(ParallelAgent pid=3059992)[0m INFO:root:Agent: node_id: 6, seed: 6000
+[2m[36m(ParallelAgent pid=3060115)[0m INFO:root:Agent: node_id: 7, seed: 7000
+[2023-10-04 18:28:08,328][root][INFO] - Created fleet with 8 agents
+[2023-10-04 18:28:08,329][root][INFO] - Adding neighbors...
+[2023-10-04 18:28:08,346][root][INFO] - Fleet initialized
+Error executing job with overrides: ['algo=modular', 'seed=0', 'num_agents=8', 'parallel=True', 'dataset=cifar100', 'dataset.num_trains_per_class=256', 'dataset.num_vals_per_class=-1', 'dataset.remap_labels=True', 'dataset.with_replacement=False', 'dataset.num_tasks=4', 'net=cnn', 'net.depth=4', 'num_init_tasks=4', 'net.dropout=0.0', 'train.init_num_epochs=10', 'train.init_component_update_freq=10', 'train.num_epochs=100', 'train.component_update_freq=100', 'agent.memory_size=32', 'agent.batch_size=1024', 'train.save_freq=20', 'agent.use_contrastive=True', 'root_save_dir=cifar_results', 'train=modular', 'job_name=cifar100_modular_numtrain_256_contrastive']
+Traceback (most recent call last):
+  File "/home/vlongle/learning-hive/experiments/run.py", line 41, in main
+    fleet.train_and_comm(task_id)
+  File "/home/vlongle/learning-hive/src/shell/fleet/fleet.py", line 274, in train_and_comm
+    ray.get([agent.train.remote(task_id, start_epoch, self.comm_freq) for agent in self.agents])
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/ray/_private/client_mode_hook.py", line 105, in wrapper
+    return func(*args, **kwargs)
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/ray/_private/worker.py", line 2380, in get
+    raise value.as_instanceof_cause()
+ray.exceptions.RayTaskError(AttributeError): [36mray::ParallelAgent.train()[39m (pid=3059534, ip=192.168.141.55, repr=<shell.fleet.fleet.ParallelAgent object at 0x7fbfca99ab60>)
+  File "/home/vlongle/learning-hive/src/shell/fleet/fleet.py", line 97, in train
+    self.agent.train(trainloader, task_id, testloaders=testloaders,
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 293, in train
+    self.save_data(start_epoch, task_id, testloaders, mode=train_mode)
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 515, in save_data
+    super().save_data(epoch, task_id, testloaders,
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 226, in save_data
+    self.test_loss, self.test_acc = self.evaluate(testloaders, mode=mode)
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 476, in evaluate
+    Y_hat = self.net(X, task)
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/vlongle/learning-hive/src/shell/models/cnn_soft_lifelong_dynamic.py", line 139, in forward
+    X = self.encodev2(X, task_id)
+  File "/home/vlongle/learning-hive/src/shell/models/cnn_soft_lifelong_dynamic.py", line 129, in encodev2
+    if j not in self.candidate_indices or j == self.active_candidate_index:  # Allow only active candidate
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1614, in __getattr__
+    raise AttributeError("'{}' object has no attribute '{}'".format(
+AttributeError: 'CNNSoftLLDynamic' object has no attribute 'candidate_indices'
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/hydra/_internal/defaults_list.py:251: UserWarning: In 'config': Defaults list is missing `_self_`. See https://hydra.cc/docs/1.2/upgrades/1.0_to_1.1/default_composition_order for more information
+  warnings.warn(msg, UserWarning)
+{'train': {'component_update_freq': 100, 'num_epochs': 100, 'init_component_update_freq': 10, 'init_num_epochs': 10, 'save_freq': 20}, 'dataset': {'dataset_name': 'cifar100', 'num_tasks': 4, 'num_classes_per_task': 5, 'with_replacement': False, 'num_trains_per_class': 256, 'num_vals_per_class': -1, 'remap_labels': True}, 'net': {'name': 'cnn', 'depth': 4, 'channels': 50, 'conv_kernel': 3, 'maxpool_kernel': 2, 'padding': 1, 'dropout': 0.0}, 'sharing_strategy': {'name': 'no_sharing', 'num_coms_per_round': 0}, 'seed': 0, 'algo': 'modular', 'job_name': 'cifar100_modular_numtrain_256', 'num_agents': 8, 'root_save_dir': 'cifar_results', 'parallel': True, 'num_init_tasks': 4, 'agent': {'save_dir': '${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}', 'batch_size': 1024, 'memory_size': 32, 'improvement_threshold': 0.05, 'use_contrastive': False}}
+[2023-10-04 18:28:20,570][root][INFO] - Class sequence: [97 66 33 19 34  3 12  2 13 92 80  5 27 60 36 11  9 25 31 87 58 44 94 95
+ 64 61 62 86 79 98 93 51 22 59 26 37 83 73 78  1 30 55 85 47 41 20 63 43
+ 90 88 21 40 15 75  4  0 52 23 35 53 84 69 16 10 71 81  6 91 56 76 38 50
+ 57 74 49 18 24 39 48 99  8 65 89 67 54 32 42 14 68 45 96 77 46 28 72 17
+ 29 82  7 70]
+[2023-10-04 18:28:20,585][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:28:20,631][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:28:20,651][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:28:20,671][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:28:21,152][root][INFO] - Class sequence: [13 55 29 67 64 47 58 19 30 38 15 16 34 35 73 96 25 89 63  5 44 21 28 60
+ 80 86 36 95 83 40  2 24 37 61 62 57 53 79 27 82 65  4 22 45 78 33 32  9
+ 90 56 46 48  7 59 41 93 98 69 51 74 68 72 71 39 54 18 91 76 70 11 10 99
+ 77 52 87 31  6  1 84 43 85 42 12 94 26 88 17 49 75 92  8 97 66 50  0 23
+ 20 81 14  3]
+[2023-10-04 18:28:21,168][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:28:21,218][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:28:21,244][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:28:21,262][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:28:21,755][root][INFO] - Class sequence: [11 37 44 67 45 66 96  1 88  4  2 84 22 50 29 28 41 82 25  5  9 77 13 17
+ 48 76 93 81 73 91 14 94 24 32 75 19 71 10 55 63 58 33 83 18 21  6 26 52
+ 68  3 78 57 80 15 59 99 86 95 92 30  0  8 53 49 35 31 16 61 60 47 98 40
+ 46 34 97 56 12 74 51 43 27 70 20 90 64 36 72 65 62 42 69  7 89 38 39 79
+ 85 23 87 54]
+[2023-10-04 18:28:21,771][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:28:21,800][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:28:21,817][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:28:21,836][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:28:22,314][root][INFO] - Class sequence: [63  2 24 65 38 56 94 61 75 55 25 96 86 32 11 64 30 67 80 27 41 52 20  0
+ 97 50 40 43 36 17 33 34 53 29 44 16 84 15 90 62 18 51 79 88 95 49 35 76
+ 59 31  8 14 68  9 71  6 73  5 66 28 72  1 13 93 60 12 78 26 98  4 46 39
+  3 48 37 69 70 87 83 91 42 47 45 81 92 19 74 89 22 10 82 23 77 85 99 58
+ 21 54  7 57]
+[2023-10-04 18:28:22,330][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:28:22,356][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:28:22,382][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:28:22,406][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:28:22,896][root][INFO] - Class sequence: [ 6 30 52 18 83 48  1 71 97 53  5 31 72 49 11 40 59 27 14 75 63 41 93 74
+ 44  7 77 87 33 51 28 43 24 69 54 42 19 17 68  8  3 73 46 22  4 92 76 89
+ 78 56 61 91 50 67 45  0 36 99 79 64 96 21 29 32 98 70 88 57 39 47 12 81
+ 10  2 25 37 60 20 16 86  9 62 55 58 94 23 13 35 90 80 34 84 15 95 82 85
+ 65 26 38 66]
+[2023-10-04 18:28:22,911][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:28:22,931][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:28:22,950][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:28:22,977][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:28:23,471][root][INFO] - Class sequence: [31  6 72  5 12 20 71 70 26 66 52 42  2 47 56 86 21 33 76 16 80 98 97 79
+ 10 84 55  8 23 83 77 68 93 25 27 90 24 43 91 40 96 28  7 49 35 15 48 50
+ 18 53  0 92 58 34 95 32  9 64 11 60 73 14 39 19 51 88 99 29 13 87 41 69
+ 37  4  3 63 67 65 59 62 54 36 61 94 89 75 74 30 78 46 85 22 17 81 57 44
+ 45 82 38  1]
+[2023-10-04 18:28:23,487][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:28:23,513][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:28:23,533][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:28:23,553][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:28:24,037][root][INFO] - Class sequence: [ 6 82 28 87 50 48  2  1 85 73 62 18 67 45 79 71 44 70  7 35 33 22  3 84
+ 14 58 24 91 83 72 59 90 41 51 43 25 29 92 63 56 46 47 26  0 39 17 34 97
+ 30 53 36 64 81 93 57 20 55 60 31 12 11 54  4 94 49 68 78 38 98 10 19 66
+ 96 37  9 69 76 13 89  8 74 23 15  5 52 61 95 65 32 21 42 40 27 16 99 77
+ 75 88 80 86]
+[2023-10-04 18:28:24,051][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:28:24,070][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:28:24,089][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:28:24,109][root][INFO] - task 3 :(1280, 3, 32, 32)
+[2023-10-04 18:28:24,587][root][INFO] - Class sequence: [66 65 15 81 88 34 41  4 33 29 76 82 38 94 85 57 86 11 95 78 77 67 53 75
+ 27 99 91 21 32  6 60 96 44 46 70 68 74 63 72 35 56  2 62 31 13  1 42  9
+ 80 58 83 25 97 17 73 16 37 71 54 52 93 48 19 47 98  7 45 14 23 18 40 64
+ 69  5 87 59 61 22 43 10 26 90 89  8 79 55 49 24 20 92 50  3  0 51 30 36
+ 28 39 84 12]
+[2023-10-04 18:28:24,603][root][INFO] - task 0 :(1280, 3, 32, 32)
+[2023-10-04 18:28:24,622][root][INFO] - task 1 :(1280, 3, 32, 32)
+[2023-10-04 18:28:24,641][root][INFO] - task 2 :(1280, 3, 32, 32)
+[2023-10-04 18:28:24,660][root][INFO] - task 3 :(1280, 3, 32, 32)
+i_size 32
+num_classes 5
+net_cfg {'name': 'cnn', 'depth': 4, 'channels': 50, 'conv_kernel': 3, 'maxpool_kernel': 2, 'padding': 1, 'dropout': 0.0, 'i_size': 32, 'num_classes': 5, 'num_tasks': 4, 'num_init_tasks': 4, 'use_contrastive': False}
+<class 'shell.learners.er_dynamic.CompositionalDynamicER'>
+[2023-10-04 18:28:24,691][root][INFO] - No. gpus per agent: 0.25
+2023-10-04 18:28:27,319	INFO worker.py:1544 -- Started a local Ray instance. View the dashboard at [1m[32m127.0.0.1:8265 [39m[22m
+[2m[36m(ParallelAgent pid=3099133)[0m INFO:root:Agent: node_id: 1, seed: 1000
+[2m[36m(ParallelAgent pid=3099132)[0m INFO:root:Agent: node_id: 0, seed: 0
+[2m[36m(ParallelAgent pid=3099134)[0m INFO:root:Agent: node_id: 2, seed: 2000
+[2m[36m(ParallelAgent pid=3099135)[0m INFO:root:Agent: node_id: 3, seed: 3000
+[2m[36m(ParallelAgent pid=3099177)[0m INFO:root:Agent: node_id: 4, seed: 4000
+[2m[36m(ParallelAgent pid=3099384)[0m INFO:root:Agent: node_id: 5, seed: 5000
+[2m[36m(ParallelAgent pid=3099513)[0m INFO:root:Agent: node_id: 7, seed: 7000
+[2m[36m(ParallelAgent pid=3099446)[0m INFO:root:Agent: node_id: 6, seed: 6000
+[2023-10-04 18:28:47,155][root][INFO] - Created fleet with 8 agents
+[2023-10-04 18:28:47,155][root][INFO] - Adding neighbors...
+[2023-10-04 18:28:47,171][root][INFO] - Fleet initialized
+Error executing job with overrides: ['algo=modular', 'seed=0', 'num_agents=8', 'parallel=True', 'dataset=cifar100', 'dataset.num_trains_per_class=256', 'dataset.num_vals_per_class=-1', 'dataset.remap_labels=True', 'dataset.with_replacement=False', 'dataset.num_tasks=4', 'net=cnn', 'net.depth=4', 'num_init_tasks=4', 'net.dropout=0.0', 'train.init_num_epochs=10', 'train.init_component_update_freq=10', 'train.num_epochs=100', 'train.component_update_freq=100', 'agent.memory_size=32', 'agent.batch_size=1024', 'train.save_freq=20', 'agent.use_contrastive=False', 'root_save_dir=cifar_results', 'train=modular', 'job_name=cifar100_modular_numtrain_256']
+Traceback (most recent call last):
+  File "/home/vlongle/learning-hive/experiments/run.py", line 41, in main
+    fleet.train_and_comm(task_id)
+  File "/home/vlongle/learning-hive/src/shell/fleet/fleet.py", line 274, in train_and_comm
+    ray.get([agent.train.remote(task_id, start_epoch, self.comm_freq) for agent in self.agents])
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/ray/_private/client_mode_hook.py", line 105, in wrapper
+    return func(*args, **kwargs)
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/ray/_private/worker.py", line 2380, in get
+    raise value.as_instanceof_cause()
+ray.exceptions.RayTaskError(AttributeError): [36mray::ParallelAgent.train()[39m (pid=3099513, ip=192.168.141.55, repr=<shell.fleet.fleet.ParallelAgent object at 0x7ee862fb2b60>)
+  File "/home/vlongle/learning-hive/src/shell/fleet/fleet.py", line 97, in train
+    self.agent.train(trainloader, task_id, testloaders=testloaders,
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 293, in train
+    self.save_data(start_epoch, task_id, testloaders, mode=train_mode)
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 515, in save_data
+    super().save_data(epoch, task_id, testloaders,
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 226, in save_data
+    self.test_loss, self.test_acc = self.evaluate(testloaders, mode=mode)
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 476, in evaluate
+    Y_hat = self.net(X, task)
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1501, in _call_impl
+    return forward_call(*args, **kwargs)
+  File "/home/vlongle/learning-hive/src/shell/models/cnn_soft_lifelong_dynamic.py", line 139, in forward
+    X = self.encodev2(X, task_id)
+  File "/home/vlongle/learning-hive/src/shell/models/cnn_soft_lifelong_dynamic.py", line 129, in encodev2
+    if j not in self.candidate_indices or j == self.active_candidate_index:  # Allow only active candidate
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1614, in __getattr__
+    raise AttributeError("'{}' object has no attribute '{}'".format(
+AttributeError: 'CNNSoftLLDynamic' object has no attribute 'candidate_indices'
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+{'algo': ['monolithic', 'modular'], 'seed': 0, 'num_agents': 8, 'parallel': True, 'dataset': 'cifar100', 'dataset.num_trains_per_class': 256, 'dataset.num_vals_per_class': -1, 'dataset.remap_labels': True, 'dataset.with_replacement': False, 'dataset.num_tasks': 4, 'net': 'cnn', 'net.depth': 4, 'num_init_tasks': 4, 'net.dropout': 0.0, 'train.init_num_epochs': 10, 'train.init_component_update_freq': 10, 'train.num_epochs': 100, 'train.component_update_freq': 100, 'agent.memory_size': 32, 'agent.batch_size': 1024, 'train.save_freq': 20, 'agent.use_contrastive': [True, False], 'root_save_dir': 'cifar_results'}
+No. of experiments: 4
+Experiment runs took 0:04:12.751483

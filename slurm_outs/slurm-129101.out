@@ -1,0 +1,277 @@
+/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/hydra/_internal/defaults_list.py:251: UserWarning: In 'config': Defaults list is missing `_self_`. See https://hydra.cc/docs/1.2/upgrades/1.0_to_1.1/default_composition_order for more information
+  warnings.warn(msg, UserWarning)
+{'train': {'component_update_freq': 100, 'num_epochs': 100, 'init_component_update_freq': 100, 'init_num_epochs': 100, 'save_freq': 20}, 'dataset': {'dataset_name': 'fashionmnist', 'num_tasks': 10, 'num_classes_per_task': 2, 'with_replacement': True, 'num_trains_per_class': 64, 'num_vals_per_class': 50, 'remap_labels': True}, 'net': {'name': 'mlp', 'depth': 4, 'layer_size': 64, 'dropout': 0.0}, 'sharing_strategy': {'name': 'no_sharing', 'num_coms_per_round': 0}, 'seed': 1, 'algo': 'monolithic', 'job_name': 'fashionmnist_monolithic_numtrain_64_contrastive', 'num_agents': 8, 'root_save_dir': 'experiment_results/vanilla_fix_bug_compute_loss_encodev2', 'parallel': True, 'num_init_tasks': 4, 'agent': {'save_dir': '${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}', 'batch_size': 64, 'memory_size': 32, 'improvement_threshold': 0.05, 'use_contrastive': True}}
+[2023-10-04 19:46:12,956][root][INFO] - Class sequence: [6 4 1 4 5 6 6 2 2 7 9 7 1 6 4 9 8 5 4 1]
+[2023-10-04 19:46:12,975][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,023][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,043][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,064][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,084][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,103][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,123][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,143][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,163][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,183][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,285][root][INFO] - Class sequence: [6 5 5 7 5 1 3 7 0 2 4 8 7 3 3 7 4 5 2 0]
+[2023-10-04 19:46:13,303][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,324][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,345][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,366][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,387][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,409][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,429][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,451][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,471][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,492][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,602][root][INFO] - Class sequence: [5 4 2 3 6 2 0 5 9 4 8 4 1 7 2 5 5 3 9 6]
+[2023-10-04 19:46:13,619][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,638][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,658][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,678][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,698][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,721][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,741][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,762][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,787][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,807][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,909][root][INFO] - Class sequence: [6 9 8 3 9 7 6 3 0 2 8 6 3 8 5 7 1 4 0 2]
+[2023-10-04 19:46:13,927][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,951][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,971][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:13,991][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,010][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,030][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,050][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,070][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,090][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,117][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,219][root][INFO] - Class sequence: [9 2 7 6 8 4 8 5 3 9 0 6 6 9 3 9 7 0 1 4]
+[2023-10-04 19:46:14,236][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,256][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,276][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,296][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,316][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,336][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,356][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,376][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,395][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,415][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,518][root][INFO] - Class sequence: [1 2 4 6 1 7 8 7 5 7 6 8 0 5 0 5 6 1 5 2]
+[2023-10-04 19:46:14,536][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,556][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,576][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,595][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,615][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,634][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,654][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,674][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,700][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,720][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,823][root][INFO] - Class sequence: [2 9 0 6 4 1 1 4 9 7 7 5 9 2 2 7 8 9 8 0]
+[2023-10-04 19:46:14,840][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,860][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,880][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,901][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,920][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,939][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,960][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,979][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:14,999][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:15,021][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:15,123][root][INFO] - Class sequence: [2 7 2 4 0 8 5 9 1 9 7 4 4 9 4 8 7 1 0 5]
+[2023-10-04 19:46:15,141][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:15,161][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:15,182][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:15,202][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:15,222][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:15,243][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:15,262][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:15,286][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:15,306][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:15,326][root][INFO] - task 9 :(128, 1, 28, 28)
+i_size 28
+num_classes 2
+net_cfg {'name': 'mlp', 'depth': 4, 'layer_size': 64, 'dropout': 0.0, 'i_size': 28, 'num_classes': 2, 'num_tasks': 10, 'num_init_tasks': 4, 'use_contrastive': True}
+<class 'shell.learners.er_nocomponents.NoComponentsER'>
+[2023-10-04 19:46:15,350][root][INFO] - No. gpus per agent: 0.25
+2023-10-04 19:46:17,748	INFO worker.py:1544 -- Started a local Ray instance. View the dashboard at [1m[32m127.0.0.1:8265 [39m[22m
+[2m[36m(ParallelAgent pid=1889818)[0m INFO:root:Agent: node_id: 0, seed: 1
+[2m[36m(ParallelAgent pid=1889819)[0m INFO:root:Agent: node_id: 1, seed: 1001
+[2m[36m(ParallelAgent pid=1889820)[0m INFO:root:Agent: node_id: 2, seed: 2001
+[2m[36m(ParallelAgent pid=1889821)[0m INFO:root:Agent: node_id: 3, seed: 3001
+[2m[36m(ParallelAgent pid=1889872)[0m INFO:root:Agent: node_id: 4, seed: 4001
+[2m[36m(ParallelAgent pid=1890005)[0m INFO:root:Agent: node_id: 5, seed: 5001
+[2m[36m(ParallelAgent pid=1890067)[0m INFO:root:Agent: node_id: 6, seed: 6001
+[2m[36m(ParallelAgent pid=1890256)[0m INFO:root:Agent: node_id: 7, seed: 7001
+[2023-10-04 19:46:35,799][root][INFO] - Created fleet with 8 agents
+[2023-10-04 19:46:35,800][root][INFO] - Adding neighbors...
+[2023-10-04 19:46:35,809][root][INFO] - Fleet initialized
+Error executing job with overrides: ['algo=monolithic', 'agent.batch_size=64', 'seed=1', 'parallel=True', 'num_agents=8', 'dataset=fashionmnist', 'dataset.num_trains_per_class=64', 'dataset.num_vals_per_class=50', 'dataset.remap_labels=True', 'dataset.with_replacement=True', 'dataset.num_tasks=10', 'net=mlp', 'net.depth=4', 'num_init_tasks=4', 'net.dropout=0.0', 'train.num_epochs=100', 'train.component_update_freq=100', 'train.init_num_epochs=100', 'train.init_component_update_freq=100', 'train.save_freq=20', 'agent.use_contrastive=True', 'agent.memory_size=32', 'root_save_dir=experiment_results/vanilla_fix_bug_compute_loss_encodev2', 'train=monolithic', 'job_name=fashionmnist_monolithic_numtrain_64_contrastive']
+Traceback (most recent call last):
+  File "/home/vlongle/learning-hive/experiments/run.py", line 41, in main
+    fleet.train_and_comm(task_id)
+  File "/home/vlongle/learning-hive/src/shell/fleet/fleet.py", line 274, in train_and_comm
+    ray.get([agent.train.remote(task_id, start_epoch, self.comm_freq) for agent in self.agents])
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/ray/_private/client_mode_hook.py", line 105, in wrapper
+    return func(*args, **kwargs)
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/ray/_private/worker.py", line 2380, in get
+    raise value.as_instanceof_cause()
+ray.exceptions.RayTaskError(AttributeError): [36mray::ParallelAgent.train()[39m (pid=1890067, ip=192.168.141.63, repr=<shell.fleet.fleet.ParallelAgent object at 0x7fdf04abebc0>)
+  File "/home/vlongle/learning-hive/src/shell/fleet/fleet.py", line 97, in train
+    self.agent.train(trainloader, task_id, testloaders=testloaders,
+  File "/home/vlongle/learning-hive/src/shell/learners/er_nocomponents.py", line 36, in train
+    self.save_data(start_epoch, task_id, testloaders,
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 226, in save_data
+    self.test_loss, self.test_acc = self.evaluate(testloaders, mode=mode)
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 198, in evaluate
+    l += self.compute_loss(X, Y, task, mode='ce').item()
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 140, in compute_loss
+    return self.compute_cross_entropy_loss(X, Y, task_id, detach=False)
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 109, in compute_cross_entropy_loss
+    X_encode = self.net.encodev2(X, task_id)
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1614, in __getattr__
+    raise AttributeError("'{}' object has no attribute '{}'".format(
+AttributeError: 'MLP' object has no attribute 'encodev2'
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/hydra/_internal/defaults_list.py:251: UserWarning: In 'config': Defaults list is missing `_self_`. See https://hydra.cc/docs/1.2/upgrades/1.0_to_1.1/default_composition_order for more information
+  warnings.warn(msg, UserWarning)
+{'train': {'component_update_freq': 100, 'num_epochs': 100, 'init_component_update_freq': 100, 'init_num_epochs': 100, 'save_freq': 20}, 'dataset': {'dataset_name': 'fashionmnist', 'num_tasks': 10, 'num_classes_per_task': 2, 'with_replacement': True, 'num_trains_per_class': 64, 'num_vals_per_class': 50, 'remap_labels': True}, 'net': {'name': 'mlp', 'depth': 4, 'layer_size': 64, 'dropout': 0.0}, 'sharing_strategy': {'name': 'no_sharing', 'num_coms_per_round': 0}, 'seed': 1, 'algo': 'modular', 'job_name': 'fashionmnist_modular_numtrain_64_contrastive', 'num_agents': 8, 'root_save_dir': 'experiment_results/vanilla_fix_bug_compute_loss_encodev2', 'parallel': True, 'num_init_tasks': 4, 'agent': {'save_dir': '${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}', 'batch_size': 64, 'memory_size': 32, 'improvement_threshold': 0.05, 'use_contrastive': True}}
+[2023-10-04 19:46:47,847][root][INFO] - Class sequence: [6 4 1 4 5 6 6 2 2 7 9 7 1 6 4 9 8 5 4 1]
+[2023-10-04 19:46:47,868][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:47,930][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:47,956][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:47,986][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,014][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,036][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,063][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,088][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,111][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,135][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,247][root][INFO] - Class sequence: [6 5 5 7 5 1 3 7 0 2 4 8 7 3 3 7 4 5 2 0]
+[2023-10-04 19:46:48,266][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,294][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,322][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,342][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,363][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,391][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,417][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,437][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,457][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,477][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,584][root][INFO] - Class sequence: [5 4 2 3 6 2 0 5 9 4 8 4 1 7 2 5 5 3 9 6]
+[2023-10-04 19:46:48,604][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,624][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,644][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,664][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,692][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,712][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,733][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,754][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,782][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,802][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,907][root][INFO] - Class sequence: [6 9 8 3 9 7 6 3 0 2 8 6 3 8 5 7 1 4 0 2]
+[2023-10-04 19:46:48,925][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,951][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,971][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:48,992][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,012][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,032][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,052][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,072][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,093][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,114][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,225][root][INFO] - Class sequence: [9 2 7 6 8 4 8 5 3 9 0 6 6 9 3 9 7 0 1 4]
+[2023-10-04 19:46:49,242][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,263][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,283][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,310][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,330][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,363][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,387][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,413][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,438][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,458][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,563][root][INFO] - Class sequence: [1 2 4 6 1 7 8 7 5 7 6 8 0 5 0 5 6 1 5 2]
+[2023-10-04 19:46:49,581][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,603][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,629][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,650][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,677][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,702][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,727][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,754][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,781][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,807][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,918][root][INFO] - Class sequence: [2 9 0 6 4 1 1 4 9 7 7 5 9 2 2 7 8 9 8 0]
+[2023-10-04 19:46:49,936][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,956][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:49,977][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,004][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,023][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,050][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,070][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,097][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,122][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,146][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,250][root][INFO] - Class sequence: [2 7 2 4 0 8 5 9 1 9 7 4 4 9 4 8 7 1 0 5]
+[2023-10-04 19:46:50,268][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,294][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,314][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,335][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,361][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,389][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,416][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,443][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,464][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-04 19:46:50,490][root][INFO] - task 9 :(128, 1, 28, 28)
+i_size 28
+num_classes 2
+net_cfg {'name': 'mlp', 'depth': 4, 'layer_size': 64, 'dropout': 0.0, 'i_size': 28, 'num_classes': 2, 'num_tasks': 10, 'num_init_tasks': 4, 'use_contrastive': True}
+<class 'shell.learners.er_dynamic.CompositionalDynamicER'>
+[2023-10-04 19:46:50,518][root][INFO] - No. gpus per agent: 0.25
+2023-10-04 19:46:52,725	INFO worker.py:1544 -- Started a local Ray instance. View the dashboard at [1m[32m127.0.0.1:8265 [39m[22m
+[2m[36m(ParallelAgent pid=1967829)[0m INFO:root:Agent: node_id: 0, seed: 1
+[2m[36m(ParallelAgent pid=1967831)[0m INFO:root:Agent: node_id: 1, seed: 1001
+[2m[36m(ParallelAgent pid=1967860)[0m INFO:root:Agent: node_id: 2, seed: 2001
+[2m[36m(ParallelAgent pid=1967967)[0m INFO:root:Agent: node_id: 4, seed: 4001
+[2m[36m(ParallelAgent pid=1967916)[0m INFO:root:Agent: node_id: 3, seed: 3001
+[2m[36m(ParallelAgent pid=1968094)[0m INFO:root:Agent: node_id: 5, seed: 5001
+[2m[36m(ParallelAgent pid=1968103)[0m INFO:root:Agent: node_id: 6, seed: 6001
+[2m[36m(ParallelAgent pid=1968227)[0m INFO:root:Agent: node_id: 7, seed: 7001
+[2023-10-04 19:47:11,027][root][INFO] - Created fleet with 8 agents
+[2023-10-04 19:47:11,028][root][INFO] - Adding neighbors...
+[2023-10-04 19:47:11,037][root][INFO] - Fleet initialized
+Error executing job with overrides: ['algo=modular', 'agent.batch_size=64', 'seed=1', 'parallel=True', 'num_agents=8', 'dataset=fashionmnist', 'dataset.num_trains_per_class=64', 'dataset.num_vals_per_class=50', 'dataset.remap_labels=True', 'dataset.with_replacement=True', 'dataset.num_tasks=10', 'net=mlp', 'net.depth=4', 'num_init_tasks=4', 'net.dropout=0.0', 'train.num_epochs=100', 'train.component_update_freq=100', 'train.init_num_epochs=100', 'train.init_component_update_freq=100', 'train.save_freq=20', 'agent.use_contrastive=True', 'agent.memory_size=32', 'root_save_dir=experiment_results/vanilla_fix_bug_compute_loss_encodev2', 'train=modular', 'job_name=fashionmnist_modular_numtrain_64_contrastive']
+Traceback (most recent call last):
+  File "/home/vlongle/learning-hive/experiments/run.py", line 41, in main
+    fleet.train_and_comm(task_id)
+  File "/home/vlongle/learning-hive/src/shell/fleet/fleet.py", line 274, in train_and_comm
+    ray.get([agent.train.remote(task_id, start_epoch, self.comm_freq) for agent in self.agents])
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/ray/_private/client_mode_hook.py", line 105, in wrapper
+    return func(*args, **kwargs)
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/ray/_private/worker.py", line 2380, in get
+    raise value.as_instanceof_cause()
+ray.exceptions.RayTaskError(AttributeError): [36mray::ParallelAgent.train()[39m (pid=1967831, ip=192.168.141.63, repr=<shell.fleet.fleet.ParallelAgent object at 0x7eeb2cd92bc0>)
+  File "/home/vlongle/learning-hive/src/shell/fleet/fleet.py", line 97, in train
+    self.agent.train(trainloader, task_id, testloaders=testloaders,
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 293, in train
+    self.save_data(start_epoch, task_id, testloaders, mode=train_mode)
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 515, in save_data
+    super().save_data(epoch, task_id, testloaders,
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 226, in save_data
+    self.test_loss, self.test_acc = self.evaluate(testloaders, mode=mode)
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 477, in evaluate
+    l += self.compute_loss(X, Y, task, mode='ce').item()
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 140, in compute_loss
+    return self.compute_cross_entropy_loss(X, Y, task_id, detach=False)
+  File "/home/vlongle/learning-hive/src/shell/learners/base_learning_classes.py", line 109, in compute_cross_entropy_loss
+    X_encode = self.net.encodev2(X, task_id)
+  File "/mnt/kostas-graid/sw/envs/vlongle/miniconda3/envs/shell/lib/python3.10/site-packages/torch/nn/modules/module.py", line 1614, in __getattr__
+    raise AttributeError("'{}' object has no attribute '{}'".format(
+AttributeError: 'MLPSoftLLDynamic' object has no attribute 'encodev2'
+
+Set the environment variable HYDRA_FULL_ERROR=1 for a complete stack trace.
+{'algo': ['monolithic', 'modular'], 'agent.batch_size': 64, 'seed': 1, 'parallel': True, 'num_agents': 8, 'dataset': 'fashionmnist', 'dataset.num_trains_per_class': 64, 'dataset.num_vals_per_class': 50, 'dataset.remap_labels': True, 'dataset.with_replacement': True, 'dataset.num_tasks': 10, 'net': 'mlp', 'net.depth': 4, 'num_init_tasks': 4, 'net.dropout': 0.0, 'train.num_epochs': 100, 'train.component_update_freq': 100, 'train.init_num_epochs': 100, 'train.init_component_update_freq': 100, 'train.save_freq': 20, 'agent.use_contrastive': True, 'agent.memory_size': 32, 'root_save_dir': 'experiment_results/vanilla_fix_bug_compute_loss_encodev2'}
+No. of experiments: 2
+Experiment runs took 0:01:12.148902

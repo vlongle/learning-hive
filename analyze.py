@@ -27,7 +27,7 @@ from shell.utils.metric import Metric
 from  shell.utils.record import Record
 # result_dir = "cifar_lasttry_im_done_results"
 # result_dir = "experiment_results/vanilla"
-result_dir = "experiment_results/vanilla_small"
+result_dir = "experiment_results/vanilla_fix_bug_compute_loss_encodev2"
 # result_dir = "experiment_results/vanilla_more_trials"
 # result_dir = "experiment_results/vanilla_tune_fashionmnist"
 # result_dir = "vanilla_results_wo_replacement_2"

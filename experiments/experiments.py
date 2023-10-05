@@ -63,8 +63,8 @@ if __name__ == "__main__":
         "train.init_component_update_freq": num_epochs,
         "train.save_freq": 20,
         # "agent.use_contrastive": [True, False],
-        # "agent.use_contrastive": True,
-        "agent.use_contrastive": False,
+        "agent.use_contrastive": True,
+        # "agent.use_contrastive": False,
         "agent.memory_size": 32,
         # "dataset": ["mnist", "kmnist", "fashionmnist"],
         "dataset": dataset,  # use the dataset from arguments

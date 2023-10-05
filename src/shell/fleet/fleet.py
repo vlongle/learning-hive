@@ -86,11 +86,18 @@ class Agent:
             if component_update_freq is not None:
                 train_kwargs["component_update_freq"] = component_update_freq
         
+        print("comm", communication_frequency)
         if communication_frequency is None:
+            # communication_frequency = train_kwargs['num_epochs'] - start_epoch
             communication_frequency = train_kwargs['num_epochs'] - start_epoch
         
         end_epoch = min(start_epoch + communication_frequency, train_kwargs['num_epochs'] )
         adjusted_num_epochs = end_epoch - start_epoch  
+        # print("num_epochs", train_kwargs["num_epochs"], "init_num_epochs", train_kwargs.get("init_num_epochs", None),
+        #     "task_id", task_id, "num_init_tasks", self.agent.net.num_init_tasks, "adjusted_num_epochs", adjusted_num_epochs,
+        #     "communication_frequency", communication_frequency, "start_epoch", start_epoch, "end_epoch", end_epoch)
+        # exit(0)
+
 
         train_kwargs["num_epochs"] = adjusted_num_epochs
 
@@ -164,7 +171,10 @@ class Fleet:
                            net_kwargs, agent_kwargs, train_kwargs)
         self.add_neighbors()
         self.num_epochs = train_kwargs["num_epochs"]
-        self.comm_freq = sharing_strategy.get("comm_freq", self.num_epochs)
+        self.init_num_epochs = train_kwargs.get("init_num_epochs", self.num_epochs)
+        self.comm_freq = sharing_strategy.get("comm_freq", None)
+        self.num_init_tasks = net_kwargs["num_init_tasks"]
+
         logging.info("Fleet initialized")
 
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs,
@@ -199,9 +209,16 @@ class Fleet:
             agent.train(task_id)
 
     def train_and_comm(self, task_id):
-        for start_epoch in range(0, self.num_epochs, self.comm_freq):
+        if task_id < self.num_init_tasks:
+            # init task
+            num_epochs = self.init_num_epochs
+        else:
+            num_epochs = self.num_epochs
+        comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs
+
+        for start_epoch in range(0, num_epochs, comm_freq):
             for agent in self.agents:
-                agent.train(task_id, start_epoch, self.comm_freq)
+                agent.train(task_id, start_epoch, comm_freq)
             self.communicate(task_id)
 
 
@@ -230,7 +247,10 @@ class ParallelFleet:
                            net_kwargs, agent_kwargs, train_kwargs)
         self.add_neighbors()
         self.num_epochs = train_kwargs["num_epochs"]
-        self.comm_freq = sharing_strategy.get("comm_freq", self.num_epochs)
+        self.init_num_epochs = train_kwargs.get("init_num_epochs", self.num_epochs)
+        self.comm_freq = sharing_strategy.get("comm_freq", None)
+        self.num_init_tasks = net_kwargs["num_init_tasks"]
+
         logging.info("Fleet initialized")
 
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
@@ -270,8 +290,15 @@ class ParallelFleet:
 
     
     def train_and_comm(self, task_id):
-        for start_epoch in range(0, self.num_epochs, self.comm_freq):
-            ray.get([agent.train.remote(task_id, start_epoch, self.comm_freq) for agent in self.agents])
+        if task_id <  self.num_init_tasks:
+            # init task
+            num_epochs = self.init_num_epochs
+        else:
+            num_epochs = self.num_epochs
+        comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs
+
+        for start_epoch in range(0, num_epochs, comm_freq):
+            ray.get([agent.train.remote(task_id, start_epoch, comm_freq) for agent in self.agents])
             self.communicate(task_id)
 
     def communicate(self, task_id):

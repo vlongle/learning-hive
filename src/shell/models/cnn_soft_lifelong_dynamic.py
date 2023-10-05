@@ -50,6 +50,12 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         self.maxpool = nn.MaxPool2d(maxpool_kernel)
         self.dropout = nn.Dropout(dropout)
 
+
+        self.active_candidate_index = None  # Initialize as no active candidate modules
+        self.candidate_indices = []  # To hold indices of candidate modules in self.components
+        self.last_active_candidate_index = None
+
+
         out_h = self.i_size[0]
         for i in range(self.depth):
             conv = nn.Conv2d(channels, channels, conv_kernel, padding=padding)
@@ -100,6 +106,19 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                         
                     self.num_components += 1
 
+
+    
+
+    def receive_modules(self, task_id, module_list):
+        # Number of temporary modules added in the last step
+        num_tmp_modules = len(self.candidate_indices)
+        
+        assert len(module_list) <= num_tmp_modules, 'Number of modules received must be less than or equal to the number of temporary modules'
+        # Loop over the temporary modules, excluding the last one
+        for i in range(len(module_list)):
+            tmp_module_idx = self.candidate_indices[i]
+            # Replacing the state_dict of the temporary module with the corresponding one in the module_list
+            self.components[tmp_module_idx].load_state_dict(module_list[i].state_dict())
 
     def hide_tmp_modulev2(self):
         if self.active_candidate_index is not None:

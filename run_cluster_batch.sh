@@ -13,8 +13,8 @@
 
 # Declare the datasets and seeds
 declare -a datasets=("mnist" "kmnist")
-# declare -a datasets=("fashionmnist")
-declare -a seeds=("0" "1" "2" "3")
+# declare -a datasets=("cifar100")
+declare -a seeds=("4" "5" "6" "7")
 
 
 # # Map the SLURM_ARRAY_TASK_ID to a dataset and seed

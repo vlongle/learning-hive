@@ -1,0 +1,4 @@
+usage: experiments.py [-h] [--seed SEED]
+                      [--dataset {mnist,kmnist,fashionmnist}]
+experiments.py: error: argument --dataset: invalid choice: 'cifar100' (choose from 'mnist', 'kmnist', 'fashionmnist')
+srun: error: enough-oryx.grasp.maas: task 0: Exited with exit code 2

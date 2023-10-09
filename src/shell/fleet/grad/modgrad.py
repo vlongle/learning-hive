@@ -28,32 +28,36 @@ class ModGrad(ModelSyncAgent):
         return super().prepare_model()
 
     def process_communicate(self, task_id, communication_round):
-        if communication_round % self.sharing_strategy.log_freq == 0:
-            self.log(task_id, communication_round)
+        # if communication_round % self.sharing_strategy.log_freq == 0:
+        #     self.log(task_id, communication_round)
 
+        print(f"node {self.node_id} is processing at round {communication_round} for task {task_id}")
+        self.log(task_id, communication_round)
         self.aggregate_models()
-        # ModGrad: retrain on local tasks using experience replay. Update ONLY shared modules,
-        # keeping structures and other task-specific modules fixed.
-        trainloader = (
-            torch.utils.data.DataLoader(self.dataset.trainset[task_id],
-                                        batch_size=self.batch_size,
-                                        shuffle=True,
-                                        num_workers=4,
-                                        pin_memory=True,
-                                        ))
+        self.log(task_id, communication_round+1)
 
-        task_id_retrain = f"{task_id}_retrain_round_{communication_round}"
-        testloaders = {task: torch.utils.data.DataLoader(testset,
-                                                         batch_size=128,
-                                                         shuffle=False,
-                                                         num_workers=0,
-                                                         pin_memory=True,
-                                                         ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
-        self.finetune_shared_modules(
-            trainloader, task_id, testloaders, task_id_retrain=task_id_retrain)
+        # # ModGrad: retrain on local tasks using experience replay. Update ONLY shared modules,
+        # # keeping structures and other task-specific modules fixed.
+        # trainloader = (
+        #     torch.utils.data.DataLoader(self.dataset.trainset[task_id],
+        #                                 batch_size=self.batch_size,
+        #                                 shuffle=True,
+        #                                 num_workers=4,
+        #                                 pin_memory=True,
+        #                                 ))
 
-        self.agent.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id_retrain,
-                             testloaders, final_save=False)  # final eval
+        # task_id_retrain = f"{task_id}_retrain_round_{communication_round}"
+        # testloaders = {task: torch.utils.data.DataLoader(testset,
+        #                                                  batch_size=128,
+        #                                                  shuffle=False,
+        #                                                  num_workers=0,
+        #                                                  pin_memory=True,
+        #                                                  ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
+        # self.finetune_shared_modules(
+        #     trainloader, task_id, testloaders, task_id_retrain=task_id_retrain)
+
+        # self.agent.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id_retrain,
+        #                      testloaders, final_save=False)  # final eval
 
     def finetune_shared_modules(self, trainloader, task_id, testloaders, train_mode=None,
                                 task_id_retrain="", save_freq=1):

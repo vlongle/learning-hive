@@ -51,6 +51,8 @@ class Agent:
         self.neighbors = neighbors
 
     def train(self, task_id, start_epoch=0, communication_frequency=None):
+        if task_id >= self.net.num_tasks:
+            return
         trainloader = (
             torch.utils.data.DataLoader(self.dataset.trainset[task_id],
                                         batch_size=self.batch_size,
@@ -86,7 +88,6 @@ class Agent:
             if component_update_freq is not None:
                 train_kwargs["component_update_freq"] = component_update_freq
         
-        print("comm", communication_frequency)
         if communication_frequency is None:
             # communication_frequency = train_kwargs['num_epochs'] - start_epoch
             communication_frequency = train_kwargs['num_epochs'] - start_epoch
@@ -209,6 +210,7 @@ class Fleet:
             agent.train(task_id)
 
     def train_and_comm(self, task_id):
+
         if task_id < self.num_init_tasks:
             # init task
             num_epochs = self.init_num_epochs
@@ -219,12 +221,13 @@ class Fleet:
         for start_epoch in range(0, num_epochs, comm_freq):
             for agent in self.agents:
                 agent.train(task_id, start_epoch, comm_freq)
-            self.communicate(task_id)
+            self.communicate(task_id, 
+                             start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round)
 
 
 
-    def communicate(self, task_id):
-        for communication_round in range(self.num_coms_per_round):
+    def communicate(self, task_id,start_com_round=0):
+        for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
             for agent in self.agents:
                 agent.prepare_communicate(task_id, communication_round)
             for agent in self.agents:

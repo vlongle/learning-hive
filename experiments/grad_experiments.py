@@ -58,10 +58,12 @@ if __name__ == "__main__":
 
 
     config = {
-        "algo": "modular",
+        # "algo": "modular",
+        "algo": "monolithic",
         "seed": 0,
-        "parallel": True,
-        "num_agents": 8,
+        # "parallel": True,
+        "parallel": False,
+        "num_agents": 2,
         "dataset": "mnist",
         "dataset.num_trains_per_class": 64,
         "dataset.num_vals_per_class": 50,
@@ -84,9 +86,7 @@ if __name__ == "__main__":
         "dataset": "mnist",
         "root_save_dir": "experiment_results/fl/",
         "sharing_strategy": "grad_sharing",
-        "sharing_strategy.num_coms_per_round": 50,
-        "sharing_strategy.retrain.num_epochs": 5,
-        "sharing_strategy.log_freq": 10,
+        "sharing_strategy.comm_freq": num_epochs,
     }
 
 

@@ -141,9 +141,14 @@ class ModelSyncAgent(Agent):
                           record=self.retrain_record)
 
     def process_communicate(self, task_id, communication_round):
-        if communication_round % self.sharing_strategy.log_freq == 0:
-            self.log(task_id, communication_round)
+        # if communication_round % self.sharing_strategy.log_freq == 0:
+        #     self.log(task_id, communication_round)
+        # self.aggregate_models()
+
+        self.log(task_id, communication_round)
         self.aggregate_models()
+        self.log(task_id, communication_round+1)
+
 
         # # Monograd: retrain on local tasks using experience replay
         # testloaders = {task: torch.utils.data.DataLoader(testset,

@@ -22,7 +22,6 @@ class GradFleet(Fleet):
     """
     def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs,
                  fake_dataset):
-        self.num_init_tasks = net_kwargs["num_init_tasks"]
         # NOTE: We create a fake agent to jointly train all agents in the same initial tasks. Then,
         # we pretend that all agents have no initial tasks, and proceed with individual local training
 
@@ -30,20 +29,13 @@ class GradFleet(Fleet):
                                    deepcopy(net_kwargs), deepcopy(
                                        agent_kwargs),
                                    deepcopy(train_kwargs), deepcopy(sharing_strategy))
-
+        self.joint_training()
         # replace net_kwargs["num_init_tasks"] with -1 as we will do joint training on the init tasks.
+        net_kwargs["num_tasks"] -= net_kwargs["num_init_tasks"]
         net_kwargs["num_init_tasks"] = -1
-        net_kwargs["num_tasks"] -= self.num_init_tasks
         net_kwargs["init_ordering_mode"] = "uniform"
         super().__init__(graph, seed, datasets, sharing_strategy, AgentCls,
                          NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
-        self.joint_training()
-
-    def joint_training(self):
-        for task_id in range(self.num_init_tasks):
-            logging.info(f"Joint training on task {task_id} ...")
-            self.fake_agent.train(task_id)
-        logging.info("DONE TRAINING THE JOINT AGENT...")
 
         # all agents should replace their models with the fake_agent's model
         excluded_params = set(["decoder", "structure"])
@@ -52,6 +44,13 @@ class GradFleet(Fleet):
 
         for agent in self.agents:
             agent.replace_model(model, strict=False)
+
+    def joint_training(self):
+        for task_id in range(self.fake_agent.net.num_init_tasks):
+            logging.info(f"Joint training on task {task_id} ...")
+            self.fake_agent.train(task_id)
+        logging.info("DONE TRAINING THE JOINT AGENT...")
+
 
 
 class ParallelGradFleet(ParallelFleet, GradFleet):
@@ -79,12 +78,15 @@ class ParallelGradFleet(ParallelFleet, GradFleet):
 
         # replace net_kwargs["num_init_tasks"] with -1 as we will do joint training on the init tasks.
         net_kwargs["num_init_tasks"] = -1
+        net_kwargs["num_tasks"] -= self.num_init_tasks
         net_kwargs["init_ordering_mode"] = "uniform"
         super().__init__(graph, seed, datasets, sharing_strategy, AgentCls,
                          NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
         # now that all agents are created, we can replace their models with the fake_agent's model
         for agent in self.agents:
             agent.replace_model.remote(self.fake_model, strict=False)
+        
+        logging.info("READY TO TRAIN INDIVIDUAL AGENTS...")
 
 
 class MonoGradFleet:

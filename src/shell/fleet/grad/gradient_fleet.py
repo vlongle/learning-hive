@@ -33,6 +33,7 @@ class GradFleet(Fleet):
 
         # replace net_kwargs["num_init_tasks"] with -1 as we will do joint training on the init tasks.
         net_kwargs["num_init_tasks"] = -1
+        net_kwargs["num_tasks"] -= self.num_init_tasks
         net_kwargs["init_ordering_mode"] = "uniform"
         super().__init__(graph, seed, datasets, sharing_strategy, AgentCls,
                          NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
@@ -66,7 +67,7 @@ class ParallelGradFleet(ParallelFleet, GradFleet):
         # need to do the joint training right here, and free the gpu so that other agents can later use them
         for task_id in range(self.num_init_tasks):
             logging.info(f"Joint training on task {task_id} ...")
-            self.fake_agent.train.remote(task_id)
+            ray.get(self.fake_agent.train.remote(task_id))
         # store the fake_agent's model
         self.fake_model = exclude_model(ray.get(self.fake_agent.get_model.remote()),
                                         set(["decoder", "structure"]))

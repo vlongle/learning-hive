@@ -11,14 +11,27 @@ Copyright (c) 2023 Long Le
 import time
 import datetime
 from shell.utils.experiment_utils import run_experiment
+
+import argparse
+
+parser = argparse.ArgumentParser(description='Run experiment with a specified seed.')
+parser.add_argument('--seed', type=int, default=0, help='Seed for the experiment.')
+parser.add_argument('--dataset', type=str, default="mnist", choices=["mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
+args = parser.parse_args()
+
+
 if __name__ == "__main__":
     start = time.time()
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
 
     # ACTUAL CONFIG
     num_init_tasks = 4
-    num_tasks = 5
-    num_epochs = 5
+    num_tasks = 10
+    num_epochs = 100
+    comm_freq = 10
+    
+    seed = args.seed
+    dataset = args.dataset
 
     # config = {
     #     # "algo": ["monolithic", "modular"],
@@ -57,11 +70,43 @@ if __name__ == "__main__":
     # }
 
 
+    # config = {
+    #     # "algo": "modular",
+    #     "algo": "monolithic",
+    #     "seed": 0,
+    #     # "parallel": True,
+    #     "parallel": False,
+    #     "num_agents": 2,
+    #     "dataset": "mnist",
+    #     "dataset.num_trains_per_class": 64,
+    #     "dataset.num_vals_per_class": 50,
+    #     "dataset.remap_labels": True,
+    #     "dataset.with_replacement": True,
+    #     # "dataset.num_tasks": num_tasks-num_init_tasks,  # NOTE: we already jointly
+    #     "dataset.num_tasks": num_tasks,  # NOTE: we already jointly
+    #     # train using a fake agent.
+    #     "net": "mlp",
+    #     "net.depth": num_init_tasks,
+    #     "num_init_tasks": num_init_tasks,
+    #     "net.dropout": 0.0,
+    #     "train.num_epochs": num_epochs,
+    #     "train.component_update_freq": num_epochs,
+    #     "train.init_num_epochs": num_epochs,
+    #     "train.init_component_update_freq": num_epochs,
+    #     "train.save_freq": 20,
+    #     "agent.use_contrastive": True,
+    #     "agent.memory_size": 32,
+    #     "dataset": "mnist",
+    #     "root_save_dir": "experiment_results/fl/",
+    #     "sharing_strategy": "grad_sharing",
+    #     "sharing_strategy.comm_freq": comm_freq,
+    # }
+
+
+
     config = {
-        # "algo": "modular",
-        "algo": "monolithic",
-        "seed": 0,
-        # "parallel": True,
+        "algo": ["monolithic", "modular"],
+        "seed": seed,
         "parallel": False,
         "num_agents": 2,
         "dataset": "mnist",
@@ -83,10 +128,10 @@ if __name__ == "__main__":
         "train.save_freq": 20,
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
-        "dataset": "mnist",
+        "dataset": dataset,
         "root_save_dir": "experiment_results/fl/",
         "sharing_strategy": "grad_sharing",
-        "sharing_strategy.comm_freq": num_epochs,
+        "sharing_strategy.comm_freq": comm_freq,
     }
 
 

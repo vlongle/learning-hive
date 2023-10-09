@@ -29,6 +29,7 @@ if __name__ == "__main__":
     num_tasks = 10
     num_epochs = 100
     comm_freq = 10
+    batch_size = 64
     
     seed = args.seed
     dataset = args.dataset
@@ -107,7 +108,8 @@ if __name__ == "__main__":
     config = {
         "algo": ["monolithic", "modular"],
         "seed": seed,
-        "parallel": False,
+        "parallel": True,
+        "agent.batch_size": batch_size,
         "num_agents": 2,
         "dataset": "mnist",
         "dataset.num_trains_per_class": 64,

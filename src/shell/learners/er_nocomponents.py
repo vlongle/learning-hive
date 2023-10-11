@@ -29,7 +29,7 @@ class NoComponentsER(Learner):
     def train(self, trainloader, task_id, component_update_freq=100, 
               start_epoch=0, num_epochs=100, save_freq=1, testloaders=None, valloader=None,
               eval_bool=True, train_mode=None,
-              record=None):
+              record=None, final=True):
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
@@ -66,10 +66,11 @@ class NoComponentsER(Learner):
                                                       )
             self._train(mega_loader, start_epoch, num_epochs, task_id,
                         testloaders, save_freq, eval_bool, train_mode=train_mode)
-            self.save_data(num_epochs + 1, task_id,
-                           testloaders, final_save=True, mode=train_mode,
-                           record=record)  # final eval
-            self.update_multitask_cost(trainloader, task_id)
+            if final:
+                self.save_data(num_epochs + 1, task_id,
+                            testloaders, final_save=True, mode=train_mode,
+                            record=record)  # final eval
+                self.update_multitask_cost(trainloader, task_id)
 
     def _train(self, mega_loader, start_epoch, num_epochs, task_id, testloaders, save_freq=1, eval_bool=True,
                train_mode=None,

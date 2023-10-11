@@ -32,9 +32,11 @@ class ModGrad(ModelSyncAgent):
         #     self.log(task_id, communication_round)
 
         print(f"node {self.node_id} is processing at round {communication_round} for task {task_id}")
-        self.log(task_id, communication_round)
+        # TODO: this logging is potentiallly buggy
+        # self.log(task_id, communication_round)
         self.aggregate_models()
-        self.log(task_id, communication_round+1)
+        # self.log(task_id, communication_round+1)
+        self.log(task_id, communication_round)
 
         # # ModGrad: retrain on local tasks using experience replay. Update ONLY shared modules,
         # # keeping structures and other task-specific modules fixed.

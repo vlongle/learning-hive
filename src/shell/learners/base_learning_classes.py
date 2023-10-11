@@ -286,7 +286,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
     def train(self, trainloader, task_id, valloader,
               component_update_freq=100, start_epoch=0, num_epochs=100, save_freq=1, testloaders=None,
               train_mode=None, num_candidate_modules=None, module_list=None,
-                remove_modules=True):
+                final=True):
+        # logging.info('task_id %s len(self.net.components) %s', task_id, len(self.net.components))
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
@@ -312,19 +313,22 @@ class CompositionalDynamicLearner(CompositionalLearner):
             # self.optimizer.add_param_group(
             #     {'params': self.net.components[-1].parameters()})
 
-            if num_candidate_modules is None:
-                num_candidate_modules = 1
+            if start_epoch == 0:
+                if num_candidate_modules is None:
+                    num_candidate_modules = 1
 
-            if module_list is None:
-                module_list = []
-            else:
-                num_candidate_modules = len(module_list) + 1
+                if module_list is None:
+                    module_list = []
+                else:
+                    num_candidate_modules = len(module_list) + 1
 
-            # print("NUM_CANDIDATE_MODULES", num_candidate_modules, 'len(module_list)', len(module_list))
-            self.net.add_tmp_modules(task_id, num_candidate_modules)
-            self.net.receive_modules(task_id, module_list)
-            for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
-                self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
+                # print("NUM_CANDIDATE_MODULES", num_candidate_modules, 'len(module_list)', len(module_list))
+                self.net.add_tmp_modules(task_id, num_candidate_modules)
+                self.net.receive_modules(task_id, module_list)
+                for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
+                    self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
+
+            # logging.info('INTRAIN task_id %s len(self.net.components) %s', task_id, len(self.net.components))
 
 
             if hasattr(self, 'preconditioner'):
@@ -363,11 +367,11 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 if i % save_freq == 0 or i == num_epochs - 1:
                     self.save_data(i + 1, task_id, testloaders,
                                    mode=train_mode)
-            if remove_modules:
+            if final:
                 self.conditionally_add_module(valloader, task_id)
-            self.save_data(num_epochs + 1, task_id,
-                           testloaders, final_save=True, mode=train_mode)
-            self.update_multitask_cost(trainloader, task_id)
+                self.save_data(num_epochs + 1, task_id,
+                            testloaders, final_save=True, mode=train_mode)
+                self.update_multitask_cost(trainloader, task_id)
 
     def conditionally_add_module(self, valloader, task_id):
         performances = {}  # relative improvement for each candidate

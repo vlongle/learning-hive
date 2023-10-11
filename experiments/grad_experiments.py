@@ -26,9 +26,12 @@ if __name__ == "__main__":
 
     # ACTUAL CONFIG
     num_init_tasks = 4
-    num_tasks = 10
-    num_epochs = 100
-    comm_freq = 10
+    # num_tasks = 10
+    num_tasks = 5
+    num_epochs = 10
+    comm_freq = 1
+    # num_epochs = 20
+    # comm_freq = 5
     batch_size = 64
     
     seed = args.seed
@@ -106,10 +109,14 @@ if __name__ == "__main__":
 
 
     config = {
-        "algo": ["monolithic", "modular"],
+        # "algo": ["monolithic", "modular"],
+        # "algo": "monolithic",
+        "algo": "modular",
         "seed": seed,
         "parallel": True,
+        # "parallel": False,
         "agent.batch_size": batch_size,
+        # "num_agents": 8,
         "num_agents": 2,
         "dataset": "mnist",
         "dataset.num_trains_per_class": 64,

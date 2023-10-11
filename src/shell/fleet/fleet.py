@@ -50,7 +50,8 @@ class Agent:
     def add_neighbors(self, neighbors: Iterable[ray.actor.ActorHandle]):
         self.neighbors = neighbors
 
-    def train(self, task_id, start_epoch=0, communication_frequency=None):
+    def train(self, task_id, start_epoch=0, communication_frequency=None,
+            final=True):
         if task_id >= self.net.num_tasks:
             return
         trainloader = (
@@ -101,6 +102,7 @@ class Agent:
 
 
         train_kwargs["num_epochs"] = adjusted_num_epochs
+        train_kwargs["final"] = final
 
         self.agent.train(trainloader, task_id, testloaders=testloaders,
                          valloader=valloader, start_epoch=start_epoch, **train_kwargs)
@@ -220,7 +222,9 @@ class Fleet:
 
         for start_epoch in range(0, num_epochs, comm_freq):
             for agent in self.agents:
-                agent.train(task_id, start_epoch, comm_freq)
+                # only remove modules for the last epoch
+                final = start_epoch + comm_freq >= num_epochs
+                agent.train(task_id, start_epoch, comm_freq, final=final)
             self.communicate(task_id, 
                              start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round)
 
@@ -301,11 +305,14 @@ class ParallelFleet:
         comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs
 
         for start_epoch in range(0, num_epochs, comm_freq):
-            ray.get([agent.train.remote(task_id, start_epoch, comm_freq) for agent in self.agents])
-            self.communicate(task_id)
+            final = start_epoch + comm_freq >= num_epochs
+            ray.get([agent.train.remote(task_id, start_epoch, comm_freq,
+                                        final=final) for agent in self.agents])
+            self.communicate(task_id, 
+                             start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round)
 
-    def communicate(self, task_id):
-        for communication_round in range(self.num_coms_per_round):
+    def communicate(self, task_id, start_com_round=0):
+        for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
             # parallelize preprocessing to prepare neccessary data
             # before the communication round.
             ray.get([agent.prepare_communicate.remote(task_id, communication_round)

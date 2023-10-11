@@ -1,22 +1,9 @@
-import ray
-from time import sleep
+num_epochs = 100
+comm_freq = 20
 
-@ray.remote
-class Counter:
-    def __init__(self):
-        for _ in range(5):
-            sleep(1)
-        self.value = 0
-        print('Counter created!')
+for start_epoch in range(0, num_epochs, comm_freq):
+	print(start_epoch)
+	if start_epoch + comm_freq >= num_epochs:
+		print(start_epoch, 'END')
+	
 
-    def increment(self):
-        self.value += 1
-        return self.value
-
-    def get_counter(self):
-        return self.value
-
-# Create an actor from this class.
-counter = Counter.remote()
-print(ray.get(counter.get_counter.remote()))
-print('END')

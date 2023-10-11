@@ -106,7 +106,7 @@ class ModelSyncAgent(Agent):
     def aggregate_models(self):
         # get model from neighbors
         # average all the models together!
-        logging.info("AGGREGATING MODELS...")
+        logging.info("AGGREGATING MODELS...no_components %s", len(self.net.components))
         stuff_added = defaultdict(int)
         for model in self.incoming_models.values():
             for name, param in model.items():
@@ -118,6 +118,7 @@ class ModelSyncAgent(Agent):
         for name, param in self.net.state_dict().items():
             # +1 because it includes the current model
             param.data /= stuff_added[name] + 1
+        # logging.info("AFTER aggregation...%s", len(self.net.components))
 
     def retrain(self, num_epochs, task_id, testloaders, save_freq=1, eval_bool=True):
         """
@@ -182,8 +183,8 @@ class ModelSyncAgent(Agent):
 @ray.remote
 class ParallelModelSyncAgent(ModelSyncAgent):
     def communicate(self, task_id, communication_round):
-        # logging.info(
-        #     f"node {self.node_id} is communicating at round {communication_round} for task {task_id}")
+        logging.info(
+            f"node {self.node_id} is communicating at round {communication_round} for task {task_id}")
         # TODO: Should we do deepcopy???
         # put model on object store
         # state_dict = deepcopy(self.net.state_dict())

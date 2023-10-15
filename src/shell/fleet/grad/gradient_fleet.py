@@ -46,7 +46,9 @@ class GradFleet(Fleet):
             agent.replace_model(model, strict=False)
 
     def joint_training(self):
-        for task_id in range(self.fake_agent.net.num_init_tasks):
+        self.fake_agent.agent.fl_strategy = None # NOTE: important to set this to None, otherwise, 
+        # the fake_agent will have stuff like L2 penalty as in fedprox
+        for task_id in range(self.fake_agent.net.num_init_tasks): 
             logging.info(f"Joint training on task {task_id} ...")
             self.fake_agent.train(task_id)
         logging.info("DONE TRAINING THE JOINT AGENT...")
@@ -62,6 +64,9 @@ class ParallelGradFleet(ParallelFleet, GradFleet):
                                                               LearnerCls, deepcopy(
                                                                   net_kwargs), deepcopy(agent_kwargs),
                                                               deepcopy(train_kwargs), deepcopy(sharing_strategy))
+
+        self.fake_agent.set_fl_strategy.remote(None) # NOTE: important to set this to None, otherwise, 
+        # the fake_agent will have stuff like L2 penalty as in fedprox
 
         # need to do the joint training right here, and free the gpu so that other agents can later use them
         for task_id in range(self.num_init_tasks):

@@ -15,6 +15,7 @@ from shell.utils.record import Record
 from torch.utils.tensorboard import SummaryWriter
 import logging
 from shell.utils.supcontrast import SupConLoss
+from shell.learners.fl_utils import *
 
 # write custom RandomGrayScale that operate on a per image
 # basis
@@ -22,7 +23,8 @@ from shell.utils.supcontrast import SupConLoss
 
 class Learner():
     def __init__(self, net, save_dir='./tmp/results/', improvement_threshold=0.05,
-                 use_contrastive=False, dataset_name=None):
+                 use_contrastive=False, dataset_name=None, fl_strategy=None,
+                 mu=None):
         self.net = net
         self.ce_loss = nn.CrossEntropyLoss()
         self.use_contrastive = use_contrastive
@@ -52,6 +54,10 @@ class Learner():
         self.mode = "ce"
         if self.use_contrastive:
             self.mode = "both"
+        self.fl_strategy = fl_strategy 
+        if fl_strategy is not None:
+            self.global_model = None
+            self.mu = mu
 
     # def apply_transform(self, X):
     #     # X: (batch_size, n_channels, height, width)
@@ -114,6 +120,22 @@ class Learner():
         return ce
 
     def compute_loss(self, X, Y, task_id, mode=None, log=False):
+        """
+        Compute main loss + (optional aux loss for FL)
+        """
+        loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log) 
+        if self.fl_strategy is not None:
+            if self.fl_strategy == "fedprox":
+                return loss + compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model, 
+                    mu=self.mu)
+            else:
+                raise NotImplementedError("FL strategy %s not implemented" % self.fl_strategy)
+        else:
+            return loss
+
+
+
+    def compute_task_loss(self, X, Y, task_id, mode=None, log=False):
         """
         Compute cross_entropy + supcon loss. Make sure that 
         cross_entropy does not propagate gradients back

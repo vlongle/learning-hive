@@ -18,9 +18,13 @@ from shell.datasets.datasets import get_custom_tensordataset
 
 class NoComponentsER(Learner):
     def __init__(self, net, memory_size, save_dir='./tmp/results/',  improvement_threshold=0.05,
-                 use_contrastive=False, dataset_name=None):
+                 use_contrastive=False, dataset_name=None,
+                 fl_strategy=None,
+                 mu=None):
         super().__init__(net, save_dir,  improvement_threshold=improvement_threshold,
-                         use_contrastive=use_contrastive, dataset_name=dataset_name)
+                         use_contrastive=use_contrastive, dataset_name=dataset_name,
+                         fl_strategy=fl_strategy,
+                         mu=mu)
         self.replay_buffers = {}
         self.shared_replay_buffers = {} # received from neighbors
         self.memory_loaders = {}

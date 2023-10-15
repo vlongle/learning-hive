@@ -17,6 +17,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Run experiment with a specified seed.')
 parser.add_argument('--seed', type=int, default=0, help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=["mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
+parser.add_argument('--mu', type=float, default=1.0)
 args = parser.parse_args()
 
 
@@ -33,9 +34,11 @@ if __name__ == "__main__":
     num_epochs = 100
     comm_freq = 10
     batch_size = 64
+    save_freq = 1
     
     seed = args.seed
     dataset = args.dataset
+    mu = args.mu # for FedProx
 
     # config = {
     #     # "algo": ["monolithic", "modular"],
@@ -109,8 +112,8 @@ if __name__ == "__main__":
 
 
     config = {
-        "algo": ["monolithic", "modular"],
-        # "algo": "monolithic",
+        # "algo": ["monolithic", "modular"],
+        "algo": "monolithic",
         # "algo": "modular",
         "seed": seed,
         "parallel": True,
@@ -134,13 +137,14 @@ if __name__ == "__main__":
         "train.component_update_freq": num_epochs,
         "train.init_num_epochs": num_epochs,
         "train.init_component_update_freq": num_epochs,
-        "train.save_freq": 20,
+        "train.save_freq": save_freq,
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
         "dataset": dataset,
-        "root_save_dir": "experiment_results/fl/",
-        "sharing_strategy": "grad_sharing",
+        "root_save_dir": "experiment_results/fedprox/",
+        "sharing_strategy": "grad_sharing_prox",
         "sharing_strategy.comm_freq": comm_freq,
+        "sharing_strategy.mu": mu,
     }
 
 

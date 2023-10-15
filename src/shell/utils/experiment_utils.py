@@ -90,7 +90,8 @@ def setup_experiment(cfg: DictConfig):
     print(LearnerCls)
     fleet_additional_cfg = {}
 
-    if cfg.sharing_strategy.name == "gradient":
+    REQUIRED_JOINT_TRAINING_STRAT = ["fedprox", "gradient"]
+    if cfg.sharing_strategy.name in REQUIRED_JOINT_TRAINING_STRAT:
         fleet_additional_cfg['fake_dataset'] = get_dataset(
             **process_dataset_cfg(cfg))
     return graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg

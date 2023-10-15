@@ -46,6 +46,9 @@ class Agent:
 
     def get_node_id(self):
         return self.node_id
+    
+    def set_fl_strategy(self, fl_strategy):
+        self.agent.fl_strategy = fl_strategy
 
     def add_neighbors(self, neighbors: Iterable[ray.actor.ActorHandle]):
         self.neighbors = neighbors

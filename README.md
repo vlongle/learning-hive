@@ -182,3 +182,9 @@ Visualize the accuracy over time.
 
 
 There's a bug somewhere in our code!! No dropout for cifar is significantly WORSE than normal.
+
+
+
+## NOTE TO FL STUFF
+
+One thing that happens with modular is the previous structure is not optimized again, and so they became fcked.

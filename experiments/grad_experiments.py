@@ -33,6 +33,7 @@ if __name__ == "__main__":
     num_epochs = 100
     comm_freq = 10
     batch_size = 64
+    save_freq = 1
     
     seed = args.seed
     dataset = args.dataset
@@ -134,7 +135,7 @@ if __name__ == "__main__":
         "train.component_update_freq": num_epochs,
         "train.init_num_epochs": num_epochs,
         "train.init_component_update_freq": num_epochs,
-        "train.save_freq": 20,
+        "train.save_freq": save_freq,
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
         "dataset": dataset,

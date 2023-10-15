@@ -1,8 +1,9 @@
 name: recv_data
 num_coms_per_round: 2
 num_queries: 10
-num_data_neighbors: 5
-num_filter_neighbors: 5
+num_data_neighbors: 10
+num_filter_neighbors: 10
 scorer: cross_entropy
 query_score_threshold: 0.0
 shared_memory_size: 100000
+comm_freq: 1

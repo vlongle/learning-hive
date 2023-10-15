@@ -7,18 +7,18 @@
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
-#SBATCH --array=0-7 # This will run 8 jobs with seeds from 0 to 7
+#SBATCH --array=0-35 # This will run 8 jobs with seeds from 0 to 7
 
 # SEED=$SLURM_ARRAY_TASK_ID  # This will retrieve the current job's array index, which we'll use as the seed
 
 # Declare the datasets and seeds
-declare -a datasets=("mnist" "kmnist")
-declare -a seeds=("0" "1" "2" "3")
+declare -a datasets=("mnist" "kmnist" "fashionmnist")
+declare -a seeds=("0" "1" "2" "3" "4" "5" "6" "7")
 
 
 # # Map the SLURM_ARRAY_TASK_ID to a dataset and seed
-DATASET=${datasets[$((SLURM_ARRAY_TASK_ID % 2))]}
-SEED=${seeds[$((SLURM_ARRAY_TASK_ID / 2))]}
+DATASET=${datasets[$((SLURM_ARRAY_TASK_ID % 3))]}
+SEED=${seeds[$((SLURM_ARRAY_TASK_ID / 3))]}
 
 
 # Since you only have one dataset, you don't need the datasets array

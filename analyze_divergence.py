@@ -12,7 +12,8 @@ from shell.utils.metric import DivergenceMetric
 from shell.utils.record import Record
 import os
 import pandas as pd
-result_dir = "grad_new_results"
+# result_dir = "grad_new_results"
+result_dir = "experiment_results/fl"
 
 pattern = r".*"
 num_init_tasks = 0  # grad_results bc of joint training

@@ -37,7 +37,8 @@ class NoComponentsER(Learner):
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
-        self.save_data(start_epoch, task_id, testloaders,
+        if start_epoch == 0:
+            self.save_data(start_epoch, task_id, testloaders,
                        mode=train_mode,
                        record=record)  # zeroshot eval
         ## INIT TRAINING
@@ -71,7 +72,7 @@ class NoComponentsER(Learner):
             self._train(mega_loader, start_epoch, num_epochs, task_id,
                         testloaders, save_freq, eval_bool, train_mode=train_mode)
             if final:
-                self.save_data(num_epochs + 1, task_id,
+                self.save_data(num_epochs + start_epoch + 1, task_id,
                             testloaders, final_save=True, mode=train_mode,
                             record=record)  # final eval
                 self.update_multitask_cost(trainloader, task_id)

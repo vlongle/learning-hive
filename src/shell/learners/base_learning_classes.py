@@ -55,6 +55,8 @@ class Learner():
         if self.use_contrastive:
             self.mode = "both"
         self.fl_strategy = fl_strategy 
+        self.mu = self.global_model = None
+
         if fl_strategy is not None:
             self.global_model = None
             self.mu = mu
@@ -124,14 +126,15 @@ class Learner():
         Compute main loss + (optional aux loss for FL)
         """
         loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log) 
+        # print("task_loss:", loss, "mu", self.mu)
         if self.fl_strategy is not None:
             if self.fl_strategy == "fedprox":
-                return loss + compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model, 
+                loss += compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model, 
                     mu=self.mu)
             else:
                 raise NotImplementedError("FL strategy %s not implemented" % self.fl_strategy)
-        else:
-            return loss
+        # print("combined loss:", loss)
+        return loss
 
 
 
@@ -313,7 +316,10 @@ class CompositionalDynamicLearner(CompositionalLearner):
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
-        self.save_data(start_epoch, task_id, testloaders, mode=train_mode)
+        if start_epoch == 0:
+            # zeroshot
+            self.save_data(start_epoch, task_id, testloaders, mode=train_mode)
+
         if self.T <= self.net.num_init_tasks:
             # NOTE: doesn't need to freeze_structure because one_hot structure
             # will be fixed anyway. We need the decoder to change for
@@ -391,7 +397,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                                    mode=train_mode)
             if final:
                 self.conditionally_add_module(valloader, task_id)
-                self.save_data(num_epochs + 1, task_id,
+                self.save_data(num_epochs + start_epoch + 1, task_id,
                             testloaders, final_save=True, mode=train_mode)
                 self.update_multitask_cost(trainloader, task_id)
 

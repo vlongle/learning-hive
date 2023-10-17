@@ -139,7 +139,7 @@ if __name__ == "__main__":
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
         "dataset": dataset,
-        "root_save_dir": "experiment_results/toy_fedavg/",
+        "root_save_dir": "experiment_results/fedavg/",
         "sharing_strategy": "grad_sharing",
         "sharing_strategy.comm_freq": comm_freq,
     }

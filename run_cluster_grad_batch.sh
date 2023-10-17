@@ -1,5 +1,6 @@
 #!/bin/bash
 #SBATCH --output=slurm_outs/fl/slurm-%j.out
+#SBATCH --error=slurm_errs/fl/slurm_%j.err   # File to which standard error will be written
 #SBATCH --gpus=2
 #SBATCH --nodes=1
 #SBATCH --cpus-per-gpu=8
@@ -7,13 +8,13 @@
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
-#SBATCH --array=0-35 # This will run 8 jobs with seeds from 0 to 7
+#SBATCH --array=0-11 # This will run 8 jobs with seeds from 0 to 7
 
 # SEED=$SLURM_ARRAY_TASK_ID  # This will retrieve the current job's array index, which we'll use as the seed
 
 # Declare the datasets and seeds
 declare -a datasets=("mnist" "kmnist" "fashionmnist")
-declare -a seeds=("0" "1" "2" "3" "4" "5" "6" "7")
+declare -a seeds=("0" "1" "2" "3")
 
 
 # # Map the SLURM_ARRAY_TASK_ID to a dataset and seed
@@ -28,7 +29,7 @@ SEED=${seeds[$((SLURM_ARRAY_TASK_ID / 3))]}
 # SEED=$SLURM_ARRAY_TASK_ID
 
 
-srun bash -c "python experiments/grad_experiments.py --seed $SEED --dataset $DATASET"
+srun bash -c "python experiments/fedavg_experiments.py --seed $SEED --dataset $DATASET"
 
 
 exit 3

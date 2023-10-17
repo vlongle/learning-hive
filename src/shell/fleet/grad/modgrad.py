@@ -66,13 +66,13 @@ class ModGrad(ModelSyncAgent):
     def reoptimize_past_structures(self, task_id, num_epochs=1):
         # optimize structures from 0--> task_id - 1 (excluding current task_id)
         # using the replay buffer
-        assert len(self.agent.memory_loaders.values()) == task_id - 1
+        assert len(self.agent.memory_loaders.values()) == task_id
 
         # TODO: handle the component dropout carefully. 
         current_active_candidate_index = self.net.active_candidate_index
         self.net.active_candidate_index = None
         for _ in range(num_epochs):
-            for task in range(task_id-1):
+            for task in range(task_id):
                 # update structure for task
                 loader = self.agent.memory_loaders[task]
                 for X, Y in loader:

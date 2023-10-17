@@ -141,7 +141,7 @@ if __name__ == "__main__":
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
         "dataset": dataset,
-        "root_save_dir": "experiment_results/fedprox/",
+        "root_save_dir": f"experiment_results/fedprox_{mu}/",
         "sharing_strategy": "grad_sharing_prox",
         "sharing_strategy.comm_freq": comm_freq,
         "sharing_strategy.mu": mu,

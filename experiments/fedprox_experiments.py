@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     # ACTUAL CONFIG
     num_init_tasks = 4
-    num_tasks = 10
+    num_tasks = 6
     # num_tasks = 5
     # num_tasks = 6
     num_epochs = 10

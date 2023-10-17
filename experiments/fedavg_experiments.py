@@ -17,7 +17,6 @@ import argparse
 parser = argparse.ArgumentParser(description='Run experiment with a specified seed.')
 parser.add_argument('--seed', type=int, default=0, help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=["mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
-parser.add_argument('--mu', type=float, default=1.0)
 args = parser.parse_args()
 
 
@@ -38,7 +37,6 @@ if __name__ == "__main__":
     
     seed = args.seed
     dataset = args.dataset
-    mu = args.mu # for FedProx
 
     # config = {
     #     # "algo": ["monolithic", "modular"],
@@ -113,8 +111,8 @@ if __name__ == "__main__":
 
     config = {
         # "algo": ["monolithic", "modular"],
-        "algo": "monolithic",
-        # "algo": "modular",
+        # "algo": "monolithic",
+        "algo": "modular",
         "seed": seed,
         "parallel": True,
         # "parallel": False,
@@ -141,10 +139,9 @@ if __name__ == "__main__":
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
         "dataset": dataset,
-        "root_save_dir": f"experiment_results/fedprox_{mu}/",
-        "sharing_strategy": "grad_sharing_prox",
+        "root_save_dir": "experiment_results/toy_fedavg/",
+        "sharing_strategy": "grad_sharing",
         "sharing_strategy.comm_freq": comm_freq,
-        "sharing_strategy.mu": mu,
     }
 
 

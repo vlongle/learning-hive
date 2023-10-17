@@ -27,8 +27,9 @@ class ModelSyncAgent(Agent):
         # key: (task_id, communication_round, neighbor_id)
         self.bytes_sent = {}
         # self.num_init_tasks = net_kwargs.get("num_init_tasks", 1)
-        self.excluded_params = set(
-            ["decoder", "projector", "structure"])
+        # self.excluded_params = set(
+        #     ["decoder", "projector", "structure"])
+        self.excluded_params = set(["decoder", "structure", "projector", "random_linear_projection"])
 
         self.sharing_record = Record(os.path.join(
             self.save_dir,

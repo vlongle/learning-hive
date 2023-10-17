@@ -28,10 +28,10 @@ if __name__ == "__main__":
     num_init_tasks = 4
     num_tasks = 10
     # num_tasks = 5
-    # num_epochs = 10
-    # comm_freq = 1
-    num_epochs = 100
-    comm_freq = 10
+    num_epochs = 4
+    comm_freq = 1
+    # num_epochs = 100
+    # comm_freq = 10
     batch_size = 64
     save_freq = 1
     
@@ -117,8 +117,8 @@ if __name__ == "__main__":
         "parallel": True,
         # "parallel": False,
         "agent.batch_size": batch_size,
-        "num_agents": 8,
-        # "num_agents": 2,
+        # "num_agents": 8,
+        "num_agents": 2,
         "dataset": "mnist",
         "dataset.num_trains_per_class": 64,
         "dataset.num_vals_per_class": 50,

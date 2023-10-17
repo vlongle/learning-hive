@@ -10,12 +10,13 @@ Copyright (c) 2023 Long Le
 import torch
 import ray
 import networkx as nx
-from typing import Iterable
+from typing import Any, Iterable
 import os
 import logging
 from shell.utils.utils import seed_everything, create_dir_if_not_exist
 from shell.utils.experiment_utils import eval_net
 from copy import deepcopy
+import math
 
 SEED_SCALE = 1000
 
@@ -33,6 +34,7 @@ class Agent:
         seed_everything(self.seed)
         logging.info(
             f"Agent: node_id: {node_id}, seed: {self.seed}")
+        self.num_coms = {}
         self.node_id = node_id
         self.dataset = dataset
         self.batch_size = agent_kwargs.get("batch_size", 64)
@@ -43,6 +45,9 @@ class Agent:
         self.train_kwargs = train_kwargs
 
         self.sharing_strategy = sharing_strategy
+
+    def set_num_coms(self, task_id, num_coms):
+        self.num_coms[task_id] = num_coms
 
     def get_node_id(self):
         return self.node_id
@@ -223,12 +228,15 @@ class Fleet:
             num_epochs = self.num_epochs
         comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs
 
+        num_coms= math.ceil(num_epochs / comm_freq)  # Number of times the loop will iterate
+
         for start_epoch in range(0, num_epochs, comm_freq):
             for agent in self.agents:
                 # only remove modules for the last epoch
                 final = start_epoch + comm_freq >= num_epochs
+                agent.set_num_coms(task_id, num_coms)
                 agent.train(task_id, start_epoch, comm_freq, final=final)
-            self.communicate(task_id, 
+            self.communicate(task_id if not final else task_id + 1, 
                              start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round)
 
 
@@ -306,12 +314,15 @@ class ParallelFleet:
         else:
             num_epochs = self.num_epochs
         comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs
+        num_coms= math.ceil(num_epochs / comm_freq)  # Number of times the loop will iterate
 
         for start_epoch in range(0, num_epochs, comm_freq):
             final = start_epoch + comm_freq >= num_epochs
+            ray.get([agent.set_num_coms.remote(
+                task_id, num_coms) for agent in self.agents])
             ray.get([agent.train.remote(task_id, start_epoch, comm_freq,
                                         final=final) for agent in self.agents])
-            self.communicate(task_id, 
+            self.communicate(task_id if not final else task_id + 1, 
                              start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round)
 
     def communicate(self, task_id, start_com_round=0):

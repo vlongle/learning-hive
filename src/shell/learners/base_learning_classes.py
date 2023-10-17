@@ -360,8 +360,10 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 # print("NUM_CANDIDATE_MODULES", num_candidate_modules, 'len(module_list)', len(module_list))
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
                 self.net.receive_modules(task_id, module_list)
-                for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
-                    self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
+
+                self.optimizer = torch.optim.Adam(self.net.parameters(),)
+                # for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
+                #     self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
 
             # logging.info('INTRAIN task_id %s len(self.net.components) %s', task_id, len(self.net.components))
 

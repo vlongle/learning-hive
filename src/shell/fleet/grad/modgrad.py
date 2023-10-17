@@ -58,9 +58,34 @@ class ModGrad(ModelSyncAgent):
         # self.finetune_shared_modules(
         #     trainloader, task_id, testloaders, task_id_retrain=task_id_retrain)
 
+        self.reoptimize_past_structures(task_id)
+
         # self.agent.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id_retrain,
         #                      testloaders, final_save=False)  # final eval
 
+    def reoptimize_past_structures(self, task_id, num_epochs=1):
+        # optimize structures from 0--> task_id - 1 (excluding current task_id)
+        # using the replay buffer
+        assert len(self.agent.memory_loaders.values()) == task_id - 1
+
+        # TODO: handle the component dropout carefully. 
+        current_active_candidate_index = self.net.active_candidate_index
+        self.net.active_candidate_index = None
+        for _ in range(num_epochs):
+            for task in range(task_id-1):
+                # update structure for task
+                loader = self.agent.memory_loaders[task]
+                for X, Y in loader:
+                    if isinstance(X, list):
+                        # contrastive two views
+                        X = torch.cat([X[0], X[1]], dim=0)
+                    X = X.to(self.net.device, non_blocking=True)
+                    Y = Y.to(self.net.device, non_blocking=True)
+                    # with new module
+                    self.update_structure(
+                        X, Y, task_id)
+        self.net.active_candidate_index = current_active_candidate_index
+         
     def finetune_shared_modules(self, trainloader, task_id, testloaders, train_mode=None,
                                 task_id_retrain="", save_freq=1):
         """

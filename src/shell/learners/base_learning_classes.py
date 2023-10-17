@@ -126,7 +126,7 @@ class Learner():
         Compute main loss + (optional aux loss for FL)
         """
         loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log) 
-        logging.info("before %s", loss)
+        # logging.info("before %s", loss)
         # print("task_loss:", loss, "mu", self.mu)
         if self.fl_strategy is not None:
             if self.fl_strategy == "fedprox":
@@ -138,7 +138,7 @@ class Learner():
 
         # save loss to self.log_file
         # NOTE: DEBUG
-        logging.info(loss.item())
+        # logging.info(loss.item())
         return loss
 
 
@@ -165,7 +165,7 @@ class Learner():
             #     #       self.sup_loss.reduction)
             # # scale = 10.0
             loss = ce + scale * cl
-            logging.info("ce %s cl %s l %s", ce, cl, loss)
+            # logging.info("ce %s cl %s l %s", ce, cl, loss)
             return loss
         elif mode == "ce":
             # only train ce (backpropage through the entire model)

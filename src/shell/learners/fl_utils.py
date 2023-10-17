@@ -9,5 +9,5 @@ def compute_fedprox_aux_loss(local_model, global_model, mu):
     # aux_loss = (mu / 2.0) * model_L2(local_model, global_model)
     aux_loss = mu * model_L2(local_model, global_model)
     # aux_loss = 0.0
-    logging.info(f"aux_loss: {aux_loss}")
+    # logging.info(f"aux_loss: {aux_loss}")
     return aux_loss

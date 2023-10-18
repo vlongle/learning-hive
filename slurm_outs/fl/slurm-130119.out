@@ -1,0 +1,143 @@
+{'train': {'component_update_freq': 100, 'num_epochs': 100, 'init_component_update_freq': 100, 'init_num_epochs': 100, 'save_freq': 1}, 'dataset': {'dataset_name': 'fashionmnist', 'num_tasks': 10, 'num_classes_per_task': 2, 'with_replacement': True, 'num_trains_per_class': 64, 'num_vals_per_class': 50, 'remap_labels': True}, 'net': {'name': 'mlp', 'depth': 4, 'layer_size': 64, 'dropout': 0.0}, 'sharing_strategy': {'name': 'gradient', 'num_coms_per_round': 1, 'comm_freq': 10, 'mu': 1.0}, 'seed': 1, 'algo': 'modular', 'job_name': 'fashionmnist_modular_numtrain_64_contrastive', 'num_agents': 2, 'root_save_dir': 'experiment_results/fedavg/', 'parallel': True, 'num_init_tasks': 4, 'agent': {'save_dir': '${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}', 'batch_size': 64, 'memory_size': 32, 'improvement_threshold': 0.05, 'use_contrastive': True}}
+[2023-10-17 23:09:31,206][root][INFO] - Class sequence: [6 4 1 4 5 6 6 2 2 7 9 7 1 6 4 9 8 5 4 1]
+[2023-10-17 23:09:31,225][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,277][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,297][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,319][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,345][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,372][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,394][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,414][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,435][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,455][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,558][root][INFO] - Class sequence: [6 5 5 7 5 1 3 7 0 2 4 8 7 3 3 7 4 5 2 0]
+[2023-10-17 23:09:31,575][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,595][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,616][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,637][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,657][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,678][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,698][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,718][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,738][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,759][root][INFO] - task 9 :(128, 1, 28, 28)
+i_size 28
+num_classes 2
+net_cfg {'name': 'mlp', 'depth': 4, 'layer_size': 64, 'dropout': 0.0, 'i_size': 28, 'num_classes': 2, 'num_tasks': 10, 'num_init_tasks': 4, 'use_contrastive': True}
+<class 'shell.learners.er_dynamic.CompositionalDynamicER'>
+[2023-10-17 23:09:31,866][root][INFO] - Class sequence: [5 4 2 3 6 2 0 5 9 4 8 4 1 7 2 5 5 3 9 6]
+[2023-10-17 23:09:31,883][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,903][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,923][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,945][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,972][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-17 23:09:31,992][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-17 23:09:32,019][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-17 23:09:32,039][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-17 23:09:32,061][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-17 23:09:32,081][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-17 23:09:47,233][root][INFO] - Joint training on task 0 ...
+[2023-10-17 23:09:52,252][root][INFO] - Joint training on task 1 ...
+[2023-10-17 23:09:53,268][root][INFO] - Joint training on task 2 ...
+[2023-10-17 23:09:54,650][root][INFO] - Joint training on task 3 ...
+[2023-10-17 23:12:37,837][root][INFO] - DONE TRAINING THE JOINT AGENT...
+[2023-10-17 23:12:37,837][root][INFO] - No. gpus per agent: 1.0
+[2023-10-17 23:12:42,824][root][INFO] - Created fleet with 2 agents
+[2023-10-17 23:12:42,825][root][INFO] - Adding neighbors...
+[2023-10-17 23:12:42,828][root][INFO] - Fleet initialized
+[2023-10-17 23:12:42,830][root][INFO] - READY TO TRAIN INDIVIDUAL AGENTS...
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 0 for task 0
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 0 for task 0
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 1 for task 0
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 1 for task 0
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 2 for task 0
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 2 for task 0
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 3 for task 0
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 3 for task 0
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 4 for task 0
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 4 for task 0
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 5 for task 0
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 5 for task 0
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 6 for task 0
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 6 for task 0
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 7 for task 0
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 7 for task 0
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 8 for task 0
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 8 for task 0
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 9 for task 1
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 9 for task 1
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 0 for task 1
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 0 for task 1
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 1 for task 1
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 1 for task 1
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 2 for task 1
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 2 for task 1
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 3 for task 1
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 3 for task 1
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 4 for task 1
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 4 for task 1
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 5 for task 1
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 5 for task 1
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 6 for task 1
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 6 for task 1
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 7 for task 1
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 7 for task 1
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 8 for task 1
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 8 for task 1
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 9 for task 2
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 9 for task 2
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 0 for task 2
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 0 for task 2
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 1 for task 2
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 1 for task 2
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 2 for task 2
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 2 for task 2
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 3 for task 2
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 3 for task 2
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 4 for task 2
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 4 for task 2
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 5 for task 2
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 5 for task 2
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 6 for task 2
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 6 for task 2
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 7 for task 2
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 7 for task 2
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 8 for task 2
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 8 for task 2
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 9 for task 3
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 9 for task 3
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 0 for task 3
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 0 for task 3
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 1 for task 3
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 1 for task 3
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 2 for task 3
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 2 for task 3
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 3 for task 3
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 3 for task 3
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 4 for task 3
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 4 for task 3
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 5 for task 3
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 5 for task 3
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 6 for task 3
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 6 for task 3
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 7 for task 3
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 7 for task 3
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 8 for task 3
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 8 for task 3
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 9 for task 4
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 9 for task 4
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 0 for task 4
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 0 for task 4
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 1 for task 4
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 1 for task 4
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 2 for task 4
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 2 for task 4
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 3 for task 4
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 3 for task 4
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 4 for task 4
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 4 for task 4
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 5 for task 4
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 5 for task 4
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 6 for task 4
+[2m[36m(ParallelModGrad pid=3035174)[0m node 0 is processing at round 6 for task 4
+[2m[36m(ParallelModGrad pid=3035512)[0m node 1 is processing at round 7 for task 4

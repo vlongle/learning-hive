@@ -1,0 +1,197 @@
+{'train': {'component_update_freq': 100, 'num_epochs': 100, 'init_component_update_freq': 100, 'init_num_epochs': 100, 'save_freq': 1}, 'dataset': {'dataset_name': 'kmnist', 'num_tasks': 10, 'num_classes_per_task': 2, 'with_replacement': True, 'num_trains_per_class': 64, 'num_vals_per_class': 50, 'remap_labels': True}, 'net': {'name': 'mlp', 'depth': 4, 'layer_size': 64, 'dropout': 0.0}, 'sharing_strategy': {'name': 'gradient', 'num_coms_per_round': 1, 'comm_freq': 10, 'mu': 1.0}, 'seed': 3, 'algo': 'modular', 'job_name': 'kmnist_modular_numtrain_64_contrastive', 'num_agents': 8, 'root_save_dir': 'experiment_results/fedavg/', 'parallel': True, 'num_init_tasks': 4, 'agent': {'save_dir': '${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}', 'batch_size': 64, 'memory_size': 32, 'improvement_threshold': 0.05, 'use_contrastive': True}}
+[2023-10-17 21:33:24,136][root][INFO] - Class sequence: [9 2 0 7 0 6 4 3 9 5 4 9 8 0 3 0 7 6 6 1]
+[2023-10-17 21:33:24,155][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,211][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,232][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,262][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,290][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,317][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,350][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,379][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,405][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,427][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,747][root][INFO] - Class sequence: [5 4 3 0 1 2 9 3 6 0 3 6 9 7 3 6 0 9 4 1]
+[2023-10-17 21:33:24,767][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,795][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,822][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,850][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,877][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,899][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,925][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,957][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-17 21:33:24,976][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,005][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,318][root][INFO] - Class sequence: [8 0 2 6 0 4 9 4 0 6 0 1 6 9 0 2 8 7 1 9]
+[2023-10-17 21:33:25,335][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,358][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,385][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,407][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,434][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,462][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,489][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,510][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,530][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,550][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,859][root][INFO] - Class sequence: [7 3 2 4 0 9 4 6 0 2 1 0 0 4 0 8 4 9 5 1]
+[2023-10-17 21:33:25,878][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,905][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,931][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,953][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-17 21:33:25,981][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,006][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,033][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,057][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,085][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,114][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,421][root][INFO] - Class sequence: [7 1 2 3 1 5 2 1 1 4 4 0 0 1 2 5 3 5 3 0]
+[2023-10-17 21:33:26,441][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,466][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,487][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,511][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,532][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,561][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,588][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,614][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,636][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,661][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-17 21:33:26,973][root][INFO] - Class sequence: [3 5 9 0 5 7 8 1 1 0 2 3 5 2 3 4 5 3 4 3]
+[2023-10-17 21:33:26,992][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,017][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,040][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,068][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,098][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,126][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,153][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,174][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,195][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,218][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,529][root][INFO] - Class sequence: [0 1 9 4 1 6 0 7 5 6 5 2 1 8 6 4 2 3 6 4]
+[2023-10-17 21:33:27,546][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,568][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,598][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,626][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,648][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,676][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,709][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,734][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,756][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-17 21:33:27,781][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,097][root][INFO] - Class sequence: [5 4 7 0 5 9 9 6 9 8 9 5 2 6 3 9 2 0 8 1]
+[2023-10-17 21:33:28,115][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,142][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,169][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,193][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,217][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,242][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,264][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,289][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,311][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,338][root][INFO] - task 9 :(128, 1, 28, 28)
+i_size 28
+num_classes 2
+net_cfg {'name': 'mlp', 'depth': 4, 'layer_size': 64, 'dropout': 0.0, 'i_size': 28, 'num_classes': 2, 'num_tasks': 10, 'num_init_tasks': 4, 'use_contrastive': True}
+<class 'shell.learners.er_dynamic.CompositionalDynamicER'>
+[2023-10-17 21:33:28,651][root][INFO] - Class sequence: [6 0 5 1 1 3 6 2 9 1 9 3 6 4 2 1 0 3 0 3]
+[2023-10-17 21:33:28,669][root][INFO] - task 0 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,697][root][INFO] - task 1 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,721][root][INFO] - task 2 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,748][root][INFO] - task 3 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,774][root][INFO] - task 4 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,802][root][INFO] - task 5 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,823][root][INFO] - task 6 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,851][root][INFO] - task 7 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,878][root][INFO] - task 8 :(128, 1, 28, 28)
+[2023-10-17 21:33:28,906][root][INFO] - task 9 :(128, 1, 28, 28)
+[2023-10-17 21:33:43,967][root][INFO] - Joint training on task 0 ...
+[2023-10-17 21:33:49,055][root][INFO] - Joint training on task 1 ...
+[2023-10-17 21:33:49,922][root][INFO] - Joint training on task 2 ...
+[2023-10-17 21:33:51,146][root][INFO] - Joint training on task 3 ...
+[2023-10-17 21:36:11,704][root][INFO] - DONE TRAINING THE JOINT AGENT...
+[2023-10-17 21:36:11,705][root][INFO] - No. gpus per agent: 0.25
+[2023-10-17 21:36:16,445][root][INFO] - Created fleet with 8 agents
+[2023-10-17 21:36:16,446][root][INFO] - Adding neighbors...
+[2023-10-17 21:36:17,786][root][INFO] - Fleet initialized
+[2023-10-17 21:36:17,795][root][INFO] - READY TO TRAIN INDIVIDUAL AGENTS...
+[2m[36m(ParallelModGrad pid=942908)[0m node 0 is processing at round 0 for task 0
+[2m[36m(ParallelModGrad pid=944063)[0m node 5 is processing at round 0 for task 0
+[2m[36m(ParallelModGrad pid=943931)[0m node 3 is processing at round 0 for task 0
+[2m[36m(ParallelModGrad pid=944034)[0m node 4 is processing at round 0 for task 0
+[2m[36m(ParallelModGrad pid=943067)[0m node 1 is processing at round 0 for task 0
+[2m[36m(ParallelModGrad pid=943445)[0m node 2 is processing at round 0 for task 0
+[2m[36m(ParallelModGrad pid=944597)[0m node 6 is processing at round 0 for task 0
+[2m[36m(ParallelModGrad pid=945063)[0m node 7 is processing at round 0 for task 0
+[2m[36m(ParallelModGrad pid=942908)[0m node 0 is processing at round 1 for task 0
+[2m[36m(ParallelModGrad pid=944063)[0m node 5 is processing at round 1 for task 0
+[2m[36m(ParallelModGrad pid=943931)[0m node 3 is processing at round 1 for task 0
+[2m[36m(ParallelModGrad pid=944034)[0m node 4 is processing at round 1 for task 0
+[2m[36m(ParallelModGrad pid=943067)[0m node 1 is processing at round 1 for task 0
+[2m[36m(ParallelModGrad pid=943445)[0m node 2 is processing at round 1 for task 0
+[2m[36m(ParallelModGrad pid=944597)[0m node 6 is processing at round 1 for task 0
+[2m[36m(ParallelModGrad pid=945063)[0m node 7 is processing at round 1 for task 0
+[2m[36m(ParallelModGrad pid=942908)[0m node 0 is processing at round 2 for task 0
+[2m[36m(ParallelModGrad pid=944063)[0m node 5 is processing at round 2 for task 0
+[2m[36m(ParallelModGrad pid=943931)[0m node 3 is processing at round 2 for task 0
+[2m[36m(ParallelModGrad pid=944034)[0m node 4 is processing at round 2 for task 0
+[2m[36m(ParallelModGrad pid=943067)[0m node 1 is processing at round 2 for task 0
+[2m[36m(ParallelModGrad pid=943445)[0m node 2 is processing at round 2 for task 0
+[2m[36m(ParallelModGrad pid=944597)[0m node 6 is processing at round 2 for task 0
+[2m[36m(ParallelModGrad pid=945063)[0m node 7 is processing at round 2 for task 0
+[2m[36m(ParallelModGrad pid=942908)[0m node 0 is processing at round 3 for task 0
+[2m[36m(ParallelModGrad pid=944063)[0m node 5 is processing at round 3 for task 0
+[2m[36m(ParallelModGrad pid=943931)[0m node 3 is processing at round 3 for task 0
+[2m[36m(ParallelModGrad pid=944034)[0m node 4 is processing at round 3 for task 0
+[2m[36m(ParallelModGrad pid=943067)[0m node 1 is processing at round 3 for task 0
+[2m[36m(ParallelModGrad pid=943445)[0m node 2 is processing at round 3 for task 0
+[2m[36m(ParallelModGrad pid=944597)[0m node 6 is processing at round 3 for task 0
+[2m[36m(ParallelModGrad pid=945063)[0m node 7 is processing at round 3 for task 0
+[2m[36m(ParallelModGrad pid=942908)[0m node 0 is processing at round 4 for task 0
+[2m[36m(ParallelModGrad pid=944063)[0m node 5 is processing at round 4 for task 0
+[2m[36m(ParallelModGrad pid=943931)[0m node 3 is processing at round 4 for task 0
+[2m[36m(ParallelModGrad pid=944034)[0m node 4 is processing at round 4 for task 0
+[2m[36m(ParallelModGrad pid=943067)[0m node 1 is processing at round 4 for task 0
+[2m[36m(ParallelModGrad pid=943445)[0m node 2 is processing at round 4 for task 0
+[2m[36m(ParallelModGrad pid=944597)[0m node 6 is processing at round 4 for task 0
+[2m[36m(ParallelModGrad pid=945063)[0m node 7 is processing at round 4 for task 0
+[2m[36m(ParallelModGrad pid=942908)[0m node 0 is processing at round 5 for task 0
+[2m[36m(ParallelModGrad pid=944063)[0m node 5 is processing at round 5 for task 0
+[2m[36m(ParallelModGrad pid=943931)[0m node 3 is processing at round 5 for task 0
+[2m[36m(ParallelModGrad pid=944034)[0m node 4 is processing at round 5 for task 0
+[2m[36m(ParallelModGrad pid=943067)[0m node 1 is processing at round 5 for task 0
+[2m[36m(ParallelModGrad pid=943445)[0m node 2 is processing at round 5 for task 0
+[2m[36m(ParallelModGrad pid=944597)[0m node 6 is processing at round 5 for task 0
+[2m[36m(ParallelModGrad pid=945063)[0m node 7 is processing at round 5 for task 0
+[2m[36m(ParallelModGrad pid=942908)[0m node 0 is processing at round 6 for task 0
+[2m[36m(ParallelModGrad pid=944063)[0m node 5 is processing at round 6 for task 0
+[2m[36m(ParallelModGrad pid=943931)[0m node 3 is processing at round 6 for task 0
+[2m[36m(ParallelModGrad pid=944034)[0m node 4 is processing at round 6 for task 0
+[2m[36m(ParallelModGrad pid=943067)[0m node 1 is processing at round 6 for task 0
+[2m[36m(ParallelModGrad pid=943445)[0m node 2 is processing at round 6 for task 0
+[2m[36m(ParallelModGrad pid=944597)[0m node 6 is processing at round 6 for task 0
+[2m[36m(ParallelModGrad pid=945063)[0m node 7 is processing at round 6 for task 0
+[2m[36m(ParallelModGrad pid=942908)[0m node 0 is processing at round 7 for task 0
+[2m[36m(ParallelModGrad pid=944063)[0m node 5 is processing at round 7 for task 0
+[2m[36m(ParallelModGrad pid=943931)[0m node 3 is processing at round 7 for task 0
+[2m[36m(ParallelModGrad pid=944034)[0m node 4 is processing at round 7 for task 0
+[2m[36m(ParallelModGrad pid=943067)[0m node 1 is processing at round 7 for task 0
+[2m[36m(ParallelModGrad pid=943445)[0m node 2 is processing at round 7 for task 0
+[2m[36m(ParallelModGrad pid=944597)[0m node 6 is processing at round 7 for task 0
+[2m[36m(ParallelModGrad pid=945063)[0m node 7 is processing at round 7 for task 0
+[2m[36m(ParallelModGrad pid=942908)[0m node 0 is processing at round 8 for task 0
+[2m[36m(ParallelModGrad pid=944063)[0m node 5 is processing at round 8 for task 0
+[2m[36m(ParallelModGrad pid=943931)[0m node 3 is processing at round 8 for task 0
+[2m[36m(ParallelModGrad pid=944034)[0m node 4 is processing at round 8 for task 0
+[2m[36m(ParallelModGrad pid=943067)[0m node 1 is processing at round 8 for task 0
+[2m[36m(ParallelModGrad pid=943445)[0m node 2 is processing at round 8 for task 0
+[2m[36m(ParallelModGrad pid=944597)[0m node 6 is processing at round 8 for task 0
+[2m[36m(ParallelModGrad pid=945063)[0m node 7 is processing at round 8 for task 0
+[2m[36m(ParallelModGrad pid=942908)[0m node 0 is processing at round 9 for task 0
+[2m[36m(ParallelModGrad pid=944063)[0m node 5 is processing at round 9 for task 0
+[2m[36m(ParallelModGrad pid=943931)[0m node 3 is processing at round 9 for task 0
+[2m[36m(ParallelModGrad pid=944034)[0m node 4 is processing at round 9 for task 0
+[2m[36m(ParallelModGrad pid=943067)[0m node 1 is processing at round 9 for task 0
+[2m[36m(ParallelModGrad pid=943445)[0m node 2 is processing at round 9 for task 0
+[2m[36m(ParallelModGrad pid=944597)[0m node 6 is processing at round 9 for task 0
+[2m[36m(ParallelModGrad pid=945063)[0m node 7 is processing at round 9 for task 0
+{'algo': 'modular', 'seed': 3, 'parallel': True, 'agent.batch_size': 64, 'num_agents': 8, 'dataset': 'kmnist', 'dataset.num_trains_per_class': 64, 'dataset.num_vals_per_class': 50, 'dataset.remap_labels': True, 'dataset.with_replacement': True, 'dataset.num_tasks': 10, 'net': 'mlp', 'net.depth': 4, 'num_init_tasks': 4, 'net.dropout': 0.0, 'train.num_epochs': 100, 'train.component_update_freq': 100, 'train.init_num_epochs': 100, 'train.init_component_update_freq': 100, 'train.save_freq': 1, 'agent.use_contrastive': True, 'agent.memory_size': 32, 'root_save_dir': 'experiment_results/fedavg/', 'sharing_strategy': 'grad_sharing', 'sharing_strategy.comm_freq': 10}
+No. of experiments: 1
+Experiment runs took 0:05:23.040544

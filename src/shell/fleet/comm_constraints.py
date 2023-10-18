@@ -47,6 +47,9 @@ def compute_mlp_model_size(layer_size=64, depth=4):
 def compute_fedavg_cost(model_size, frequency=1):
     return model_size * frequency
 
+def compute_fedcurv_cost(model_size, frequency=1):
+    return 2 * compute_fedavg_cost(model_size, frequency)
+
 def compute_modular_cost(no_exchanged_components, component_size, frequency=1):
     return no_exchanged_components * component_size * frequency
 

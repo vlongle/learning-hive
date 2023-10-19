@@ -45,7 +45,6 @@ class ModelSyncAgent(Agent):
         # return self.net.state_dict()
         # without the task-specific parameters named in self.excluded_params
         # should also exclude random_linear_projection
-        self.excluded_params.add("random_linear_projection")
         model = exclude_model(self.net.state_dict(), self.excluded_params)
 
         return model

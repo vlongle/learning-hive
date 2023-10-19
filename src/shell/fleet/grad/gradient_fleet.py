@@ -38,7 +38,8 @@ class GradFleet(Fleet):
                          NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
 
         # all agents should replace their models with the fake_agent's model
-        excluded_params = set(["decoder", "structure", "projector", "random_linear_projection"])
+        # excluded_params = set(["decoder", "structure", "projector", "random_linear_projection"])
+        excluded_params = set(["decoder", "structure", "projector"])
         model = exclude_model(
             self.fake_agent.net.state_dict(), excluded_params)
 
@@ -73,7 +74,8 @@ class ParallelGradFleet(ParallelFleet, GradFleet):
             logging.info(f"Joint training on task {task_id} ...")
             ray.get(self.fake_agent.train.remote(task_id))
         
-        excluded_params = set(["decoder", "structure", "projector", "random_linear_projection"])
+        # excluded_params = set(["decoder", "structure", "projector", "random_linear_projection"])
+        excluded_params = set(["decoder", "structure", "projector"])
         # store the fake_agent's model
         self.fake_model = exclude_model(ray.get(self.fake_agent.get_model.remote()),
                                         excluded_params)

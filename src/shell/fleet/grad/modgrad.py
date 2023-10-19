@@ -28,6 +28,8 @@ class ModGrad(ModelSyncAgent):
         return super().prepare_model()
 
     def process_communicate(self, task_id, communication_round):
+        # TODO: maybe only re-optimize past structures only if 
+
         # if communication_round % self.sharing_strategy.log_freq == 0:
         #     self.log(task_id, communication_round)
 

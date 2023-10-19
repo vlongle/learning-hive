@@ -21,6 +21,7 @@ from shell.models.mlp import MLP
 from shell.models.mlp_soft_lifelong_dynamic import MLPSoftLLDynamic
 from shell.learners.er_dynamic import CompositionalDynamicER
 from shell.learners.er_nocomponents import NoComponentsER
+from copy import deepcopy
 
 
 def process_dataset_cfg(cfg):
@@ -101,13 +102,18 @@ def load_net(cfg, NetCls, net_cfg, agent_id, task_id, num_added_components=None)
     save_dir = os.path.join(cfg['agent']['save_dir'],
                             f'agent_{agent_id}', f'task_{task_id}')
     print('save_dir', save_dir)
+    if agent_id == 69420: # HACK for the jointly trained agent
+        net_cfg = deepcopy(net_cfg)
+        net_cfg['num_tasks'] += net_cfg['num_init_tasks']
+        print("net_cfg", net_cfg)
+
     net = NetCls(**net_cfg)
     # TODO: how to know how many components to add?
     if num_added_components is not None:
         for _ in range(num_added_components):
             # TODO: this is buggy. We need to log the number of new components added
             # over time into a record.csv and use that
-            net.add_tmp_module(len(net.components)+1)
+            net.add_tmp_modules(task_id=len(net.components)+1, num_modules=1)
 
     checkpoint = torch.load(os.path.join(save_dir, "checkpoint.pt"))
     net.load_state_dict(checkpoint["model_state_dict"])

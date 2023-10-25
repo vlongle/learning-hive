@@ -92,13 +92,13 @@ class ModelSyncAgent(Agent):
         # make a test_acc_ls of dicts where each entry is {task_id: , test_acc:}
         test_acc_ls = [{"test_task": test_task_id, "test_acc": test_acc} for test_task_id, test_acc in test_acc.items()]
         for entry in test_acc_ls:
-            self.sharing_model_diff_record.write(
+            self.sharing_perf_record.write(
                 {
                     "task_id": task_id,
                     "communication_round": communication_round,
                 } |entry | info
             )
-        self.sharing_model_diff_record.save()
+        self.sharing_perf_record.save()
 
     def log_model_diff(self, task_id, communication_round, info={}):
         my_model = self.net.state_dict()

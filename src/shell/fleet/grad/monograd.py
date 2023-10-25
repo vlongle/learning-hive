@@ -90,7 +90,7 @@ class ModelSyncAgent(Agent):
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
         _, test_acc = self.agent.evaluate(testloaders) # test_acc is a dict of task: acc
         # make a test_acc_ls of dicts where each entry is {task_id: , test_acc:}
-        test_acc_ls = [{"test_task": test_task_id, "test_acc": test_acc} for test_task_id, test_acc in test_acc.items()]
+        test_acc_ls = [{"test_task": test_task_id, "test_acc": max(test_acc) if isinstance(test_acc, tuple) else test_acc} for test_task_id, test_acc in test_acc.items()]
         for entry in test_acc_ls:
             self.sharing_perf_record.write(
                 {

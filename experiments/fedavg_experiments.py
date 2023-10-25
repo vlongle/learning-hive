@@ -19,6 +19,7 @@ parser.add_argument('--seed', type=int, default=0, help='Seed for the experiment
 parser.add_argument('--dataset', type=str, default="mnist", choices=["mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
 parser.add_argument('--comm_freq', type=int, default=10)
 parser.add_argument('--when_reoptimize_structure', type=str, default="never", choices=["never", "always", "final"])
+parser.add_argument('--num_epochs', type=int, default=100)
 args = parser.parse_args()
 
 
@@ -32,7 +33,6 @@ if __name__ == "__main__":
     # num_tasks = 5
     # num_epochs = 4
     # comm_freq = 1
-    num_epochs = 100
     # comm_freq = 50 # how many epochs does a round of communication take place
 
     batch_size = 64
@@ -136,10 +136,10 @@ if __name__ == "__main__":
         "net.depth": num_init_tasks,
         "num_init_tasks": num_init_tasks,
         "net.dropout": 0.0,
-        "train.num_epochs": num_epochs,
-        "train.component_update_freq": num_epochs,
-        "train.init_num_epochs": num_epochs,
-        "train.init_component_update_freq": num_epochs,
+        "train.num_epochs": args.num_epochs,
+        "train.component_update_freq": args.num_epochs,
+        "train.init_num_epochs": args.num_epochs,
+        "train.init_component_update_freq": args.num_epochs,
         "train.save_freq": save_freq,
         "agent.use_contrastive": True,
         "agent.memory_size": 32,

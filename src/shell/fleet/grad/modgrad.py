@@ -67,8 +67,9 @@ class ModGrad(ModelSyncAgent):
 
         if self.sharing_strategy.when_reoptimize_structure == 'never':
             return
-        elif self.sharing_strategy.when_reoptimize_structure == 'final' and final:
-            self.reoptimize_past_structures(task_id, communication_round)
+        elif self.sharing_strategy.when_reoptimize_structure == 'final':
+            if final:
+                self.reoptimize_past_structures(task_id, communication_round)
         elif self.sharing_strategy.when_reoptimize_structure == 'always':
             # always re-optimize
             self.reoptimize_past_structures(task_id, communication_round)

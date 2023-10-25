@@ -124,19 +124,19 @@ class Agent:
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
         return eval_net(self.net, testloaders)
 
-    def communicate(self, task_id, communication_round):
+    def communicate(self, task_id, communication_round,final=False):
         """
         Sending communication to neighbors
         """
         pass
 
-    def prepare_communicate(self, task_id, communication_round):
+    def prepare_communicate(self, task_id, communication_round,final=False):
         """
         Preparing communication to neighbors
         """
         pass
 
-    def process_communicate(self, task_id, communication_round):
+    def process_communicate(self, task_id, communication_round,final=False):
         """
         Processing communication from neighbors
         after a round of communication
@@ -237,18 +237,19 @@ class Fleet:
                 agent.set_num_coms(task_id, num_coms)
                 agent.train(task_id, start_epoch, comm_freq, final=final)
             self.communicate(task_id if not final else task_id + 1, 
-                             start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round)
+                             start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round,
+                             final=final)
 
 
 
-    def communicate(self, task_id,start_com_round=0):
+    def communicate(self, task_id,start_com_round=0, final=False):
         for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
             for agent in self.agents:
-                agent.prepare_communicate(task_id, communication_round)
+                agent.prepare_communicate(task_id, communication_round, final)
             for agent in self.agents:
-                agent.communicate(task_id, communication_round)
+                agent.communicate(task_id, communication_round, final)
             for agent in self.agents:
-                agent.process_communicate(task_id, communication_round)
+                agent.process_communicate(task_id, communication_round, final)
 
 
 class ParallelFleet:
@@ -323,13 +324,14 @@ class ParallelFleet:
             ray.get([agent.train.remote(task_id, start_epoch, comm_freq,
                                         final=final) for agent in self.agents])
             self.communicate(task_id if not final else task_id + 1, 
-                             start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round)
+                             start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round,
+                             final=final)
 
-    def communicate(self, task_id, start_com_round=0):
+    def communicate(self, task_id, start_com_round=0, final=False):
         for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
             # parallelize preprocessing to prepare neccessary data
             # before the communication round.
-            ray.get([agent.prepare_communicate.remote(task_id, communication_round)
+            ray.get([agent.prepare_communicate.remote(task_id, communication_round, final)
                     for agent in self.agents])
             # NOTE: HACK: communicate in done in sequence to avoid dysnc issues,
             # if the sender sends something to the receiver but the receiver is not paying
@@ -338,7 +340,7 @@ class ParallelFleet:
             for agent in self.agents:
                 # sequential, because ray.get is blocking to get the result from one
                 # agent before moving to the next.
-                ray.get(agent.communicate.remote(task_id, communication_round))
+                ray.get(agent.communicate.remote(task_id, communication_round,final))
 
-            ray.get([agent.process_communicate.remote(task_id, communication_round)
+            ray.get([agent.process_communicate.remote(task_id, communication_round, final)
                     for agent in self.agents])

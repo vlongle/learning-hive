@@ -27,7 +27,7 @@ class ModGrad(ModelSyncAgent):
             self.excluded_params.add("components.{}".format(i))
         return super().prepare_model()
 
-    def process_communicate(self, task_id, communication_round):
+    def process_communicate(self, task_id, communication_round, final=False):
         # TODO: maybe only re-optimize past structures only if 
 
         # if communication_round % self.sharing_strategy.log_freq == 0:
@@ -36,9 +36,14 @@ class ModGrad(ModelSyncAgent):
         print(f"node {self.node_id} is processing at round {communication_round} for task {task_id}")
         # TODO: this logging is potentiallly buggy
         # self.log(task_id, communication_round)
+        # self.aggregate_models()
+        # # self.log(task_id, communication_round+1)
+        # self.log(task_id, communication_round)
+
+        self.log(task_id, communication_round, info={'info': 'before'})
         self.aggregate_models()
-        # self.log(task_id, communication_round+1)
-        self.log(task_id, communication_round)
+        self.log(task_id, communication_round, info={'info': 'after'})
+
 
         # # ModGrad: retrain on local tasks using experience replay. Update ONLY shared modules,
         # # keeping structures and other task-specific modules fixed.
@@ -60,7 +65,15 @@ class ModGrad(ModelSyncAgent):
         # self.finetune_shared_modules(
         #     trainloader, task_id, testloaders, task_id_retrain=task_id_retrain)
 
-        self.reoptimize_past_structures(task_id, communication_round)
+        if self.sharing_strategy.when_reoptimize_structure == 'never':
+            return
+        elif self.sharing_strategy.when_reoptimize_structure == 'final' and final:
+            self.reoptimize_past_structures(task_id, communication_round)
+        elif self.sharing_strategy.when_reoptimize_structure == 'always':
+            # always re-optimize
+            self.reoptimize_past_structures(task_id, communication_round)
+        else:
+            raise NotImplementedError(f'when_reoptimize_structure: {self.sharing_strategy.when_reoptimize_structure} not implemented')
 
         # self.agent.save_data(self.sharing_strategy.retrain.num_epochs + 1, task_id_retrain,
         #                      testloaders, final_save=False)  # final eval
@@ -205,7 +218,7 @@ class ModGrad(ModelSyncAgent):
 
 @ray.remote
 class ParallelModGrad(ModGrad):
-    def communicate(self, task_id, communication_round):
+    def communicate(self, task_id, communication_round, final=False):
         # logging.info(
         #     f"node {self.node_id} is communicating at round {communication_round} for task {task_id}")
         # TODO: Should we do deepcopy???

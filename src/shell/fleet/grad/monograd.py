@@ -31,9 +31,14 @@ class ModelSyncAgent(Agent):
         #     ["decoder", "projector", "structure"])
         self.excluded_params = set(["decoder", "structure", "projector", "random_linear_projection"])
 
-        self.sharing_record = Record(os.path.join(
+        self.sharing_model_diff_record = Record(os.path.join(
             self.save_dir,
             "sharing_record.csv"
+        ))
+
+        self.sharing_perf_record =  Record(os.path.join(
+            self.save_dir,
+            "sharing_perf_record.csv"
         ))
         self.retrain_record = Record(os.path.join(
             self.save_dir, "retrain_record.csv"))
@@ -49,10 +54,10 @@ class ModelSyncAgent(Agent):
 
         return model
 
-    def prepare_communicate(self, task_id, communication_round):
+    def prepare_communicate(self, task_id, communication_round, final=False):
         self.model = self.prepare_model()
 
-    def communicate(self, task_id, communication_round):
+    def communicate(self, task_id, communication_round, final=False):
         # if task_id < self.num_init_tasks - 1:
         #     return
         # send model to neighbors
@@ -72,7 +77,30 @@ class ModelSyncAgent(Agent):
     def get_bytes_sent(self):
         return self.bytes_sent
 
-    def log(self, task_id, communication_round):
+    def log(self, task_id, communication_round, info={}):
+        self.log_model_diff(task_id, communication_round, info)
+        self.log_model_perf(task_id, communication_round, info)
+    
+    def log_model_perf(self, task_id, communication_round, info={}):
+        testloaders = {task: torch.utils.data.DataLoader(testset,
+                                                         batch_size=256,
+                                                         shuffle=False,
+                                                         num_workers=4,
+                                                         pin_memory=True,
+                                                         ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
+        _, test_acc = self.agent.evaluate(testloaders) # test_acc is a dict of task: acc
+        # make a test_acc_ls of dicts where each entry is {task_id: , test_acc:}
+        test_acc_ls = [{"test_task": test_task_id, "test_acc": test_acc} for test_task_id, test_acc in test_acc.items()]
+        for entry in test_acc_ls:
+            self.sharing_model_diff_record.write(
+                {
+                    "task_id": task_id,
+                    "communication_round": communication_round,
+                } |entry | info
+            )
+        self.sharing_model_diff_record.save()
+
+    def log_model_diff(self, task_id, communication_round, info={}):
         my_model = self.net.state_dict()
         diffs = {}  # diff['name'] is a dictionary of "param_key"
         # and float indicating the difference
@@ -95,13 +123,13 @@ class ModelSyncAgent(Agent):
         diffs['avg_neigh']['avg_params'] = sum(
             diffs['avg_neigh'].values()) / len(diffs['avg_neigh'])
 
-        self.sharing_record.write(
+        self.sharing_model_diff_record.write(
             {
                 "task_id": task_id,
                 "communication_round": communication_round,
-            } | diffs['avg_neigh']
+            } | diffs['avg_neigh'] | info
         )
-        self.sharing_record.save()
+        self.sharing_model_diff_record.save()
 
     def aggregate_models(self):
         # get model from neighbors
@@ -141,14 +169,14 @@ class ModelSyncAgent(Agent):
                           testloaders, save_freq, eval_bool,
                           record=self.retrain_record)
 
-    def process_communicate(self, task_id, communication_round):
+    def process_communicate(self, task_id, communication_round, final=False):
         # if communication_round % self.sharing_strategy.log_freq == 0:
         #     self.log(task_id, communication_round)
         # self.aggregate_models()
 
-        self.log(task_id, communication_round)
+        self.log(task_id, communication_round, info={'info': 'before'})
         self.aggregate_models()
-        self.log(task_id, communication_round+1)
+        self.log(task_id, communication_round, info={'info': 'after'})
 
 
         # # Monograd: retrain on local tasks using experience replay

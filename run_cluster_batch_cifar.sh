@@ -7,7 +7,7 @@
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
-#SBATCH --nodelist=enough-oryx.grasp.maas   # Use only the specific node with A6000 GPUs
+#SBATCH --nodelist=ee-a6000-1.grasp.maas   # Use only the specific node with A6000 GPUs
 #SBATCH --array=0-7   # This will run 8 jobs with seeds from 0 to 7
 
 # Use SLURM_ARRAY_TASK_ID directly to get the seed

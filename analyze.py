@@ -32,7 +32,7 @@ from  shell.utils.record import Record
 # result_dir = "experiment_results/vanilla_fix_bug_compute_loss_encodev2"
 # result_dir = "experiment_results/toy_fedavg"
 # result_dir = "experiment_results/fedavg_transfer_also_projection_100"
-result_dir = "experiment_results/fedavg_transfer_also_projection_10_only_final_False"
+result_dir = "experiment_results/fedavg_transfer_also_projection_10_only_final_always"
 # result_dir = "experiment_results/toy_fedprox"
 # result_dir = "experiment_results/vanilla_cifar"
 # result_dir = "experiment_results/fedprox_0.0"

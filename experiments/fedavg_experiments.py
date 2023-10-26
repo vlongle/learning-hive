@@ -144,7 +144,7 @@ if __name__ == "__main__":
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
         "dataset": dataset,
-        "root_save_dir": f"experiment_results/toy_fedavg_transfer_also_projection_{comm_freq}_only_final_{args.when_reoptimize_structure}/",
+        "root_save_dir": f"experiment_results/fedavg_transfer_also_projection_{comm_freq}_only_final_{args.when_reoptimize_structure}/",
         "sharing_strategy": "grad_sharing",
         "sharing_strategy.comm_freq": comm_freq,
         "sharing_strategy.when_reoptimize_structure": args.when_reoptimize_structure,

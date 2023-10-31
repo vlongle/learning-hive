@@ -395,9 +395,9 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         self.update_structure(
                             X, Y, task_id, train_mode=train_mode)
                         # self.net.hide_tmp_module()
-                        self.net.hide_tmp_modulev2()
 
                         # without new module
+                        self.net.hide_tmp_modulev2()
                         self.update_structure(
                             X, Y, task_id, train_mode=train_mode)
                         # self.net.recover_hidden_module()

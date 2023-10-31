@@ -20,6 +20,7 @@ parser.add_argument('--dataset', type=str, default="mnist", choices=["mnist", "k
 parser.add_argument('--comm_freq', type=int, default=10)
 parser.add_argument('--when_reoptimize_structure', type=str, default="never", choices=["never", "always", "final"])
 parser.add_argument('--num_epochs', type=int, default=100)
+parser.add_argument('--use_contrastive', action='store_true')
 args = parser.parse_args()
 
 
@@ -43,8 +44,8 @@ if __name__ == "__main__":
 
 
 
-    # use_contrastive = False
-    use_contrastive = True
+    use_contrastive = args.use_contrastive
+    # use_contrastive = True
 
     config = {
         # "algo": ["monolithic", "modular"],

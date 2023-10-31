@@ -114,12 +114,14 @@ class Agent:
         train_kwargs["final"] = final
 
         # print(self.net.structure[task_id])
-        print('final:', final)
+        # print('final:', final)
+        # print('BEFORE TRAINING', self.net.structure[task_id])
 
         self.agent.train(trainloader, task_id, testloaders=testloaders,
                          valloader=valloader, start_epoch=start_epoch, **train_kwargs)
         
         print(self.net.structure[task_id])
+        print(self.net.decoder[task_id].bias)
 
     def eval(self, task_id):
         testloaders = {task: torch.utils.data.DataLoader(testset,

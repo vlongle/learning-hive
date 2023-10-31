@@ -182,7 +182,8 @@ class Learner():
     def train(self, *args, **kwargs):
         raise NotImplementedError('Training loop is algorithm specific')
 
-    def init_train(self, trainloader, task_id, start_epoch, num_epochs, save_freq=1, testloaders=None):
+    def init_train(self, trainloader, task_id, start_epoch, num_epochs, save_freq=1, testloaders=None,
+                   final=True):
         if self.init_trainloaders is None:
             self.init_trainloaders = {}
         self.init_trainloaders[task_id] = trainloader
@@ -198,16 +199,17 @@ class Learner():
                             X = X.to(self.net.device, non_blocking=True)
                             Y = Y.to(self.net.device, non_blocking=True)
                             self.gradient_step(X, Y, task)
-                if i % save_freq == 0 or i == num_epochs - 1:
+                if i % save_freq == 0:
                     self.save_data(i + 1, task_id, testloaders)
 
-            self.save_data(num_epochs + 1, task_id,
-                           testloaders, final_save=True)
-            for task, loader in self.init_trainloaders.items():
-                self.update_multitask_cost(loader, task)
+            if final:
+                self.save_data(num_epochs + start_epoch + 1, task_id,
+                            testloaders, final_save=final)
+                for task, loader in self.init_trainloaders.items():
+                    self.update_multitask_cost(loader, task)
         else:
             self.save_data(start_epoch, task_id,
-                           testloaders, final_save=True)
+                           testloaders, final_save=final)
 
     def evaluate(self, testloaders, mode=None, eval_no_update=True):
         was_training = self.net.training
@@ -324,7 +326,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.observed_tasks.add(task_id)
             self.T += 1
         if start_epoch == 0:
-            # zeroshot
+        # zeroshot
             self.save_data(start_epoch, task_id, testloaders, mode=train_mode)
 
         if self.T <= self.net.num_init_tasks:
@@ -338,7 +340,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.net.freeze_linear_weights()
             # self.net.freeze_structure()
             self.init_train(trainloader, task_id, start_epoch, num_epochs,
-                            save_freq, testloaders)
+                            save_freq, testloaders, final)
         else:
             self.net.freeze_modules()
             self.net.freeze_structure()     # freeze structure for all tasks
@@ -368,8 +370,6 @@ class CompositionalDynamicLearner(CompositionalLearner):
             # logging.info('INTRAIN task_id %s len(self.net.components) %s', task_id, len(self.net.components))
 
 
-            if hasattr(self, 'preconditioner'):
-                self.preconditioner.add_module(self.net.components[-1])
 
             # unfreeze (new) structure for current task
             # self.net.freeze_structure(freeze=False, task_id=task_id)
@@ -377,10 +377,13 @@ class CompositionalDynamicLearner(CompositionalLearner):
             iter_cnt = 0
 
             for i in range(start_epoch, num_epochs + start_epoch):
+                # print('num_epochs', num_epochs, 'start_epoch', start_epoch, 'i', i)
                 if (i + 1) % component_update_freq == 0:
+                    # print('UPDATING MODULES')
                     self.update_modules(
                         trainloader, task_id, train_mode=train_mode)
                 else:
+                    print('update structs')
                     for X, Y in trainloader:
                         if isinstance(X, list):
                             # contrastive two views
@@ -401,13 +404,13 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         self.net.recover_hidden_modulev2()
                         self.net.select_active_module()  # select the next module in round-robin
                         iter_cnt += 1
-                if i % save_freq == 0 or i == num_epochs - 1:
+                if i % save_freq == 0:
                     self.save_data(i + 1, task_id, testloaders,
                                    mode=train_mode)
             if final:
                 self.conditionally_add_module(valloader, task_id)
                 self.save_data(num_epochs + start_epoch + 1, task_id,
-                            testloaders, final_save=True, mode=train_mode)
+                            testloaders, final_save=final, mode=train_mode)
                 self.update_multitask_cost(trainloader, task_id)
 
     def conditionally_add_module(self, valloader, task_id):

@@ -103,7 +103,7 @@ for job_name in os.listdir(result_dir):
         for algo in os.listdir(os.path.join(result_dir, job_name, dataset_name)):
             for seed in os.listdir(os.path.join(result_dir, job_name, dataset_name, algo)):
                 for agent_id in os.listdir(os.path.join(result_dir, job_name, dataset_name, algo, seed)):
-                    if agent_id == "hydra_out":
+                    if agent_id == "hydra_out" or agent_id == "agent_69420":
                         continue
                     save_dir = os.path.join(
                         result_dir, job_name, dataset_name, algo, seed, agent_id)

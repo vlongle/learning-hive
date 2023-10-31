@@ -12,6 +12,7 @@ import ray
 from shell.fleet.fleet import Fleet, ParallelFleet
 import networkx as nx
 from shell.fleet.utils.model_sharing_utils import exclude_model
+import torch
 
 
 class GradFleet(Fleet):
@@ -25,74 +26,71 @@ class GradFleet(Fleet):
         # NOTE: We create a fake agent to jointly train all agents in the same initial tasks. Then,
         # we pretend that all agents have no initial tasks, and proceed with individual local training
 
-        self.fake_agent = AgentCls(69420, seed, fake_dataset, NetCls, LearnerCls,
+        tmp_agent_kwargs = deepcopy(agent_kwargs)
+        tmp_agent_kwargs["fl_strategy"] = None
+
+        self.jointly_trained_agent = AgentCls(69420, seed, fake_dataset, NetCls, LearnerCls,
                                    deepcopy(net_kwargs), deepcopy(
-                                       agent_kwargs),
+                                       tmp_agent_kwargs),
                                    deepcopy(train_kwargs), deepcopy(sharing_strategy))
-        self.joint_training()
-        # replace net_kwargs["num_init_tasks"] with -1 as we will do joint training on the init tasks.
-        net_kwargs["num_tasks"] -= net_kwargs["num_init_tasks"]
-        net_kwargs["num_init_tasks"] = -1
-        net_kwargs["init_ordering_mode"] = "uniform"
-        super().__init__(graph, seed, datasets, sharing_strategy, AgentCls,
-                         NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
-
-        # all agents should replace their models with the fake_agent's model
-        # excluded_params = set(["decoder", "structure", "projector", "random_linear_projection"])
-        excluded_params = set(["decoder", "structure", "projector"])
-        model = exclude_model(
-            self.fake_agent.net.state_dict(), excluded_params)
-
-        for agent in self.agents:
-            agent.replace_model(model, strict=False)
-
-    def joint_training(self):
-        self.fake_agent.agent.fl_strategy = None # NOTE: important to set this to None, otherwise, 
-        # the fake_agent will have stuff like L2 penalty as in fedprox
-        for task_id in range(self.fake_agent.net.num_init_tasks): 
-            logging.info(f"Joint training on task {task_id} ...")
-            self.fake_agent.train(task_id)
-        logging.info("DONE TRAINING THE JOINT AGENT...")
-
-
-
-class ParallelGradFleet(ParallelFleet, GradFleet):
-    def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs,
-                 train_kwargs, fake_dataset):
         self.num_init_tasks = net_kwargs["num_init_tasks"]
-
-        self.fake_agent = AgentCls.options(num_gpus=1).remote(69420, seed, fake_dataset, NetCls,
-                                                              LearnerCls, deepcopy(
-                                                                  net_kwargs), deepcopy(agent_kwargs),
-                                                              deepcopy(train_kwargs), deepcopy(sharing_strategy))
-
-        self.fake_agent.set_fl_strategy.remote(None) # NOTE: important to set this to None, otherwise, 
-        # the fake_agent will have stuff like L2 penalty as in fedprox
-
-        # need to do the joint training right here, and free the gpu so that other agents can later use them
-        for task_id in range(self.num_init_tasks):
-            logging.info(f"Joint training on task {task_id} ...")
-            ray.get(self.fake_agent.train.remote(task_id))
-        
-        # excluded_params = set(["decoder", "structure", "projector", "random_linear_projection"])
-        excluded_params = set(["decoder", "structure", "projector"])
-        # store the fake_agent's model
-        self.fake_model = exclude_model(ray.get(self.fake_agent.get_model.remote()),
-                                        excluded_params)
-        # delete the fake_agent
-        ray.kill(self.fake_agent)
-        del self.fake_agent
-
-        logging.info("DONE TRAINING THE JOINT AGENT...")
-
-        # replace net_kwargs["num_init_tasks"] with -1 as we will do joint training on the init tasks.
-        net_kwargs["num_init_tasks"] = -1
-        net_kwargs["num_tasks"] -= self.num_init_tasks
-        net_kwargs["init_ordering_mode"] = "uniform"
         super().__init__(graph, seed, datasets, sharing_strategy, AgentCls,
                          NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
-        # now that all agents are created, we can replace their models with the fake_agent's model
-        for agent in self.agents:
-            agent.replace_model.remote(self.fake_model, strict=False)
         
-        logging.info("READY TO TRAIN INDIVIDUAL AGENTS...")
+        self.uniformize_init_tasks()
+
+
+    def uniformize_init_tasks(self):
+        """
+        """
+        for agent in self.agents:
+            for task in range(self.num_init_tasks):
+                agent.dataset.trainset[task] = self.jointly_trained_agent.dataset.trainset[task]
+                agent.dataset.testset[task] = self.jointly_trained_agent.dataset.testset[task]
+                agent.dataset.valset[task] = self.jointly_trained_agent.dataset.valset[task]
+                agent.dataset.class_sequence[:task * (agent.dataset.num_classes_per_task)] = self.jointly_trained_agent.dataset.class_sequence[:task * (agent.dataset.num_classes_per_task)]
+
+
+    def train_and_comm(self, task_id):
+        if task_id < self.num_init_tasks:
+            # jointly train on the initial tasks
+            self.jointly_trained_agent.train(task_id)
+        else:
+            if task_id == self.num_init_tasks:
+                # now that we are done with joint training, we can delete the jointly_trained_agent
+                self.copy_from_jointly_trained_agent()
+                del self.jointly_trained_agent
+            return super(GradFleet, self).train_and_comm(task_id)
+    
+    def copy_from_jointly_trained_agent(self):
+        """
+        1. Copy the weights over
+        2. Copy the replay buffer over
+        3. Copy the logging to record.csv
+        """
+        for agent in self.agents:
+            agent.net.load_state_dict(self.jointly_trained_agent.net.state_dict())
+
+        for task_id in range(self.num_init_tasks):
+            train_loader = (
+            torch.utils.data.DataLoader(self.jointly_trained_agent.dataset.trainset[task_id],
+                                        batch_size=64,
+                                        shuffle=True,
+                                        num_workers=4,
+                                        pin_memory=True,
+                                        ))
+
+            for node in self.agents:
+                node.agent.update_multitask_cost(train_loader, task_id)
+                node.agent.T += 1
+                node.agent.observed_tasks.add(task_id)
+
+        for node in self.agents:
+            node.agent.record.df = self.jointly_trained_agent.agent.record.df.copy()
+            # overwrite the record.csv file
+            node.agent.record.save()
+
+
+
+class ParallelGradFleet(GradFleet, ParallelFleet):
+    pass

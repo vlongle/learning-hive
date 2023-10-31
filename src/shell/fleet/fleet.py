@@ -60,6 +60,7 @@ class Agent:
 
     def train(self, task_id, start_epoch=0, communication_frequency=None,
             final=True):
+        # print(f"node {self.node_id} train task {task_id} epoch {start_epoch} communication_frequency {communication_frequency} final {final}")
         if task_id >= self.net.num_tasks:
             return
         trainloader = (
@@ -108,12 +109,17 @@ class Agent:
         #     "communication_frequency", communication_frequency, "start_epoch", start_epoch, "end_epoch", end_epoch)
         # exit(0)
 
-
+        # print('adjusted_num_epochs', adjusted_num_epochs)
         train_kwargs["num_epochs"] = adjusted_num_epochs
         train_kwargs["final"] = final
 
+        # print(self.net.structure[task_id])
+        print('final:', final)
+
         self.agent.train(trainloader, task_id, testloaders=testloaders,
                          valloader=valloader, start_epoch=start_epoch, **train_kwargs)
+        
+        print(self.net.structure[task_id])
 
     def eval(self, task_id):
         testloaders = {task: torch.utils.data.DataLoader(testset,
@@ -215,10 +221,6 @@ class Fleet:
                          for neighbor_id in self.graph.neighbors(agent_id)]
             agent.add_neighbors(neighbors)
 
-    def train(self, task_id):
-        for agent in self.agents:
-            agent.train(task_id)
-
     def train_and_comm(self, task_id):
 
         if task_id < self.num_init_tasks:
@@ -234,6 +236,7 @@ class Fleet:
             for agent in self.agents:
                 # only remove modules for the last epoch
                 final = start_epoch + comm_freq >= num_epochs
+                print("final:", final, "start_epoch:", start_epoch, "comm_freq:", comm_freq, "num_epochs:", num_epochs)
                 agent.set_num_coms(task_id, num_coms)
                 agent.train(task_id, start_epoch, comm_freq, final=final)
             self.communicate(task_id if not final else task_id + 1, 
@@ -302,10 +305,6 @@ class ParallelFleet:
             neighbors = [self.agents[neighbor_id]
                          for neighbor_id in self.graph.neighbors(agent_id)]
             agent.add_neighbors.remote(neighbors)
-
-    def train(self, task_id):
-        # parallelize training
-        ray.get([agent.train.remote(task_id) for agent in self.agents])
 
     
     def train_and_comm(self, task_id):

@@ -34,6 +34,14 @@ FLEET_CLS = {
         True: ParallelGradFleet,
         False: GradFleet,
     },
+    # "debug_joint":{
+    #     True: ParallelGradFleet,
+    #     False: GradFleet,
+    # },
+    "debug_joint":{
+        True: ParallelFleet,
+        False: Fleet,
+    },
     # "sender_data": {},
     # "modmod": {},
 }
@@ -76,6 +84,16 @@ AGENT_CLS = {
         "modular": {
             True: ParallelRecvDataAgent,
             False: RecvDataAgent,
+        },
+    },
+    "debug_joint": {
+         "monolithic": {
+            True: ParallelAgent,
+            False: Agent
+        },
+        "modular": {
+            True: ParallelAgent,
+            False: Agent
         },
     },
 }

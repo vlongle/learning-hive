@@ -60,7 +60,6 @@ class Agent:
 
     def train(self, task_id, start_epoch=0, communication_frequency=None,
             final=True):
-        # print(f"node {self.node_id} train task {task_id} epoch {start_epoch} communication_frequency {communication_frequency} final {final}")
         if task_id >= self.net.num_tasks:
             return
         trainloader = (
@@ -104,24 +103,12 @@ class Agent:
         
         end_epoch = min(start_epoch + communication_frequency, train_kwargs['num_epochs'] )
         adjusted_num_epochs = end_epoch - start_epoch  
-        # print("num_epochs", train_kwargs["num_epochs"], "init_num_epochs", train_kwargs.get("init_num_epochs", None),
-        #     "task_id", task_id, "num_init_tasks", self.agent.net.num_init_tasks, "adjusted_num_epochs", adjusted_num_epochs,
-        #     "communication_frequency", communication_frequency, "start_epoch", start_epoch, "end_epoch", end_epoch)
-        # exit(0)
-
-        # print('adjusted_num_epochs', adjusted_num_epochs)
         train_kwargs["num_epochs"] = adjusted_num_epochs
         train_kwargs["final"] = final
-
-        # print(self.net.structure[task_id])
-        # print('final:', final)
-        # print('BEFORE TRAINING', self.net.structure[task_id])
 
         self.agent.train(trainloader, task_id, testloaders=testloaders,
                          valloader=valloader, start_epoch=start_epoch, **train_kwargs)
         
-        print(self.net.structure[task_id])
-        print(self.net.decoder[task_id].bias)
 
     def eval(self, task_id):
         testloaders = {task: torch.utils.data.DataLoader(testset,
@@ -238,9 +225,14 @@ class Fleet:
             for agent in self.agents:
                 # only remove modules for the last epoch
                 final = start_epoch + comm_freq >= num_epochs
-                print("final:", final, "start_epoch:", start_epoch, "comm_freq:", comm_freq, "num_epochs:", num_epochs)
                 agent.set_num_coms(task_id, num_coms)
                 agent.train(task_id, start_epoch, comm_freq, final=final)
+                # NOTE: HACK: tmp for debugging. save the ck
+                task_result_dir =os.path.join(agent.agent.save_dir, 'task_{}'.format(task_id))
+                path = os.path.join(task_result_dir, 
+                    f"checkpoint_{start_epoch}.pth")
+                torch.save(agent.agent.net.state_dict(), path)
+
             self.communicate(task_id if not final else task_id + 1, 
                              start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round,
                              final=final)

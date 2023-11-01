@@ -100,7 +100,12 @@ def setup_experiment(cfg: DictConfig):
     return graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg
 
 
-def load_net(cfg, NetCls, net_cfg, agent_id, task_id, num_added_components=None):
+def load_net(cfg, NetCls, net_cfg, agent_id, task_id, num_added_components=None,
+             checkpt_name=None):
+
+    if checkpt_name is None:
+        checkpt_name = "checkpoint.pt"
+
     save_dir = os.path.join(cfg['agent']['save_dir'],
                             f'agent_{agent_id}', f'task_{task_id}')
     print('save_dir', save_dir)
@@ -115,10 +120,16 @@ def load_net(cfg, NetCls, net_cfg, agent_id, task_id, num_added_components=None)
         for _ in range(num_added_components):
             # TODO: this is buggy. We need to log the number of new components added
             # over time into a record.csv and use that
-            net.add_tmp_modules(task_id=len(net.components)+1, num_modules=1)
+            # net.add_tmp_modules(task_id=len(net.components)+1, num_modules=1)
+            net.add_tmp_modules(task_id=len(net.components), num_modules=1)
 
-    checkpoint = torch.load(os.path.join(save_dir, "checkpoint.pt"))
-    net.load_state_dict(checkpoint["model_state_dict"])
+    # print('net', net.components, net.decoder, net.structure)
+    checkpoint = torch.load(os.path.join(save_dir, checkpt_name))
+    # print('checkpt:', checkpoint['model_state_dict'].keys())
+    if "model_state_dict" in checkpoint:
+        net.load_state_dict(checkpoint["model_state_dict"])
+    else:
+        net.load_state_dict(checkpoint)
     return net
 
 

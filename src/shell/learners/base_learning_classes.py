@@ -383,7 +383,6 @@ class CompositionalDynamicLearner(CompositionalLearner):
                     self.update_modules(
                         trainloader, task_id, train_mode=train_mode)
                 else:
-                    print('update structs')
                     for X, Y in trainloader:
                         if isinstance(X, list):
                             # contrastive two views
@@ -391,12 +390,15 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         X = X.to(self.net.device, non_blocking=True)
                         Y = Y.to(self.net.device, non_blocking=True)
 
-                        # with new module
+                        # with new module. Update struct + update the active
+                        # candidate
+                        self.net.unfreeze_module(self.net.active_candidate_index)
                         self.update_structure(
                             X, Y, task_id, train_mode=train_mode)
                         # self.net.hide_tmp_module()
 
                         # without new module
+                        self.net.freeze_module(self.net.active_candidate_index)
                         self.net.hide_tmp_modulev2()
                         self.update_structure(
                             X, Y, task_id, train_mode=train_mode)

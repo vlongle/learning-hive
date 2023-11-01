@@ -94,7 +94,7 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                     self.active_candidate_index = self.num_components
                     
                 self.num_components += 1
-        print('ADDED TMP MODULES', self.structure[task_id])
+        # print('ADDED TMP MODULES', self.structure[task_id])
 
     def receive_modules(self, task_id, module_list):
         # Number of temporary modules added in the last step

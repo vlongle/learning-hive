@@ -79,7 +79,7 @@ if __name__ == "__main__":
         "agent.use_contrastive": use_contrastive,
         "agent.memory_size": 32,
         "dataset": dataset,
-        "root_save_dir": f"experiment_results/debug_joint_agent_use_reg_fleet_comm_freq_{comm_freq}_use_contrastive_{use_contrastive}",
+        "root_save_dir": f"debug_fix_experiment_results/small_debug_joint_agent_use_reg_fleet_comm_freq_{comm_freq}_use_contrastive_{use_contrastive}",
         "sharing_strategy": "debug_joint",
         "sharing_strategy.comm_freq": comm_freq,
         "sharing_strategy.when_reoptimize_structure": args.when_reoptimize_structure,

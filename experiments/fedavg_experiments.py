@@ -17,9 +17,11 @@ import argparse
 parser = argparse.ArgumentParser(description='Run experiment with a specified seed.')
 parser.add_argument('--seed', type=int, default=0, help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=["mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
-parser.add_argument('--comm_freq', type=int, default=10)
+# parser.add_argument('--comm_freq', type=int, default=10)
+parser.add_argument('--comm_freq', type=int, default=1)
 parser.add_argument('--when_reoptimize_structure', type=str, default="never", choices=["never", "always", "final"])
-parser.add_argument('--num_epochs', type=int, default=100)
+# parser.add_argument('--num_epochs', type=int, default=100)
+parser.add_argument('--num_epochs', type=int, default=3)
 args = parser.parse_args()
 
 
@@ -119,8 +121,8 @@ if __name__ == "__main__":
         # "algo": "monolithic",
         "algo": "modular",
         "seed": seed,
-        # "parallel": True,
-        "parallel": False,
+        "parallel": True,
+        # "parallel": False,
         "agent.batch_size": batch_size,
         "num_agents": 8,
         # "num_agents": 2,
@@ -144,7 +146,7 @@ if __name__ == "__main__":
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
         "dataset": dataset,
-        "root_save_dir": f"experiment_results/fedavg_transfer_also_projection_{comm_freq}_only_final_{args.when_reoptimize_structure}/",
+        "root_save_dir": f"debug_fix_experiment_results/fedavg_epochs_{args.num_epochs}_freq_{comm_freq}_only_final_{args.when_reoptimize_structure}/",
         "sharing_strategy": "grad_sharing",
         "sharing_strategy.comm_freq": comm_freq,
         "sharing_strategy.when_reoptimize_structure": args.when_reoptimize_structure,

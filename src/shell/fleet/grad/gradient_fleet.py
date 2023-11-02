@@ -40,15 +40,15 @@ class GradFleet(Fleet):
         self.uniformize_init_tasks()
 
 
-    def uniformize_init_tasks(self):
+    def uniformize_init_tasks(self, dataset=None):
         """
         """
+        if dataset is None:
+            dataset = self.jointly_trained_agent.dataset
         for agent in self.agents:
             for task in range(self.num_init_tasks):
-                agent.dataset.trainset[task] = self.jointly_trained_agent.dataset.trainset[task]
-                agent.dataset.testset[task] = self.jointly_trained_agent.dataset.testset[task]
-                agent.dataset.valset[task] = self.jointly_trained_agent.dataset.valset[task]
-                agent.dataset.class_sequence[:task * (agent.dataset.num_classes_per_task)] = self.jointly_trained_agent.dataset.class_sequence[:task * (agent.dataset.num_classes_per_task)]
+                agent.replace_dataset(dataset, task)
+ 
 
 
     def train_and_comm(self, task_id):
@@ -62,18 +62,26 @@ class GradFleet(Fleet):
                 del self.jointly_trained_agent
             return super(GradFleet, self).train_and_comm(task_id)
     
-    def copy_from_jointly_trained_agent(self):
+    def copy_from_jointly_trained_agent(self, net=None, dataset=None,
+                                        record=None):
         """
         1. Copy the weights over
         2. Copy the replay buffer over
         3. Copy the logging to record.csv
         """
-        for agent in self.agents:
-            agent.net.load_state_dict(self.jointly_trained_agent.net.state_dict())
+        if net is None:
+            net = self.jointly_trained_agent.net
+        if dataset is None:
+            dataset = self.jointly_trained_agent.dataset
+        if record is None:
+            record = self.jointly_trained_agent.agent.record
+
+        for node in self.agents:
+            node.replace_model(net)
 
         for task_id in range(self.num_init_tasks):
             train_loader = (
-            torch.utils.data.DataLoader(self.jointly_trained_agent.dataset.trainset[task_id],
+            torch.utils.data.DataLoader(dataset.trainset[task_id],
                                         batch_size=64,
                                         shuffle=True,
                                         num_workers=4,
@@ -81,16 +89,67 @@ class GradFleet(Fleet):
                                         ))
 
             for node in self.agents:
-                node.agent.update_multitask_cost(train_loader, task_id)
-                node.agent.T += 1
-                node.agent.observed_tasks.add(task_id)
+                node.replace_dataset(train_loader, task_id)
+
 
         for node in self.agents:
-            node.agent.record.df = self.jointly_trained_agent.agent.record.df.copy()
-            # overwrite the record.csv file
-            node.agent.record.save()
+            node.replace_record(node, record)
 
 
 
-class ParallelGradFleet(GradFleet, ParallelFleet):
-    pass
+class ParallelGradFleet(ParallelFleet):
+    def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs,
+                 fake_dataset):
+        tmp_agent_kwargs = deepcopy(agent_kwargs)
+        tmp_agent_kwargs["fl_strategy"] = None
+        self.fake_dataset = fake_dataset
+
+        self.jointly_trained_agent = AgentCls.options(num_gpus=1).remote(69420, seed, fake_dataset, NetCls, LearnerCls,
+                                   deepcopy(net_kwargs), deepcopy(
+                                       tmp_agent_kwargs),
+                                   deepcopy(train_kwargs), deepcopy(sharing_strategy))
+        self.num_init_tasks = net_kwargs["num_init_tasks"]
+        self.args = (graph, seed, datasets, sharing_strategy, AgentCls,
+                         NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
+
+    def train_and_comm(self, task_id):
+        if task_id < self.num_init_tasks:
+            # jointly train on the initial tasks
+            ray.get(self.jointly_trained_agent.train.remote(task_id))
+        else:
+            if task_id == self.num_init_tasks:
+                net = ray.get(self.jointly_trained_agent.get_model.remote())
+                record = ray.get(self.jointly_trained_agent.get_record.remote())
+                # now that we are done with joint training, we can delete the jointly_trained_agent
+                # to free up GPU for the fleet
+                del self.jointly_trained_agent        
+                super().__init__(*self.args)
+                self.uniformize_init_tasks(self.fake_dataset)
+                self.copy_from_jointly_trained_agent(net, self.fake_dataset, record)
+            return super(ParallelGradFleet, self).train_and_comm(task_id)
+
+    def copy_from_jointly_trained_agent(self, net, dataset, record):
+        ray.get([
+            agent.replace_model.remote(net) for agent in self.agents
+        ])
+
+        for task_id in range(self.num_init_tasks):
+            train_loader = (
+            torch.utils.data.DataLoader(dataset.trainset[task_id],
+                                        batch_size=64,
+                                        shuffle=True,
+                                        num_workers=4,
+                                        pin_memory=True,
+                                        ))
+            ray.get([
+                agent.replace_replay.remote(train_loader, task_id) for agent in self.agents
+            ]) 
+
+        ray.get([
+            agent.replace_record.remote(record) for agent in self.agents
+        ])
+
+    def uniformize_init_tasks(self, dataset):
+        for agent in self.agents:
+                for task in range(self.num_init_tasks):
+                    ray.get(agent.replace_dataset.remote(deepcopy(dataset), task))

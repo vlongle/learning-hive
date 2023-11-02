@@ -159,6 +159,32 @@ class Agent:
 
     def get_num_components(self):
         return len(self.net.components)
+    
+    def replace_dataset(self, dataset, task):
+        self.dataset.trainset[task] = dataset.trainset[task]
+        self.dataset.testset[task] = dataset.testset[task]
+        self.dataset.valset[task] = dataset.valset[task]
+        if not self.dataset.class_sequence.flags.writeable:
+            self.dataset.class_sequence = self.dataset.class_sequence.copy()
+        self.dataset.class_sequence[:task * (self.dataset.num_classes_per_task)] = dataset.class_sequence[:task * (self.dataset.num_classes_per_task)]
+    
+    def replace_model(self, new_model, strict=True):
+        # print("replacing model with strict:", strict)
+        self.net.load_state_dict(new_model, strict=strict)
+        self.net.to(self.net.device)
+
+    def replace_record(self, record):
+        self.agent.record.df = record.df.copy()
+        self.agent.record.save()
+    
+    def replace_replay(self, trainloader, task_id, increment_T=True):
+        self.agent.update_multitask_cost(trainloader, task_id)
+        self.agent.observed_tasks.add(task_id)
+        if increment_T:
+            self.agent.T += 1
+    
+    def get_record(self):
+        return self.agent.record
 
 
 @ray.remote
@@ -227,11 +253,11 @@ class Fleet:
                 final = start_epoch + comm_freq >= num_epochs
                 agent.set_num_coms(task_id, num_coms)
                 agent.train(task_id, start_epoch, comm_freq, final=final)
-                # NOTE: HACK: tmp for debugging. save the ck
-                task_result_dir =os.path.join(agent.agent.save_dir, 'task_{}'.format(task_id))
-                path = os.path.join(task_result_dir, 
-                    f"checkpoint_{start_epoch}.pth")
-                torch.save(agent.agent.net.state_dict(), path)
+                # # NOTE: HACK: tmp for debugging. save the ck
+                # task_result_dir =os.path.join(agent.agent.save_dir, 'task_{}'.format(task_id))
+                # path = os.path.join(task_result_dir, 
+                #     f"checkpoint_{start_epoch}.pth")
+                # torch.save(agent.agent.net.state_dict(), path)
 
             self.communicate(task_id if not final else task_id + 1, 
                              start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round,

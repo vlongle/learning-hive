@@ -24,58 +24,27 @@ class ModelSyncAgent(Agent):
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
                          net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
         self.incoming_models = {}
-        # key: (task_id, communication_round, neighbor_id)
-        self.bytes_sent = {}
-        # self.num_init_tasks = net_kwargs.get("num_init_tasks", 1)
-        # self.excluded_params = set(
-        #     ["decoder", "projector", "structure"])
         self.excluded_params = set(["decoder", "structure", "projector", "random_linear_projection"])
 
         self.sharing_model_diff_record = Record(os.path.join(
             self.save_dir,
             "sharing_record.csv"
         ))
-
         self.sharing_perf_record =  Record(os.path.join(
             self.save_dir,
             "sharing_perf_record.csv"
         ))
-        self.retrain_record = Record(os.path.join(
-            self.save_dir, "retrain_record.csv"))
-
-    def compute_model_size(self, state_dict):
-        return sum(p.numel() for p in state_dict.values())
-
-    def prepare_model(self):
-        # return self.net.state_dict()
-        # without the task-specific parameters named in self.excluded_params
-        # should also exclude random_linear_projection
-        model = exclude_model(self.net.state_dict(), self.excluded_params)
-
-        return model
 
     def prepare_communicate(self, task_id, communication_round, final=False):
-        self.model = self.prepare_model()
+        self.model = exclude_model(deepcopy(self.net.state_dict()), self.excluded_params)
 
     def communicate(self, task_id, communication_round, final=False):
-        # if task_id < self.num_init_tasks - 1:
-        #     return
-        # send model to neighbors
         for neighbor in self.neighbors:
             neighbor.receive(self.node_id, deepcopy(self.model), "model")
-            self.bytes_sent[(task_id, communication_round,
-                             neighbor.get_node_id())] = self.compute_model_size(self.model)
 
     def receive(self, node_id, model, msg_type):
-        # get model from neighbors
-        # average all the models together!
         self.incoming_models[node_id] = model
 
-    def get_received_models(self):
-        return self.incoming_models
-
-    def get_bytes_sent(self):
-        return self.bytes_sent
 
     def log(self, task_id, communication_round, info={}):
         self.log_model_diff(task_id, communication_round, info)
@@ -89,11 +58,15 @@ class ModelSyncAgent(Agent):
                                                          pin_memory=True,
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
         _, test_acc = self.agent.evaluate(testloaders) # test_acc is a dict of task: acc
-        if "avg" not in self.test_acc:
-            self.test_acc["avg"] = sum(
-                self.test_acc.values()) / len(self.test_acc)
+        for t, t_a in test_acc.items():
+            if isinstance(t_a, tuple):
+                test_acc[t] = max(t_a)
+
+        if "avg" not in test_acc:
+            test_acc["avg"] = sum(
+                test_acc.values()) / len(test_acc)
+        test_acc_ls = [{"test_task": test_task_id, "test_acc": t_a} for test_task_id, t_a in test_acc.items()]
         # make a test_acc_ls of dicts where each entry is {task_id: , test_acc:}
-        test_acc_ls = [{"test_task": test_task_id, "test_acc": max(test_acc) if isinstance(test_acc, tuple) else test_acc} for test_task_id, test_acc in test_acc.items()]
         for entry in test_acc_ls:
             self.sharing_perf_record.write(
                 {
@@ -149,85 +122,16 @@ class ModelSyncAgent(Agent):
         for name, param in self.net.state_dict().items():
             # +1 because it includes the current model
             param.data /= stuff_added[name] + 1
-        # logging.info("AFTER aggregation...%s", len(self.net.components))
-
-    def retrain(self, num_epochs, task_id, testloaders, save_freq=1, eval_bool=True):
-        """
-        Retrain on local data after aggregation. Only tested for monolithic models.
-        """
-        # mega_dataset = ConcatDataset(
-        #     [loader.dataset for loader in self.agent.memory_loaders.values()])
-
-        mega_dataset = ConcatDataset(
-            [get_custom_tensordataset(loader.dataset.tensors, name=self.agent.dataset_name,
-                                      use_contrastive=self.agent.use_contrastive) for loader in self.agent.memory_loaders.values()])
-        mega_loader = torch.utils.data.DataLoader(mega_dataset,
-                                                  batch_size=self.agent.memory_loaders[0].batch_size,
-                                                  shuffle=True,
-                                                  num_workers=0,
-                                                  pin_memory=True
-                                                  )
-        logging.info("RETRAINING...")
-        self.agent._train(mega_loader, num_epochs, task_id,
-                          testloaders, save_freq, eval_bool,
-                          record=self.retrain_record)
 
     def process_communicate(self, task_id, communication_round, final=False):
-        # if communication_round % self.sharing_strategy.log_freq == 0:
-        #     self.log(task_id, communication_round)
-        # self.aggregate_models()
-
         self.log(task_id, communication_round, info={'info': 'before'})
         self.aggregate_models()
         self.log(task_id, communication_round, info={'info': 'after'})
 
-
-        # # Monograd: retrain on local tasks using experience replay
-        # testloaders = {task: torch.utils.data.DataLoader(testset,
-        #                                                  batch_size=128,
-        #                                                  shuffle=False,
-        #                                                  num_workers=0,
-        #                                                  pin_memory=True,
-        #                                                  ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
-
-        # self.agent.save_data(0,
-        #                      task_id, testloaders, final_save=False,
-        #                      record=self.retrain_record)  # zeroshot
-        # # TODO: the epoch here is not incremented with respect to the previous communication round.
-        # self.retrain(
-        #     self.sharing_strategy.retrain.num_epochs, task_id, testloaders, save_freq=1, eval_bool=True,
-        # )
-
-        # self.agent.save_data(self.sharing_strategy.retrain.num_epochs+1,
-        #                      task_id, testloaders, final_save=True,
-        #                      record=self.retrain_record,
-        #                      save_dir=os.path.join(
-        #                          self.agent.save_dir, "retrain"),
-        #                      )  # save final model
-
-    def replace_model(self, new_model, strict=True):
-        # print("replacing model with strict:", strict)
-        self.net.load_state_dict(new_model, strict=strict)
-        self.net.to(self.net.device)
-
-
 @ray.remote
 class ParallelModelSyncAgent(ModelSyncAgent):
     def communicate(self, task_id, communication_round):
-        logging.info(
-            f"node {self.node_id} is communicating at round {communication_round} for task {task_id}")
-        # TODO: Should we do deepcopy???
-        # put model on object store
-        # state_dict = deepcopy(self.net.state_dict())
-        # model = state_dict
-        # model = ray.put(state_dict)
-        # send model to neighbors
-        # logging.info(f"My neighbors are: {self.neighbors}")
         for neighbor in self.neighbors:
-            # neighbor_id = ray.get(neighbor.get_node_id.remote())
-            # NOTE: neighbor_id for some reason is NOT responding...
-            # logging.info(f"SENDING MODEL: {self.node_id} -> {neighbor_id}")
-            # use ray.get blocking to make sure that the receiver has received the model
             ray.get(neighbor.receive.remote(self.node_id, self.model, "model"))
             self.bytes_sent[(task_id, communication_round)
                             ] = self.compute_model_size(self.model)

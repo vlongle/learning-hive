@@ -1,55 +1,29 @@
-# num_epochs = 100
-# comm_freq = 100
-# #num_epochs = 10
-# #comm_freq = 4
-# num_coms_per_round = 1
+# num_epochs = 100 # how long to train
+# comm_freq = 101 # how often to communicate (for exampple, every 50 epochs)
+# # num_coms_per_round = 1
 
+
+# class Agent:
+# 	def communicate(self):
+# 		print('communicate')
+# 	def train(self, start_epoch, end_epoch):
+# 		print(f'train {start_epoch}->{end_epoch}')
+
+# agent = Agent()
 # for start_epoch in range(0, num_epochs, comm_freq):
-# 	start_com_round=(start_epoch // comm_freq) * num_coms_per_round
+# 	# start_com_round=(start_epoch // comm_freq) * num_coms_per_round
 # 	end_epoch = min(start_epoch + comm_freq, num_epochs)
-# 	print('epoch', start_epoch, '->', end_epoch, 'comm_round', start_com_round)
-# 	if start_epoch + comm_freq >= num_epochs:
-# 		print(start_epoch, 'END')
-	
+# 	agent.train(start_epoch, end_epoch)
+# 	if comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
+# 	    agent.communicate()
+# 	# print('start', start_epoch, 'end', end_epoch)
 
 
-# class A:
-#     def __init__(self) -> None:
-#         print("A")
 
-# class B:
-# 	def __init__(self) -> None:
-# 		print("B")
-	
-# 	def doB(self):
-# 		print("doB")
-
-# class Child(A, B):
-# 	def __init__(self) -> None:
-# 		print("child")
-# 		super().__init__()
-# 		self.doB()
+import torch	
 
 
-# c = Child()
+a = torch.tensor([1,2,3])
 
-
-# class A:
-#     def __init__(self, a, b):
-#         print(a, b)
-
-
-# c = (5, 6)
-
-# a = A(*c)
-
-
-datasets = ["M", "K", "F"]
-seeds = [0, 1]
-
-jobs = [0,1,2,3,4,5]
-
-for job_id in jobs:
-    d = datasets[job_id % 3]
-    seed = seeds[job_id // 3]
-    print(f"running --d {d} --seed {seed}")
+for e in a:
+    print(e)

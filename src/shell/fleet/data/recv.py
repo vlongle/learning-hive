@@ -15,6 +15,7 @@ import ray
 from shell.fleet.fleet import Agent
 from torchmetrics.functional import pairwise_cosine_similarity
 from shell.utils.replay_buffers import ReplayBufferReservoir
+from shell.fleet.data.data_utilize import *
 
 """
 Receiver-first procedure.
@@ -66,6 +67,13 @@ def entropy_scorer(logits, labels=None):
     return -torch.sum(probs * log_probs, dim=1)
     # return -torch.sum(probs * torch.log(probs), dim=1)
 
+@torch.inference_mode()
+def random_scorer(logits, labels=None):
+    """
+    Return random scores
+    """
+    return torch.rand(logits.shape[0])
+
 # ====================
 # Supervised Methods
 # ====================
@@ -84,6 +92,7 @@ SCORER_FN_LOOKUP = {
     "margin": margin_scorer,
     "entropy": entropy_scorer,
     "cross_entropy": cross_entropy_scorer,
+    "random": random_scorer,
 }
 
 SCORER_TYPE_LOOKUP = {
@@ -91,6 +100,7 @@ SCORER_TYPE_LOOKUP = {
     "margin": "unsupervised",
     "entropy": "unsupervised",
     "cross_entropy": "supervised",
+    "random": "unsupervised",
 }
 
 
@@ -166,13 +176,18 @@ class RecvDataAgent(Agent):
         if chosen_tasks is not None:
             replay_buffers = {t: replay_buffers[t] for t in chosen_tasks}
 
-        for t, replay in replay_buffers.items():
+        # TODO: BUGGY, move the current task outside of the
+        # replay buffer
+        # for t, replay in replay_buffers.items():
+        for t in range(self.agent.T):
+            if chosen_tasks is not None and t not in chosen_tasks:
+                continue
             if t == self.agent.T - 1:
                 # current task
                 Xt, yt = self.dataset.trainset[t].tensors
             else:
-                Xt = replay.tensors[0]
-                yt = replay.tensors[1]
+                Xt = replay_buffers[t].tensors[0]
+                yt = replay_buffers[t].tensors[1]
             sim = computer(qX, Xt, t)
             sims.append(sim)
             Xs.append(Xt)
@@ -234,11 +249,42 @@ class RecvDataAgent(Agent):
 
         return X_neighbors, Y_neighbors, task_neighbors
 
-    def new_nearest_neighbors(self, qX, n_neighbors, n_filter_neighbors,
-                              debug=False):
-        """
-        Pre-filter with raw pixel comparison and then refine with embeddings.
-        """
+    def prefilter(self, qX, neighbor_id, n_filter_neighbors):
+        if self.sharing_strategy['prefilter_strategy'] == 'raw_distance':
+            return self.prefilter_raw_distance(qX, n_filter_neighbors)
+        elif self.sharing_strategy['prefilter_strategy'] == 'None':
+            return self.prefilter_none(qX, n_filter_neighbors)
+        elif self.sharing_strategy['prefilter_strategy'] == 'oracle':
+            return self.prefilter_oracle(qX, neighbor_id, n_filter_neighbors)
+        else:
+            raise ValueError(f"Invalid prefilter strategy {self.sharing_strategy['prefilter_strategy']}")
+
+    
+    def prefilter_none(self, qX, n_filter_neighbors):
+        return {
+            "task_neighbors_prefilter": None,
+        }
+    
+    def prefilter_oracle(self, qX, neighbor_id, n_filter_neighbors):
+        query_global_y = self.incoming_query_extra_info[neighbor_id]['query_global_y'] # dict of task_id -> global_y
+        query_global_y = torch.cat(list(query_global_y.values()), dim=0) # shape=(num_queries)
+        # print('query_global_y', query_global_y)
+        _, task_ids = get_local_labels(query_global_y, self.dataset.class_sequence, self.dataset.num_classes_per_task)
+        ret = torch.full((query_global_y.size(0), n_filter_neighbors), -1, dtype=torch.long)
+        for i, task_id in enumerate(task_ids):
+            if task_id == -1 or task_id >= self.agent.T:
+                continue
+            else:
+                ret[i, :] = torch.full((n_filter_neighbors,), task_id, dtype=torch.long)
+        
+        return {
+            "task_neighbors_prefilter": ret,
+        }
+
+
+
+
+    def prefilter_raw_distance(self, qX, n_filter_neighbors):
         # 1. Pre-filter using raw pixel comparison
         sims_prefilter, Xs, ys, tasks = self.compute_similarity(
             qX, 
@@ -249,92 +295,45 @@ class RecvDataAgent(Agent):
             sims_prefilter, Xs, ys, tasks, 
             neighbors=n_filter_neighbors
         )
+        return {
+                "X_n_prefilter": X_n_prefilter,
+                "y_n_prefilter": y_n_prefilter,
+                "task_neighbors_prefilter": task_neighbors_prefilter,
+        }
+
+
+    def new_nearest_neighbors(self, qX, neighbor_id, n_neighbors, n_filter_neighbors,
+                              debug=False):
+        """
+        qX is a concatenated tensor of query points from all tasks.
+        Pre-filter with raw pixel comparison and then refine with embeddings.
+        """
 
         # Convert to list of task indices for each query point
         # task_lists = [tasks[indices].tolist() for indices in task_neighbors_prefilter]
+        prefilter_info = self.prefilter(qX, neighbor_id, n_filter_neighbors)
+
 
         # 2. Compute similarity using embedding method
-        sims, _, _, _ = self.compute_similarity(qX, computer=self.compute_embedding_dist)
+        sims, Xs, ys, tasks = self.compute_similarity(qX, computer=self.compute_embedding_dist)
 
         # 3. Extract top neighbors considering the pre-filtered tasks
-        X_neighbors, _, _ = self.extract_topk_from_similarity(
+        X_neighbors, Y_neighbors, task_neighbors = self.extract_topk_from_similarity(
             sims, Xs, ys, tasks, 
             neighbors=n_neighbors, 
             # candidate_tasks=task_lists,
-            candidate_tasks=task_neighbors_prefilter,
+            candidate_tasks=prefilter_info['task_neighbors_prefilter'],
         )
         
         if debug:
-            return X_neighbors, X_n_prefilter
+            return {
+                "X_neighbors": X_neighbors, 
+                "Y_neighbors": Y_neighbors, 
+                "task_neighbors": task_neighbors, 
+            } | prefilter_info
         return X_neighbors
 
 
-
-
-
-    def nearest_neighbors(self, qX, neighbors: int, computer=None, debug=False, chosen_tasks=None):
-        """
-        NOTE: old algorithm without the pre-filtering step. Kept here for reference.
-
-
-        
-        First, go through every task in the replay buffer and compute
-        the cosine similarity scores between X and the data in the replay buffer.
-
-        At the end, take the top `neighbors` number of data points
-
-
-        X.shape = (N, C, H, W)
-
-        Return: X_neighbors of shape (N, n_neighbor, C, H, W)
-        """
-        if computer is None:
-            computer = self.compute_embedding_dist
-
-        sims = []
-        Xs, ys, tasks = [], [], []
-        was_training = self.net.training
-        qX = qX.to(self.net.device)
-
-
-
-        replay_buffers = self.agent.replay_buffers
-        if chosen_tasks is not None:
-            replay_buffers = {t: replay_buffers[t] for t in chosen_tasks}
-
-        for t, replay in replay_buffers.items():
-            Xt = replay.tensors[0]
-            yt = replay.tensors[1]
-            sim = computer(qX, Xt, t)
-            sims.append(sim)
-            Xs.append(Xt)
-            ys.append(yt)
-            tasks.append(torch.ones(Xt.shape[0], dtype=torch.long) * t)
-
-        sims = torch.cat(sims, dim=1)
-        # print('sims:', sims.shape)
-        Xs = torch.cat(Xs, dim=0)
-        ys = torch.cat(ys, dim=0)
-        tasks = torch.cat(tasks, dim=0)
-
-        top_k = torch.topk(sims, k=neighbors, dim=1).indices
-        X_neighbors = Xs[top_k.flatten()]
-        Y_neighbors = ys[top_k.flatten()]
-        task_neighbors = tasks[top_k.flatten()]
-
-        # reshape to (N, n_neighbor, c, h, w)
-        X_neighbors = X_neighbors.reshape(
-            qX.shape[0], neighbors, *qX.shape[1:])
-        Y_neighbors = Y_neighbors.reshape(
-            qX.shape[0], neighbors)
-        task_neighbors = task_neighbors.reshape(
-            qX.shape[0], neighbors)
-        if was_training:
-            self.net.train()
-        
-        if debug:
-            return X_neighbors, Y_neighbors, task_neighbors
-        return X_neighbors
 
     def get_valset(self, tasks):
         # NOTE: TODO: probably should get the query from the replay buffer instead
@@ -412,30 +411,55 @@ class RecvDataAgent(Agent):
         elif data_type == "data":
             # add data to buffer
             self.incoming_data[sender_id] = data
+        elif data_type == "extra_info":
+            self.incoming_extra_info[sender_id] = data
+        elif data_type == "query_extra_info":
+            self.incoming_query_extra_info[sender_id] = data
         else:
             raise ValueError("Invalid data type")
 
+
+    def helper_chunk(self, tensor, keys, lengths):
+        structured_data = {}
+        start_idx = 0
+        for k, l in zip(keys, lengths):
+            end_idx = start_idx + l
+            structured_data[k] = tensor[start_idx:end_idx]
+            start_idx = end_idx
+        return structured_data
 
     def compute_data(self):
         # Get relevant data for the query
         # and populate self.data
         self.data = {}
+        self.extra_info = {}
         for requester, query in self.incoming_query.items():
             # query is a dict of task_id -> X
             concat_query = torch.cat(list(query.values()), dim=0) # concat_query = size (N, C, H, W)
             data = self.new_nearest_neighbors(concat_query,
+                                            requester,
                                              self.sharing_strategy.num_data_neighbors,
-                                             self.sharing_strategy.num_filter_neighbors)
+                                             self.sharing_strategy.num_filter_neighbors,
+                                             debug=True)
+            # X_neighbors = data["X_neighbors"]
             # data size = (N, n_neighbor, C, H, W)
             # put the data back into a dict
-            structured_data = {}
-            start_idx = 0
-            for task_id, X in query.items():
-                end_idx = start_idx + X.size(0)  # Assuming the 0th dimension is the size N
-                structured_data[task_id] = data[start_idx:end_idx]
-                start_idx = end_idx  # Update start_idx for the next iteration
+            # structured_data = {}
+            # start_idx = 0
+            # for task_id, X in query.items():
+            #     end_idx = start_idx + X.size(0)  # Assuming the 0th dimension is the size N
+            #     structured_data[task_id] = X_neighbors[start_idx:end_idx]
+            #     start_idx = end_idx  # Update start_idx for the next iteration
 
-            self.data[requester] = structured_data
+            structured_data = {}
+            lengths = [qX.size(0) for qX in query.values()] # lengths[task_id] = how many query points for task_id
+            for k, tensor in data.items():
+                if isinstance(tensor, torch.Tensor):
+                    structured_data[k] = self.helper_chunk(tensor, query.keys(), lengths) 
+
+
+            self.data[requester] = structured_data['X_neighbors']
+            self.extra_info[requester] = structured_data
             
 
     def add_incoming_data(self):
@@ -462,31 +486,41 @@ class RecvDataAgent(Agent):
         ## TODO: start learning now!
     
 
-    def prepare_communicate(self, task_id, communication_round):
-        if communication_round == 0:
-            self.incoming_query, self.incoming_data = {}, {}
+    def get_query_global_labels(self, y):
+        ret = {}
+        for task, y_t in y.items():
+            ret[task]= get_global_labels(y_t, [task] * len(y_t), self.dataset.class_sequence, self.dataset.num_classes_per_task)
+        return ret
+
+    def prepare_communicate(self, task_id, communication_round, final=False):
+        if communication_round % 2 == 0:
+            self.incoming_query, self.incoming_data, self.incoming_extra_info, self.incoming_query_extra_info = {}, {}, {}, {}
         if task_id < self.agent.net.num_init_tasks - 1:
             return
-        if communication_round == 0:
+        if communication_round % 2 == 0:
             X, y = self.compute_query(task_id)
             self.query = X
             self.query_y = y
-        elif communication_round == 1:
+            self.query_extra_info = {
+                "query_global_y": self.get_query_global_labels(y),
+            }
+        elif communication_round % 2 == 1:
             self.compute_data()
         else:
             raise ValueError(f"Invalid round number {communication_round}")
 
     # potentially parallelizable
-    def communicate(self, task_id, communication_round):
+    def communicate(self, task_id, communication_round, final=False):
         if task_id < self.agent.net.num_init_tasks - 1:
             # NOTE: don't communicate for the first few tasks to
             # allow agents some initital training to find their weakness
             return
-        if communication_round == 0:
+        if communication_round % 2 == 0:
             # send query to neighbors
             for neighbor in self.neighbors:
                 neighbor.receive(self.node_id, self.query, "query")
-        elif communication_round == 1:
+                neighbor.receive(self.node_id, self.query_extra_info, "query_extra_info")
+        elif communication_round % 2 == 1:
             # send data to the requester
             # for requester in self.incoming_query:
             #     self.neighbors[requester].receive(
@@ -494,26 +528,30 @@ class RecvDataAgent(Agent):
             for neighbor in self.neighbors:
                 neighbor.receive(
                     self.node_id, self.data[neighbor.node_id], "data")
+                neighbor.receive(
+                self.node_id, self.extra_info[neighbor.node_id], "extra_info")
         else:
             raise ValueError(f"Invalid round number {communication_round}")
 
-    def process_communicate(self, task_id, communication_round):
+
+
+    def process_communicate(self, task_id, communication_round, final=False):
         if task_id < self.agent.net.num_init_tasks - 1:
             return
-        if communication_round == 0:
+        if communication_round % 2 == 0:
             pass
-        elif communication_round == 1:
+        elif communication_round % 2 == 1:
             self.add_incoming_data()
         else:
             raise ValueError("Invalid round number")
 
 class ParallelRecvDataAgent(RecvDataAgent):
-    def communicate(self, task_id, communication_round):
-        if communication_round == 0:
+    def communicate(self, task_id, communication_round, final=False):
+        if communication_round % 2 == 0:
             # send query to neighbors
             for neighbor in self.neighbors:
                 neighbor.remote.receive(self.node_id, self.query, "query")
-        elif communication_round == 1:
+        elif communication_round % 2 == 1:
             # send data to the requester
             for requester in self.incoming_query:
                 requester.remote.receive(

@@ -157,6 +157,7 @@ class Learner():
             ce = self.compute_cross_entropy_loss(X, Y, task_id, detach=True)
             cl = self.compute_contrastive_loss(X, Y, task_id)
             scale = 1.0
+            # scale = 0.1
             # if log:
             #     print("task", task_id, "size", len(Y), "no components",
             #           self.net.num_components, "cl:", cl/len(Y), "ce:", ce/len(Y))
@@ -165,7 +166,7 @@ class Learner():
             #     #       self.sup_loss.reduction)
             # # scale = 10.0
             loss = ce + scale * cl
-            # logging.info("ce %s cl %s l %s", ce, cl, loss)
+            logging.info("ce %s cl %s l %s", ce, cl, loss)
             return loss
         elif mode == "ce":
             # only train ce (backpropage through the entire model)
@@ -205,11 +206,12 @@ class Learner():
             if final:
                 self.save_data(num_epochs + start_epoch + 1, task_id,
                             testloaders, final_save=final)
-                for task, loader in self.init_trainloaders.items():
-                    self.update_multitask_cost(loader, task)
+                # for task, loader in self.init_trainloaders.items():
+                #     self.update_multitask_cost(loader, task)
         else:
             self.save_data(start_epoch, task_id,
                            testloaders, final_save=final)
+        self.update_multitask_cost(self.init_trainloaders[task_id], task_id)
 
     def evaluate(self, testloaders, mode=None, eval_no_update=True):
         was_training = self.net.training
@@ -367,14 +369,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 # for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
                 #     self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
 
-            # logging.info('INTRAIN task_id %s len(self.net.components) %s', task_id, len(self.net.components))
-
-
-
-            # unfreeze (new) structure for current task
-            # self.net.freeze_structure(freeze=False, task_id=task_id)
             self.net.unfreeze_structure(task_id=task_id)
-            iter_cnt = 0
 
             for i in range(start_epoch, num_epochs + start_epoch):
                 # print('num_epochs', num_epochs, 'start_epoch', start_epoch, 'i', i)
@@ -405,7 +400,6 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         # self.net.recover_hidden_module()
                         self.net.recover_hidden_modulev2()
                         self.net.select_active_module()  # select the next module in round-robin
-                        iter_cnt += 1
                 if i % save_freq == 0:
                     self.save_data(i + 1, task_id, testloaders,
                                    mode=train_mode)

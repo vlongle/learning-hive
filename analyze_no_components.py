@@ -20,8 +20,6 @@ import os
 # result_dir = "cifar_epochs_500_mild_dropout_memory_64_data_300_results"
 # result_dir = "vanilla_remove_datasets_hack_results"
 result_dir = "experiment_results/vanilla_fix_bug_compute_loss_encodev2"
-record = Record(f"{result_dir}.csv")
-
 pattern = r".*"
 
 

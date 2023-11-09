@@ -11,6 +11,8 @@ import torch.nn as nn
 import numpy as np
 import copy
 from shell.models.base_net_classes import SoftOrderingNet
+import torch.nn.functional as F
+
 
 
 class MLPSoftLLDynamic(SoftOrderingNet):
@@ -26,6 +28,8 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                  device='cuda',
                  dropout=0.5,
                  use_contrastive=None,
+                 normalize=False,
+                 use_projector=False,
                  ):
         super().__init__(i_size,
                          depth,
@@ -37,6 +41,8 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.size = layer_size
         self.max_components = max_components if max_components != -1 else np.inf
         self.num_components = self.depth
+
+        self.normalize = normalize
 
         self.components = nn.ModuleList()
 
@@ -65,6 +71,12 @@ class MLPSoftLLDynamic(SoftOrderingNet):
             decoder_t = nn.Linear(
                 self.size, self.num_classes[t])
             self.decoder.append(decoder_t)
+
+        self.use_contrastive = use_contrastive
+        self.use_projector = use_projector
+        if self.use_contrastive and self.use_projector:
+            self.projector = nn.ModuleList([nn.Linear(self.size, self.size // 2)
+                                           for t in range(self.num_tasks)])
 
         self.to(self.device)
 
@@ -190,10 +202,18 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         NOTE: not currently using any projector!
         """
         # X = self.encode(X, task_id)
-        X = self.encode(X, task_id)
-        return X
+        # # X = self.projector(X)
+        # if self.normalize:
+        #     X = F.normalize(X, dim=1)
+        # return X
+
+        feat = self.encode(X, task_id)
+        if self.use_projector:
+            feat = self.projector[task_id](feat)
+        if self.normalize:
+            feat = F.normalize(feat, dim=1)
+        return feat
 
     def forward(self, X, task_id):
-        # X = self.encode(X, task_id)
         X = self.encode(X, task_id)
         return self.decoder[task_id](X)

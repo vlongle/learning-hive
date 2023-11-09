@@ -185,6 +185,14 @@ class Agent:
     
     def get_record(self):
         return self.agent.record
+    
+    def load_model_from_ckpoint(self, path=None, task_id=None):
+        if path is not None:
+            self.net.load_state_dict(torch.load(path)['model_state_dict'])
+        else:
+            assert task_id is not None
+            path = os.path.join(self.save_dir, 'task_{}'.format(task_id), 'checkpoint.pt')
+            self.net.load_state_dict(torch.load(path)['model_state_dict'])
 
 
 @ray.remote
@@ -243,7 +251,7 @@ class Fleet:
             num_epochs = self.init_num_epochs
         else:
             num_epochs = self.num_epochs
-        comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs
+        comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs + 1
 
         num_coms= math.ceil(num_epochs / comm_freq)  # Number of times the loop will iterate
 
@@ -259,7 +267,10 @@ class Fleet:
                 #     f"checkpoint_{start_epoch}.pth")
                 # torch.save(agent.agent.net.state_dict(), path)
 
-            self.communicate(task_id if not final else task_id + 1, 
+            end_epoch = min(start_epoch + comm_freq, num_epochs)
+            if comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
+                print('COMMUNICATING')
+                self.communicate(task_id if not final else task_id + 1, 
                              start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round,
                              final=final)
 
@@ -333,7 +344,7 @@ class ParallelFleet:
             num_epochs = self.init_num_epochs
         else:
             num_epochs = self.num_epochs
-        comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs
+        comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs + 1
         num_coms= math.ceil(num_epochs / comm_freq)  # Number of times the loop will iterate
 
         for start_epoch in range(0, num_epochs, comm_freq):
@@ -342,7 +353,10 @@ class ParallelFleet:
                 task_id, num_coms) for agent in self.agents])
             ray.get([agent.train.remote(task_id, start_epoch, comm_freq,
                                         final=final) for agent in self.agents])
-            self.communicate(task_id if not final else task_id + 1, 
+
+            end_epoch = min(start_epoch + comm_freq, num_epochs)
+            if comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
+                self.communicate(task_id if not final else task_id + 1, 
                              start_com_round=(start_epoch // comm_freq) * self.num_coms_per_round,
                              final=final)
 

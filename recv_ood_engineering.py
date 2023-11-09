@@ -245,12 +245,17 @@ def compute_image_search_quality(node, neighbor, neighbor_id, task_id):
     # range from 0 to num_classes 
     Y_query_global = get_global_labels(Y_query, [task_id] * len(Y_query), node.dataset.class_sequence, node.dataset.num_classes_per_task)
 
+    task_neighbors_prefilter = None
     Y_neighbor = node.incoming_extra_info[neighbor_id]['Y_neighbors'][task_id]
-    task_neighbor = node.incoming_extra_info[neighbor_id]['task_neighbors'][task_id]
     print(Y_query_global)
-    print(node.incoming_extra_info[neighbor_id]['task_neighbors_prefilter'][task_id])
-    task_neighbors_prefilter = node.incoming_extra_info[neighbor_id]['task_neighbors_prefilter'][task_id]
+
+    if 'task_neighbors_prefilter' in node.incoming_extra_info[neighbor_id]:
+        task_neighbors_prefilter = node.incoming_extra_info[neighbor_id]['task_neighbors_prefilter'][task_id]
+        print(task_neighbors_prefilter)
     Y_neighbor_flatten = Y_neighbor.view(-1)
+
+
+    task_neighbor = node.incoming_extra_info[neighbor_id]['task_neighbors'][task_id]
     task_neighbor_flatten = task_neighbor.view(-1)
     # print(Y_neighbor_flatten.shape, task_neighbor_flatten.shape)
 
@@ -265,7 +270,7 @@ def compute_image_search_quality(node, neighbor, neighbor_id, task_id):
     confusion_matrix = np.zeros((num_classes, num_classes))
     for i in range(len(Y_query_global)):
         for j in range(Y_neighbor_global.shape[1]):  # Assuming Y_neighbor_global is a 2D array
-            if task_neighbors_prefilter[i, j] == -1:
+            if task_neighbors_prefilter is not None and task_neighbors_prefilter[i, j] == -1:
                 continue
             query_label = Y_query_global[i]
             neighbor_label = Y_neighbor_global[i, j]
@@ -274,12 +279,13 @@ def compute_image_search_quality(node, neighbor, neighbor_id, task_id):
     print(confusion_matrix)
     acc = np.sum(np.diag(confusion_matrix)) / np.sum(confusion_matrix)
     if np.isnan(acc):
-        acc = 1.0
+        # acc = 1.0
+        acc = 0.0
 
     # print('y_query_global', Y_query_global)
 
-    X_neighbor = node.incoming_data[neighbor_id][task_id] # shape=(num_queries, num_neighbors, 1, 28, 28)
-    viz_neighbor_data(X_neighbor, path=f"{node.save_dir}/task_{task_id}/neighbor_{neighbor_id}_{prefilter_strategy}.pdf")
+    # X_neighbor = node.incoming_data[neighbor_id][task_id] # shape=(num_queries, num_neighbors, 1, 28, 28)
+    # viz_neighbor_data(X_neighbor, path=f"{node.save_dir}/task_{task_id}/neighbor_{neighbor_id}_{prefilter_strategy}.pdf")
     return confusion_matrix, acc
 
 def viz_neighbor_data(X_neighbor, path):
@@ -315,6 +321,7 @@ for task in range(num_tasks):
             print(f"node {agent.node_id} task {task} neighbor {other_agent.node_id} acc {acc}")
             accs.append(acc)
 
+print(accs)
 print(f"mean acc {np.mean(accs)}")
 
 # print('receiver incoming_query_extra_info', receiver.incoming_query_extra_info)

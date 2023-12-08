@@ -22,6 +22,18 @@ class TopologyGenerator:
         G = nx.complete_graph(self.num_nodes)
         G = self.__drop_edges(G)
         return G
+    
+    def generate_disconnected(self):
+        # graph with no edges (i.e., no communication)
+        G = nx.empty_graph(self.num_nodes)
+        return G
+    
+    def generate_self_loop(self):
+        # graph with self-loops (i.e., only communicate with self)
+        G = nx.empty_graph(self.num_nodes)
+        for i in range(self.num_nodes):
+            G.add_edge(i, i)
+        return G
 
     def generate_ring(self):
         G = nx.cycle_graph(self.num_nodes)

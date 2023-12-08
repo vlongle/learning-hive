@@ -21,12 +21,14 @@ very bad.
 # call the fit function of the learner, and then evaluate on task_id again
 # return the difference in performance
 
+
+
+
+import random
 import logging
 import numpy as np
 import torch
 import torch.nn.functional as F
-
-
 def evaluate_data(func):
     def wrapper(data, agent, task_id):
         cur_task = len(agent.agent.replay_buffers) - 1
@@ -48,18 +50,22 @@ def evaluate_data(func):
     return wrapper
 
 
-def get_global_label(local_y: int, task_id: int, source_class_sequence, num_classes_per_task)-> int:
+def get_global_label(local_y: int, task_id: int, source_class_sequence, num_classes_per_task) -> int:
     # convert local_y to global_y
-    task_classes = source_class_sequence[task_id * num_classes_per_task: (task_id + 1) * num_classes_per_task]
+    task_classes = source_class_sequence[task_id *
+                                         num_classes_per_task: (task_id + 1) * num_classes_per_task]
     global_y = task_classes[local_y]
     return global_y
+
 
 def get_global_labels(local_ys, task_ids, source_class_sequence, num_classes_per_task):
     global_ys = []
     for local_y, task_id in zip(local_ys, task_ids):
-        global_y = get_global_label(local_y, task_id, source_class_sequence, num_classes_per_task)
+        global_y = get_global_label(
+            local_y, task_id, source_class_sequence, num_classes_per_task)
         global_ys.append(global_y)
     return torch.tensor(global_ys)
+
 
 def get_global_labels_dataset(data, source_class_sequence, num_classes_per_task):
     """
@@ -77,7 +83,8 @@ def get_global_labels_dataset(data, source_class_sequence, num_classes_per_task)
 
         def __getitem__(self, index):
             X, local_y, task_id = self.dataset[index]
-            global_y = get_global_label(local_y, task_id, source_class_sequence, num_classes_per_task)
+            global_y = get_global_label(
+                local_y, task_id, source_class_sequence, num_classes_per_task)
             return X, global_y
 
     return GlobalLabelsDataset(data)
@@ -87,9 +94,20 @@ def get_local_label_for_task(global_y, target_task_id, target_class_sequence, nu
     """
     Get the local label for the target task. If global_y is not in the target task, return -1.
     """
-    task_classes = list(target_class_sequence[target_task_id * num_classes_per_task: (target_task_id + 1) * num_classes_per_task])
+    task_classes = list(target_class_sequence[target_task_id * num_classes_per_task: (
+        target_task_id + 1) * num_classes_per_task])
     local_y = task_classes.index(global_y) if global_y in task_classes else -1
     return local_y
+
+
+def get_local_labels_for_task(global_ys, target_task_id, target_class_sequence, num_classes_per_task):
+    local_ys = []
+    for global_y in global_ys:
+        local_y = get_local_label_for_task(
+            global_y, target_task_id, target_class_sequence, num_classes_per_task)
+        local_ys.append(local_y)
+    return torch.tensor(local_ys)
+
 
 def remap_to_task_local_labels(data, target_class_sequence, num_classes_per_task, target_task_id):
     """
@@ -106,10 +124,13 @@ def remap_to_task_local_labels(data, target_class_sequence, num_classes_per_task
 
         def __getitem__(self, index):
             X, global_y = self.dataset[index]
-            local_y = get_local_label_for_task(global_y, target_task_id, target_class_sequence, num_classes_per_task)
+            local_y = get_local_label_for_task(
+                global_y, target_task_id, target_class_sequence, num_classes_per_task)
             return X, local_y
 
     return LocalLabelsForTaskDataset(data)
+
+# NOTE: just find the first task, a bit problematic
 
 
 def get_local_label(global_y, target_class_sequence, num_classes_per_task):
@@ -117,20 +138,24 @@ def get_local_label(global_y, target_class_sequence, num_classes_per_task):
     local_y = -1
     local_task_id = -1
     for task_id in range(num_tasks):
-        temp_local_y = get_local_label_for_task(global_y, task_id, target_class_sequence, num_classes_per_task)
+        temp_local_y = get_local_label_for_task(
+            global_y, task_id, target_class_sequence, num_classes_per_task)
         if temp_local_y != -1:
             local_y = temp_local_y
             local_task_id = task_id
             break
     return local_y, local_task_id
 
+
 def get_local_labels(global_ys, target_class_sequence, num_classes_per_task):
     local_ys, local_task_ids = [], []
     for global_y in global_ys:
-        local_y, local_task_id = get_local_label(global_y, target_class_sequence, num_classes_per_task)
+        local_y, local_task_id = get_local_label(
+            global_y, target_class_sequence, num_classes_per_task)
         local_ys.append(local_y)
         local_task_ids.append(local_task_id)
     return torch.tensor(local_ys), torch.tensor(local_task_ids)
+
 
 def remap_to_local_labels(data, class_sequence, num_classes_per_task):
     """Remap global labels to the agent's local labels and determine the corresponding local task."""
@@ -144,7 +169,8 @@ def remap_to_local_labels(data, class_sequence, num_classes_per_task):
 
         def __getitem__(self, index):
             X, global_y = self.dataset[index]
-            local_y, local_task_id = get_local_label(global_y, class_sequence, num_classes_per_task)
+            local_y, local_task_id = get_local_label(
+                global_y, class_sequence, num_classes_per_task)
             return X, local_y, local_task_id
 
     return LocalLabelsDataset(data)
@@ -158,16 +184,15 @@ def utilize_global_labels(data, source_class_sequence, target_class_sequence, nu
     """
 
     # Convert the dataset with local task-specific labels to a dataset with global labels
-    global_label_data = get_global_labels_dataset(data, source_class_sequence, num_classes_per_task)
-    
+    global_label_data = get_global_labels_dataset(
+        data, source_class_sequence, num_classes_per_task)
+
     # Remap global labels to the target's local labels and determine the corresponding local task
-    local_label_data = remap_to_local_labels(global_label_data, target_class_sequence, num_classes_per_task)
-    
+    local_label_data = remap_to_local_labels(
+        global_label_data, target_class_sequence, num_classes_per_task)
+
     return local_label_data
 
-
-
-import random
 
 class RandomFlippedDataset(torch.utils.data.Dataset):
     def __init__(self, dataset, flip_probability, num_classes,
@@ -190,7 +215,8 @@ class RandomFlippedDataset(torch.utils.data.Dataset):
         if random.random() < self.flip_probability:
             if self.jerk:
                 # TODO
-                possible_labels = [label for label in range(self.num_classes) if label != y]
+                possible_labels = [label for label in range(
+                    self.num_classes) if label != y]
                 # Choose a random label from the generated list
                 y = random.choice(possible_labels)
             else:
@@ -213,29 +239,29 @@ and then applies confidence
 """
 # def rank_and_pseudo_label(agent, X_source):
 #     task_scores = []
-    
+
 #     for task_id in range(agent.num_tasks):
 #         outputs = agent.predict(X_source, task_id)
 #         _, predicted_class = outputs.max(dim=1)
-        
+
 #         # Find the mode of the predicted_class
 #         mode_label = torch.mode(predicted_class).values.item()
 #         mode_label_count = (predicted_class == mode_label).sum().item()
-        
+
 #         # Consistency score: how frequently the mode occurs.
 #         consistency_score = mode_label_count / len(predicted_class)
 #         task_scores.append((task_id, consistency_score, mode_label))
-        
+
 #     # Sort tasks by their consistency score
 #     sorted_tasks = sorted(task_scores, key=lambda x: x[1], reverse=True)
-    
+
 #     # Most consistent task details
 #     best_task_id, _, best_task_mode_label = sorted_tasks[0]
-    
+
 #     # For confidence, get the softmax scores from the best task's predictions
 #     outputs_best_task = agent.predict(X_source, best_task_id)
 #     confidences = torch.nn.functional.softmax(outputs_best_task, dim=1)
-    
+
 #     # Get the confidence values of the best task mode label
 #     confidences_best_label = confidences[:, best_task_mode_label]
 
@@ -243,6 +269,7 @@ and then applies confidence
 #     pseudo_labels = torch.full((len(X_source),), best_task_mode_label, dtype=torch.long)
 
 #     return pseudo_labels, confidences_best_label, best_task_id
+
 
 @torch.inference_mode()
 def rank_and_pseudo_label(agent, X_source):
@@ -261,7 +288,7 @@ def rank_and_pseudo_label(agent, X_source):
     # Accumulate results from all task decoders
     for task_id in range(total_tasks):
         predictions = agent.net(X_source.to(agent.net.device), task_id)
-        
+
         # Get the predicted labels and their confidences
         predicted_labels = torch.argmax(predictions, dim=1).cpu()
         confidences = torch.max(F.softmax(predictions, dim=1), dim=1)[0].cpu()
@@ -270,7 +297,8 @@ def rank_and_pseudo_label(agent, X_source):
         print('\n\n')
 
         # Accumulate label counts
-        label_counts = torch.bincount(predicted_labels, minlength=num_classes_per_task)
+        label_counts = torch.bincount(
+            predicted_labels, minlength=num_classes_per_task)
         label_count_matrix.append(label_counts)
 
         # Sum up the confidences for each unique label
@@ -284,7 +312,8 @@ def rank_and_pseudo_label(agent, X_source):
     label_confidence_matrix = torch.stack(label_confidence_matrix)
 
     # Get average confidences
-    avg_confidences = label_confidence_matrix / (label_count_matrix + 1e-10)  # Avoid division by zero
+    avg_confidences = label_confidence_matrix / \
+        (label_count_matrix + 1e-10)  # Avoid division by zero
 
     # # Rank task decoders based on mode consistency and confidence
     total_scores = label_count_matrix + avg_confidences
@@ -325,7 +354,8 @@ def pseudo_label(agent, X_source, threshold=0.9):
     """
 
     # Using the previous function to rank tasks and obtain pseudo-labels
-    task_rankings, task_labels, confidences = rank_and_pseudo_label(agent, X_source)
+    task_rankings, task_labels, confidences = rank_and_pseudo_label(
+        agent, X_source)
 
     # Identifying the top-ranked task and its associated labels and confidences
     top_task_id = task_rankings[0]
@@ -355,7 +385,6 @@ def pseudo_label(agent, X_source, threshold=0.9):
 #     Data should be a mono dataset
 #     """
 #     pass
-
 
 
 def filter_dataset_by_label(dataset, target_label):

@@ -166,7 +166,7 @@ class Learner():
             #     #       self.sup_loss.reduction)
             # # scale = 10.0
             loss = ce + scale * cl
-            logging.info("ce %s cl %s l %s", ce, cl, loss)
+            # logging.info("ce %s cl %s l %s", ce, cl, loss)
             return loss
         elif mode == "ce":
             # only train ce (backpropage through the entire model)

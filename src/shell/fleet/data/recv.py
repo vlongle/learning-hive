@@ -16,7 +16,7 @@ from shell.fleet.fleet import Agent
 from torchmetrics.functional import pairwise_cosine_similarity
 from shell.utils.replay_buffers import ReplayBufferReservoir
 from shell.fleet.data.data_utilize import *
-
+import pickle
 """
 Receiver-first procedure.
 Scorers return higher scores for more valuable instances (need to train more on).
@@ -35,6 +35,8 @@ TODO:
 # ====================
 # Unsupervised methods
 # ====================
+
+
 @torch.inference_mode()
 def least_confidence_scorer(logits, labels=None):
     """
@@ -66,6 +68,7 @@ def entropy_scorer(logits, labels=None):
     log_probs = F.log_softmax(logits, dim=1)
     return -torch.sum(probs * log_probs, dim=1)
     # return -torch.sum(probs * torch.log(probs), dim=1)
+
 
 @torch.inference_mode()
 def random_scorer(logits, labels=None):
@@ -122,7 +125,8 @@ class RecvDataAgent(Agent):
     @torch.inference_mode()
     def compute_embedding_dist(self, X1, X2, task_id):
         self.net.eval()
-        X1_embed = self.net.encode(X1.to(self.net.device), task_id=task_id) # (B, hidden_dim)
+        X1_embed = self.net.encode(
+            X1.to(self.net.device), task_id=task_id)  # (B, hidden_dim)
         X2_embed = self.net.encode(X2.to(self.net.device), task_id=task_id)
         sim = pairwise_cosine_similarity(X1_embed, X2_embed)
         return sim.cpu()
@@ -143,20 +147,29 @@ class RecvDataAgent(Agent):
             X2 = X2.reshape(X2.shape[0], -1)
         sim = pairwise_cosine_similarity(X1, X2)
         return sim
-    
+
     # def compute_raw_dist(self, X1, X2, task_id=None):
     #     # make sure X1.shape == X2.shape
     #     # if X1.shape is not [N, d] then flatten it
     #     if len(X1.shape) > 2:
     #         X1 = X1.reshape(X1.shape[0], -1)
     #         X2 = X2.reshape(X2.shape[0], -1)
-        
+
     #     # Compute the L2 distance
     #     dist = torch.cdist(X1, X2)
     #     return dist
 
+    def get_candidate_data(self, task):
+        if task == self.agent.T - 1:
+            # current task
+            Xt, yt = self.dataset.trainset[task].tensors
+        else:
+            Xt = self.agent.replay_buffers[task].tensors[0]
+            yt = self.agent.replay_buffers[task].tensors[1]
+        return Xt, yt
+
     @torch.inference_mode()
-    def compute_similarity(self, qX, computer=None, chosen_tasks=None):
+    def compute_similarity(self, qX, computer=None):
         """
         Loop through all the data of each task that we currently have
         and compute the similarity with qX. Return the considered
@@ -171,23 +184,9 @@ class RecvDataAgent(Agent):
 
         sims = []
         Xs, ys, tasks = [], [], []
-        
-        replay_buffers = self.agent.replay_buffers
-        if chosen_tasks is not None:
-            replay_buffers = {t: replay_buffers[t] for t in chosen_tasks}
 
-        # TODO: BUGGY, move the current task outside of the
-        # replay buffer
-        # for t, replay in replay_buffers.items():
         for t in range(self.agent.T):
-            if chosen_tasks is not None and t not in chosen_tasks:
-                continue
-            if t == self.agent.T - 1:
-                # current task
-                Xt, yt = self.dataset.trainset[t].tensors
-            else:
-                Xt = replay_buffers[t].tensors[0]
-                yt = replay_buffers[t].tensors[1]
+            Xt, yt = self.get_candidate_data(t)
             sim = computer(qX, Xt, t)
             sims.append(sim)
             Xs.append(Xt)
@@ -217,23 +216,25 @@ class RecvDataAgent(Agent):
         """
         if candidate_tasks is not None:
             # Step 1: Reshape task_neighbors_prefilter
-            expanded_prefilter = candidate_tasks.unsqueeze(-1) # Shape: [N, n_filter_neighbors, 1]
+            # Shape: [N, n_filter_neighbors, 1]
+            expanded_prefilter = candidate_tasks.unsqueeze(-1)
 
             # Step 2: Expand tasks
-            expanded_tasks = tasks.unsqueeze(0).unsqueeze(0) # Shape: [1, 1, M]
+            expanded_tasks = tasks.unsqueeze(
+                0).unsqueeze(0)  # Shape: [1, 1, M]
 
             # Step 3: Use broadcasting to compare the two tensors
-            comparison_result = expanded_prefilter == expanded_tasks # Shape: [N, n_filter_neighbors, M]
+            # Shape: [N, n_filter_neighbors, M]
+            comparison_result = expanded_prefilter == expanded_tasks
 
             # Step 4: Aggregate along the n_filter_neighbors dimension
-            mask = comparison_result.any(dim=1).float() # Shape: [N, M], valid task is 1, invalid task is 0
+            # Shape: [N, M], valid task is 1, invalid task is 0
+            mask = comparison_result.any(dim=1).float()
 
-            # Step 5: articially lower the score for data from non-candidate tasks
+            # Step 5: artificially lower the score for data from non-candidate tasks
             invalid_mask = (1 - mask).bool()
-            sims = torch.where(invalid_mask, torch.tensor(-float('inf'), device=sims.device), sims)
-
-
-
+            sims = torch.where(
+                invalid_mask, torch.tensor(-float('inf'), device=sims.device), sims)
 
         top_k = torch.topk(sims, k=neighbors, dim=1).indices
 
@@ -257,50 +258,55 @@ class RecvDataAgent(Agent):
         elif self.sharing_strategy['prefilter_strategy'] == 'oracle':
             return self.prefilter_oracle(qX, neighbor_id, n_filter_neighbors)
         else:
-            raise ValueError(f"Invalid prefilter strategy {self.sharing_strategy['prefilter_strategy']}")
+            raise ValueError(
+                f"Invalid prefilter strategy {self.sharing_strategy['prefilter_strategy']}")
 
-    
     def prefilter_none(self, qX, n_filter_neighbors):
         return {
             "task_neighbors_prefilter": None,
         }
-    
+
     def prefilter_oracle(self, qX, neighbor_id, n_filter_neighbors):
-        query_global_y = self.incoming_query_extra_info[neighbor_id]['query_global_y'] # dict of task_id -> global_y
-        query_global_y = torch.cat(list(query_global_y.values()), dim=0) # shape=(num_queries)
+        # dict of task_id -> global_y
+        query_global_y = self.incoming_query_extra_info[neighbor_id]['query_global_y']
+        query_global_y = torch.cat(
+            list(query_global_y.values()), dim=0)  # shape=(num_queries)
         # print('query_global_y', query_global_y)
-        _, task_ids = get_local_labels(query_global_y, self.dataset.class_sequence, self.dataset.num_classes_per_task)
-        ret = torch.full((query_global_y.size(0), n_filter_neighbors), -1, dtype=torch.long)
+
+        return {
+            "task_neighbors_prefilter": self.prefilter_oracle_helper(qX, query_global_y, n_filter_neighbors)
+        }
+
+    def prefilter_oracle_helper(self, qX, q_global_Y, n_filter_neighbors):
+        assert q_global_Y.shape[0] == qX.shape[0]
+        _, task_ids = get_local_labels(
+            q_global_Y, self.dataset.class_sequence, self.dataset.num_classes_per_task)
+        ret = torch.full(
+            (q_global_Y.size(0), n_filter_neighbors), -1, dtype=torch.long)
         for i, task_id in enumerate(task_ids):
             if task_id == -1 or task_id >= self.agent.T:
                 continue
             else:
-                ret[i, :] = torch.full((n_filter_neighbors,), task_id, dtype=torch.long)
-        
-        return {
-            "task_neighbors_prefilter": ret,
-        }
-
-
-
+                ret[i, :] = torch.full(
+                    (n_filter_neighbors,), task_id, dtype=torch.long)
+        return ret
 
     def prefilter_raw_distance(self, qX, n_filter_neighbors):
         # 1. Pre-filter using raw pixel comparison
         sims_prefilter, Xs, ys, tasks = self.compute_similarity(
-            qX, 
+            qX,
             computer=self.compute_raw_dist
         )
         # print("tasks.shape:", tasks.shape, "Xs:", Xs.shape, "ys:", ys.shape, "sims_prefilter:", sims_prefilter.shape)
         X_n_prefilter, y_n_prefilter, task_neighbors_prefilter = self.extract_topk_from_similarity(
-            sims_prefilter, Xs, ys, tasks, 
+            sims_prefilter, Xs, ys, tasks,
             neighbors=n_filter_neighbors
         )
         return {
-                "X_n_prefilter": X_n_prefilter,
-                "y_n_prefilter": y_n_prefilter,
-                "task_neighbors_prefilter": task_neighbors_prefilter,
+            "X_n_prefilter": X_n_prefilter,
+            "y_n_prefilter": y_n_prefilter,
+            "task_neighbors_prefilter": task_neighbors_prefilter,
         }
-
 
     def new_nearest_neighbors(self, qX, neighbor_id, n_neighbors, n_filter_neighbors,
                               debug=False):
@@ -313,27 +319,25 @@ class RecvDataAgent(Agent):
         # task_lists = [tasks[indices].tolist() for indices in task_neighbors_prefilter]
         prefilter_info = self.prefilter(qX, neighbor_id, n_filter_neighbors)
 
-
         # 2. Compute similarity using embedding method
-        sims, Xs, ys, tasks = self.compute_similarity(qX, computer=self.compute_embedding_dist)
+        sims, Xs, ys, tasks = self.compute_similarity(
+            qX, computer=self.compute_embedding_dist)
 
         # 3. Extract top neighbors considering the pre-filtered tasks
         X_neighbors, Y_neighbors, task_neighbors = self.extract_topk_from_similarity(
-            sims, Xs, ys, tasks, 
-            neighbors=n_neighbors, 
+            sims, Xs, ys, tasks,
+            neighbors=n_neighbors,
             # candidate_tasks=task_lists,
             candidate_tasks=prefilter_info['task_neighbors_prefilter'],
         )
-        
+
         if debug:
             return {
-                "X_neighbors": X_neighbors, 
-                "Y_neighbors": Y_neighbors, 
-                "task_neighbors": task_neighbors, 
+                "X_neighbors": X_neighbors,
+                "Y_neighbors": Y_neighbors,
+                "task_neighbors": task_neighbors,
             } | prefilter_info
         return X_neighbors
-
-
 
     def get_valset(self, tasks):
         # NOTE: TODO: probably should get the query from the replay buffer instead
@@ -401,9 +405,6 @@ class RecvDataAgent(Agent):
             return X_queries, y_queries, y_pred_queries, score_queries
         return X_queries, y_queries
 
-    
-
-
     def receive(self, sender_id, data, data_type):
         if data_type == "query":
             # add query to buffer
@@ -417,7 +418,6 @@ class RecvDataAgent(Agent):
             self.incoming_query_extra_info[sender_id] = data
         else:
             raise ValueError("Invalid data type")
-
 
     def helper_chunk(self, tensor, keys, lengths):
         structured_data = {}
@@ -435,32 +435,23 @@ class RecvDataAgent(Agent):
         self.extra_info = {}
         for requester, query in self.incoming_query.items():
             # query is a dict of task_id -> X
-            concat_query = torch.cat(list(query.values()), dim=0) # concat_query = size (N, C, H, W)
+            # concat_query = size (N, C, H, W)
+            concat_query = torch.cat(list(query.values()), dim=0)
             data = self.new_nearest_neighbors(concat_query,
-                                            requester,
-                                             self.sharing_strategy.num_data_neighbors,
-                                             self.sharing_strategy.num_filter_neighbors,
-                                             debug=True)
-            # X_neighbors = data["X_neighbors"]
-            # data size = (N, n_neighbor, C, H, W)
-            # put the data back into a dict
-            # structured_data = {}
-            # start_idx = 0
-            # for task_id, X in query.items():
-            #     end_idx = start_idx + X.size(0)  # Assuming the 0th dimension is the size N
-            #     structured_data[task_id] = X_neighbors[start_idx:end_idx]
-            #     start_idx = end_idx  # Update start_idx for the next iteration
-
+                                              requester,
+                                              self.sharing_strategy.num_data_neighbors,
+                                              self.sharing_strategy.num_filter_neighbors,
+                                              debug=True)
             structured_data = {}
-            lengths = [qX.size(0) for qX in query.values()] # lengths[task_id] = how many query points for task_id
+            # lengths[task_id] = how many query points for task_id
+            lengths = [qX.size(0) for qX in query.values()]
             for k, tensor in data.items():
                 if isinstance(tensor, torch.Tensor):
-                    structured_data[k] = self.helper_chunk(tensor, query.keys(), lengths) 
-
+                    structured_data[k] = self.helper_chunk(
+                        tensor, query.keys(), lengths)
 
             self.data[requester] = structured_data['X_neighbors']
             self.extra_info[requester] = structured_data
-            
 
     def add_incoming_data(self):
         # get the data and now learn from it
@@ -471,25 +462,27 @@ class RecvDataAgent(Agent):
                     self.agent.shared_replay_buffers[task_id] = ReplayBufferReservoir(
                         self.sharing_strategy.shared_memory_size, task_id)
                 Y = self.query_y[task_id]  # Y.shape = (N)
-                n_neighbor = task_data.shape[1]  # Extracting n_neighbor from task_data shape
-                
-                # Expanding Y to shape (N, n_neighbor) 
+                # Extracting n_neighbor from task_data shape
+                n_neighbor = task_data.shape[1]
+
+                # Expanding Y to shape (N, n_neighbor)
                 # and then flattening it to (N*n_neighbor,)
                 Y_expanded = Y.unsqueeze(1).expand(-1, n_neighbor).reshape(-1)
-                
+
                 # Flattening task_data to (N*n_neighbor, C, H, W)
                 X_flattened = task_data.reshape(-1, *task_data.shape[2:])
-                
+
                 # Storing flattened X and Y into the replay buffer
-                self.agent.shared_replay_buffers[task_id].push(X_flattened, Y_expanded)
-        
-        ## TODO: start learning now!
-    
+                self.agent.shared_replay_buffers[task_id].push(
+                    X_flattened, Y_expanded)
+
+        # TODO: start learning now!
 
     def get_query_global_labels(self, y):
         ret = {}
         for task, y_t in y.items():
-            ret[task]= get_global_labels(y_t, [task] * len(y_t), self.dataset.class_sequence, self.dataset.num_classes_per_task)
+            ret[task] = get_global_labels(
+                y_t, [task] * len(y_t), self.dataset.class_sequence, self.dataset.num_classes_per_task)
         return ret
 
     def prepare_communicate(self, task_id, communication_round, final=False):
@@ -519,7 +512,8 @@ class RecvDataAgent(Agent):
             # send query to neighbors
             for neighbor in self.neighbors:
                 neighbor.receive(self.node_id, self.query, "query")
-                neighbor.receive(self.node_id, self.query_extra_info, "query_extra_info")
+                neighbor.receive(
+                    self.node_id, self.query_extra_info, "query_extra_info")
         elif communication_round % 2 == 1:
             # send data to the requester
             # for requester in self.incoming_query:
@@ -529,11 +523,9 @@ class RecvDataAgent(Agent):
                 neighbor.receive(
                     self.node_id, self.data[neighbor.node_id], "data")
                 neighbor.receive(
-                self.node_id, self.extra_info[neighbor.node_id], "extra_info")
+                    self.node_id, self.extra_info[neighbor.node_id], "extra_info")
         else:
             raise ValueError(f"Invalid round number {communication_round}")
-
-
 
     def process_communicate(self, task_id, communication_round, final=False):
         if task_id < self.agent.net.num_init_tasks - 1:
@@ -544,6 +536,90 @@ class RecvDataAgent(Agent):
             self.add_incoming_data()
         else:
             raise ValueError("Invalid round number")
+
+    def save_debug_data(self):
+        """
+        Save data for debugging purposes
+        """
+        if self.agent.T < self.agent.net.num_init_tasks:
+            return
+
+        # pickle query, query_extra_info, incoming_data, incoming_extra_info
+        with open(f"{self.save_dir}/task_{self.agent.T-1}/query_{self.sharing_strategy['prefilter_strategy']}_{self.sharing_strategy.scorer}.pt", 'wb') as f:
+            pickle.dump(self.query, f)
+        with open(f"{self.save_dir}/task_{self.agent.T-1}/query_extra_info_{self.sharing_strategy['prefilter_strategy']}_{self.sharing_strategy.scorer}.pt", 'wb') as f:
+            pickle.dump(self.query_extra_info, f)
+        with open(f"{self.save_dir}/task_{self.agent.T-1}/incoming_data_{self.sharing_strategy['prefilter_strategy']}_{self.sharing_strategy.scorer}.pt", 'wb') as f:
+            pickle.dump(self.incoming_data, f)
+        with open(f"{self.save_dir}/task_{self.agent.T-1}/incoming_extra_info_{self.sharing_strategy['prefilter_strategy']}_{self.sharing_strategy.scorer}.pt", 'wb') as f:
+            pickle.dump(self.incoming_extra_info, f)
+        # pickle incoming_query
+        with open(f"{self.save_dir}/task_{self.agent.T-1}/incoming_query_{self.sharing_strategy['prefilter_strategy']}_{self.sharing_strategy.scorer}.pt", 'wb') as f:
+            pickle.dump(self.incoming_query, f)
+        # pickle incoming_query_extra_info
+        with open(f"{self.save_dir}/task_{self.agent.T-1}/incoming_query_extra_info_{self.sharing_strategy['prefilter_strategy']}_{self.sharing_strategy.scorer}.pt", 'wb') as f:
+            pickle.dump(self.incoming_query_extra_info, f)
+
+    def load_debug_data(self):
+        """
+        Load data for debugging purposes
+        """
+        if self.agent.T < self.agent.net.num_init_tasks:
+            return
+
+        # pickle query, query_extra_info, incoming_data, incoming_extra_info
+        with open(f"{self.save_dir}/task_{self.agent.T-1}/query_{self.sharing_strategy['prefilter_strategy']}_{self.sharing_strategy.scorer}.pt", 'rb') as f:
+            self.query = pickle.load(f)
+        with open(f"{self.save_dir}/task_{self.agent.T-1}/query_extra_info_{self.sharing_strategy['prefilter_strategy']}_{self.sharing_strategy.scorer}.pt", 'rb') as f:
+            self.query_extra_info = pickle.load(f)
+        with open(f"{self.save_dir}/task_{self.agent.T-1}/incoming_data_{self.sharing_strategy['prefilter_strategy']}_{self.sharing_strategy.scorer}.pt", 'rb') as f:
+            self.incoming_data = pickle.load(f)
+        with open(f"{self.save_dir}/task_{self.agent.T-1}/incoming_extra_info_{self.sharing_strategy['prefilter_strategy']}_{self.sharing_strategy.scorer}.pt", 'rb') as f:
+            self.incoming_extra_info = pickle.load(f)
+
+        # pickle incoming_query
+        with open(f"{self.save_dir}/task_{self.agent.T-1}/incoming_query_{self.sharing_strategy['prefilter_strategy']}_{self.sharing_strategy.scorer}.pt", 'rb') as f:
+            self.incoming_query = pickle.load(f)
+        # pickle incoming_query_extra_info
+        with open(f"{self.save_dir}/task_{self.agent.T-1}/incoming_query_extra_info_{self.sharing_strategy['prefilter_strategy']}_{self.sharing_strategy.scorer}.pt", 'rb') as f:
+            self.incoming_query_extra_info = pickle.load(f)
+
+    def get_format_viz_data(self, task):
+        anchor_X, anchor_y = self.get_candidate_data(task)
+        X_list = []
+        y_list = []
+
+        neighbor_ids = self.incoming_query.keys()
+        for neighbor_id in neighbor_ids:
+            tasks = self.incoming_query[neighbor_id].keys()
+            for t in tasks:
+                X_list.append(self.incoming_query[neighbor_id][t])
+                y_list.append(
+                    self.incoming_query_extra_info[neighbor_id]['query_global_y'][t])
+
+        # Concatenate the lists into numpy arrays
+        X = np.concatenate(X_list, axis=0)
+        y = np.concatenate(y_list, axis=0)
+        y_local = get_local_labels_for_task(y, task, self.dataset.class_sequence,
+                                            self.dataset.num_classes_per_task)
+        # divide X, y into OD and ID. Note that `get_local_labels_for_task`
+        # will return -1 for OD data points.
+        id_mask = y_local != -1
+        od_mask = ~id_mask
+
+        id_X = X[id_mask]
+        id_y = y_local[id_mask]
+
+        od_X = X[od_mask]
+        od_y = y_local[od_mask]
+
+        data_dict = {
+            "ID": (id_X, id_y),
+            "anchor": (anchor_X, anchor_y),
+            "OD": (od_X, od_y)
+        }
+        return data_dict
+
 
 class ParallelRecvDataAgent(RecvDataAgent):
     def communicate(self, task_id, communication_round, final=False):

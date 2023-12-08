@@ -6,6 +6,7 @@ Author: Long Le (vlongle@seas.upenn.edu)
 
 Copyright (c) 2023 Long Le
 '''
+import omegaconf
 import subprocess
 import torch.nn as nn
 import torch
@@ -108,8 +109,7 @@ def load_net(cfg, NetCls, net_cfg, agent_id, task_id, num_added_components=None,
 
     save_dir = os.path.join(cfg['agent']['save_dir'],
                             f'agent_{agent_id}', f'task_{task_id}')
-    print('save_dir', save_dir)
-    if agent_id == 69420: # HACK for the jointly trained agent
+    if agent_id == 69420:  # HACK for the jointly trained agent
         net_cfg = deepcopy(net_cfg)
         net_cfg['num_tasks'] += net_cfg['num_init_tasks']
         print("net_cfg", net_cfg)
@@ -199,6 +199,27 @@ def get_all_combinations(config, strict=True):
     return combs
 
 
+def get_job_name(dataset, algo, num_trains_per_class, use_contrastive):
+    job_name = f"{dataset}_{algo}_numtrain_{num_trains_per_class}"
+    job_name += "" if use_contrastive == False else "_contrastive"
+    return job_name
+
+
+def get_save_dir(experiment_folder, experiment_name, dataset, algo, num_trains_per_class, use_contrastive, seed):
+    root_save_dir = f"{experiment_folder}/{experiment_name}"
+    job_name = get_job_name(
+        dataset, algo, num_trains_per_class, use_contrastive)
+    return f"{root_save_dir}/{job_name}/{dataset}/{algo}/seed_{seed}"
+
+
+def get_cfg(save_dir):
+    config_path = os.path.join(save_dir, "hydra_out", ".hydra", "config.yaml")
+    cfg = omegaconf.OmegaConf.load(config_path)
+    graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg = setup_experiment(
+        cfg)
+    return graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg, cfg
+
+
 def run_experiment(config, strict=True):
     """
     Generate all the combinations from config
@@ -218,8 +239,8 @@ def run_experiment(config, strict=True):
             script_path,
         ] + [f"{k}={v}" for k, v in cfg.items()]
         num_trains_per_class = cfg["dataset.num_trains_per_class"]
-        job_name = f"{dataset}_{algo}_numtrain_{num_trains_per_class}"
-        job_name += "" if cfg["agent.use_contrastive"] == False else "_contrastive"
+        job_name = get_job_name(
+            dataset, algo, num_trains_per_class, cfg["agent.use_contrastive"])
         cmd += [f"train={algo}", f"job_name={job_name}"]
         # print(" ".join(cmd), "\n\n")
         subprocess.run(cmd)

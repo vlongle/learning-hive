@@ -21,6 +21,8 @@ class MLP(nn.Module):
                  dropout=0.5,
                  init_ordering_mode=None,
                  use_contrastive=None,
+                 normalize=False,
+                 use_projector=False,
                  ):
         super().__init__()
         self.device = device

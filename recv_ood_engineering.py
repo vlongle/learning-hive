@@ -25,8 +25,8 @@ logging.basicConfig(level=logging.INFO)
 ## 2) throw that away by distance thresholding.
 
 # %%
-# use_contrastive = False
-use_contrastive = True
+use_contrastive = False
+# use_contrastive = True
 num_tasks = 4
 num_init_tasks = 4
 num_epochs = 100
@@ -82,7 +82,7 @@ agent_cfg = {
     'memory_size': 64,
     'use_contrastive': use_contrastive,
     # 'save_dir': f'recv_ood_engineering/use_contrastive_{use_contrastive}_normalize_embedding_results',
-    'save_dir': f'recv_ood_engineering/use_contrastive_{use_contrastive}',
+    'save_dir': f'recv_ood_engineering/er_dynamic/use_contrastive_{use_contrastive}',
 }
 
 # %%
@@ -109,6 +109,8 @@ train_cfg = {
 # %%
 # create a graph of 3 nodes and 2 edges from 2 and 3 to 1
 g = TopologyGenerator(num_nodes=3).generate_fully_connected()
+# g = TopologyGenerator(num_nodes=3).generate_disconnected()
+# g = TopologyGenerator(num_nodes=3).generate_self_loop()
 # %%
 fleet = Fleet(g, 0, [dataset, sender_dataset1, sender_dataset2], 
               sharing_cfg, AgentCls, NetCls, LearnerCls, net_cfg, agent_cfg, 
@@ -189,6 +191,10 @@ def viz_query(X, y, y_pred, scores, path="test.pdf"):
         axs[i].set_title(f"{y[i]} / {y_pred[i]} / {scores[i]:.2f}", color=color) 
         axs[i].axis("off")
     plt.tight_layout()
+    # make dir if not exists, path is path/...pdf
+    # first get the dir path by removing the last part of the path
+    dir_path = "/".join(path.split("/")[:-1])
+    os.makedirs(dir_path, exist_ok=True)
     plt.savefig(path)
     plt.close(fig)
 
@@ -220,11 +226,16 @@ Norm: somehow implicitly being normalized to 0-1. Even OOD samples will be mappe
 Also, compute the sim matrix on the valset and plot the barplot of same class vs diff class.
 """
 
-# for agent in fleet.agents:
-#     X, y, y_pred, scores = agent.compute_query(num_tasks-1, debug_return=True)
-#     for task in X:
-#         path = f"{agent.save_dir}/task_{task}/query_{scorer}.pdf"
-#         viz(X[task], y[task], y_pred[task], scores[task], path=path)
+viz=False
+
+for agent in fleet.agents:
+    X, y, y_pred, scores = agent.compute_query(num_tasks-1, debug_return=True)
+    for task in X:
+        path = f"{agent.save_dir}/task_{task}/viz/query_prefilter_{scorer}.pdf"
+        if viz:
+            viz_query(X[task], y[task], y_pred[task], scores[task], path=path)
+        torch.save(X[task], f"{agent.save_dir}/task_{task}/X_query_prefilter_{scorer}.pt")
+
 
 
 
@@ -235,11 +246,16 @@ Also, compute the sim matrix on the valset and plot the barplot of same class vs
 # # %%
 receiver = fleet.agents[0]
 
-def compute_image_search_quality(node, neighbor, neighbor_id, task_id):
+# NOTE: task_id is weird and probably wrong...
+def compute_image_search_quality(node, neighbor, neighbor_id, task_id,viz=False):
     """
     Return a num_classes x num_classes matrix where each entry[i, j]
     is the number of query images of class i that are given neighbors of class j.
+
+
+    Query for task_id from neighbor.
     """
+    print("neighbor", neighbor_id, "request task", task_id, "from node", node.node_id)
     Y_query = node.query_y[task_id]
     # Y_query_global.shape=(num_queries) where each entry is the global label of the query
     # range from 0 to num_classes 
@@ -247,12 +263,14 @@ def compute_image_search_quality(node, neighbor, neighbor_id, task_id):
 
     task_neighbors_prefilter = None
     Y_neighbor = node.incoming_extra_info[neighbor_id]['Y_neighbors'][task_id]
-    print(Y_query_global)
 
     if 'task_neighbors_prefilter' in node.incoming_extra_info[neighbor_id]:
         task_neighbors_prefilter = node.incoming_extra_info[neighbor_id]['task_neighbors_prefilter'][task_id]
-        print(task_neighbors_prefilter)
     Y_neighbor_flatten = Y_neighbor.view(-1)
+
+
+    qX = node.query[task_id]
+    oracle_neighbors_prefilter = neighbor.prefilter_oracle_helper(qX, Y_query_global, n_filter_neighbors=sharing_cfg.num_filter_neighbors)
 
 
     task_neighbor = node.incoming_extra_info[neighbor_id]['task_neighbors'][task_id]
@@ -268,6 +286,7 @@ def compute_image_search_quality(node, neighbor, neighbor_id, task_id):
     # print(Y_query.shape, Y_neighbor.shape, task_neighbor.shape, Y_neighbor_global.shape)
     num_classes = len(np.unique(node.dataset.class_sequence))
     confusion_matrix = np.zeros((num_classes, num_classes))
+    id_confusion_matrix = np.zeros((num_classes, num_classes))
     for i in range(len(Y_query_global)):
         for j in range(Y_neighbor_global.shape[1]):  # Assuming Y_neighbor_global is a 2D array
             if task_neighbors_prefilter is not None and task_neighbors_prefilter[i, j] == -1:
@@ -275,18 +294,32 @@ def compute_image_search_quality(node, neighbor, neighbor_id, task_id):
             query_label = Y_query_global[i]
             neighbor_label = Y_neighbor_global[i, j]
             confusion_matrix[query_label, neighbor_label] += 1
-    
+
+    for i in range(len(Y_query_global)):
+        for j in range(Y_neighbor_global.shape[1]):  # Assuming Y_neighbor_global is a 2D array
+            if oracle_neighbors_prefilter[i, j] == -1:
+                continue
+            query_label = Y_query_global[i]
+            neighbor_label = Y_neighbor_global[i, j]
+            id_confusion_matrix[query_label, neighbor_label] += 1
+
     print(confusion_matrix)
-    acc = np.sum(np.diag(confusion_matrix)) / np.sum(confusion_matrix)
-    if np.isnan(acc):
-        # acc = 1.0
-        acc = 0.0
+    if np.sum(confusion_matrix) == 0:
+        acc = 1.0
+        # exit()
+    else:
+        acc = np.sum(np.diag(confusion_matrix)) / np.sum(confusion_matrix)
 
     # print('y_query_global', Y_query_global)
 
-    # X_neighbor = node.incoming_data[neighbor_id][task_id] # shape=(num_queries, num_neighbors, 1, 28, 28)
-    # viz_neighbor_data(X_neighbor, path=f"{node.save_dir}/task_{task_id}/neighbor_{neighbor_id}_{prefilter_strategy}.pdf")
-    return confusion_matrix, acc
+    X_neighbor = node.incoming_data[neighbor_id][task_id] # shape=(num_queries, num_neighbors, 1, 28, 28)
+    if viz:
+        # viz_neighbor_data(X_neighbor, path=f"{node.save_dir}/task_{task_id}/viz_self_loop/from_{neighbor_id}_prefilter_{prefilter_strategy}.pdf")
+        viz_neighbor_data(X_neighbor, path=f"{node.save_dir}/task_{task_id}/viz/from_{neighbor_id}_prefilter_{prefilter_strategy}.pdf")
+    
+    # save X_neighbor to disk
+    torch.save(X_neighbor, f"{node.save_dir}/task_{task_id}/X_neighbor_from_{neighbor_id}_prefilter_{prefilter_strategy}.pt")
+    return confusion_matrix, id_confusion_matrix, acc
 
 def viz_neighbor_data(X_neighbor, path):
     """
@@ -304,35 +337,61 @@ def viz_neighbor_data(X_neighbor, path):
             axs[i, j].imshow(X_neighbor[i, j].permute(1, 2, 0))
             axs[i, j].axis('off')
 
+    dir_path = "/".join(path.split("/")[:-1])
+    os.makedirs(dir_path, exist_ok=True)
     plt.tight_layout()
     plt.savefig(path)
     # close the figure to save memory
     plt.close(fig)
 
+# viz=False
 
 # neighbor = fleet.agents[1]
 accs = []
+conf_mats = []
+id_conf_mats = []
 for task in range(num_tasks):
     for agent in fleet.agents:
         for other_agent in fleet.agents:
-            if agent.node_id == other_agent.node_id:
+            # check if there is an edge between agent and other_agent
+            if not g.has_edge(agent.node_id, other_agent.node_id):
                 continue
-            conf_mat, acc = compute_image_search_quality(agent, other_agent, other_agent.node_id, task)
+            conf_mat, id_conf_mat, acc = compute_image_search_quality(agent, other_agent, other_agent.node_id, task, viz=viz)
             print(f"node {agent.node_id} task {task} neighbor {other_agent.node_id} acc {acc}")
             accs.append(acc)
+            conf_mats.append(conf_mat)
+            id_conf_mats.append(id_conf_mat)
+
+# aggregate conf_mats into one by summing them
+conf_mat = np.zeros_like(conf_mats[0])
+for mat in conf_mats:
+    conf_mat += mat
+id_conf_mat = np.zeros_like(id_conf_mats[0])
+for mat in id_conf_mats:
+    id_conf_mat += mat
 
 print(accs)
 print(f"mean acc {np.mean(accs)}")
+print('conf_mat\n', conf_mat)
+print("no. of examples:", np.sum(conf_mat))
+print("acc from conf_mat", np.sum(np.diag(conf_mat)) / np.sum(conf_mat))
+print("id conf_mat\n", id_conf_mat)
+print("no of examples id", np.sum(id_conf_mat))
+print("acc from id_conf_mat", np.sum(np.diag(id_conf_mat)) / np.sum(id_conf_mat))
+
+
+
+
 
 # print('receiver incoming_query_extra_info', receiver.incoming_query_extra_info)
 # print('receiver class_sequence', receiver.dataset.class_sequence)
 
-neighbor_id = 1
-qX = torch.cat(list(receiver.incoming_query[neighbor_id].values()), dim=0)
-print(receiver.prefilter_oracle(qX, neighbor_id, n_filter_neighbors=3))
-print(receiver.dataset.class_sequence)
-print(fleet.agents[1].dataset.class_sequence)
-print(fleet.agents[2].dataset.class_sequence)
+# neighbor_id = 1
+# qX = torch.cat(list(receiver.incoming_query[neighbor_id].values()), dim=0)
+# print(receiver.prefilter_oracle(qX, neighbor_id, n_filter_neighbors=3))
+# print(receiver.dataset.class_sequence)
+# print(fleet.agents[1].dataset.class_sequence)
+# print(fleet.agents[2].dataset.class_sequence)
 # print('T', receiver.agent.T)
 # print()
 

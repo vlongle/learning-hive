@@ -54,7 +54,7 @@ class Learner():
         self.mode = "ce"
         if self.use_contrastive:
             self.mode = "both"
-        self.fl_strategy = fl_strategy 
+        self.fl_strategy = fl_strategy
         self.mu = self.global_model = None
 
         if fl_strategy is not None:
@@ -125,23 +125,22 @@ class Learner():
         """
         Compute main loss + (optional aux loss for FL)
         """
-        loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log) 
+        loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log)
         # logging.info("before %s", loss)
         # print("task_loss:", loss, "mu", self.mu)
         if self.fl_strategy is not None:
             if self.fl_strategy == "fedprox":
-                loss += compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model, 
-                    mu=self.mu)
+                loss += compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model,
+                                                 mu=self.mu)
             else:
-                raise NotImplementedError("FL strategy %s not implemented" % self.fl_strategy)
+                raise NotImplementedError(
+                    "FL strategy %s not implemented" % self.fl_strategy)
         # print("combined loss:", loss)
 
         # save loss to self.log_file
         # NOTE: DEBUG
         # logging.info(loss.item())
         return loss
-
-
 
     def compute_task_loss(self, X, Y, task_id, mode=None, log=False):
         """
@@ -157,14 +156,6 @@ class Learner():
             ce = self.compute_cross_entropy_loss(X, Y, task_id, detach=True)
             cl = self.compute_contrastive_loss(X, Y, task_id)
             scale = 1.0
-            # scale = 0.1
-            # if log:
-            #     print("task", task_id, "size", len(Y), "no components",
-            #           self.net.num_components, "cl:", cl/len(Y), "ce:", ce/len(Y))
-            #     # print("task", task_id, "size", len(Y), "no components",
-            #     #       self.net.num_components, "cl:", cl, "ce:", ce,
-            #     #       self.sup_loss.reduction)
-            # # scale = 10.0
             loss = ce + scale * cl
             # logging.info("ce %s cl %s l %s", ce, cl, loss)
             return loss
@@ -205,7 +196,7 @@ class Learner():
 
             if final:
                 self.save_data(num_epochs + start_epoch + 1, task_id,
-                            testloaders, final_save=final)
+                               testloaders, final_save=final)
                 # for task, loader in self.init_trainloaders.items():
                 #     self.update_multitask_cost(loader, task)
         else:
@@ -322,13 +313,13 @@ class CompositionalDynamicLearner(CompositionalLearner):
     def train(self, trainloader, task_id, valloader,
               component_update_freq=100, start_epoch=0, num_epochs=100, save_freq=1, testloaders=None,
               train_mode=None, num_candidate_modules=None, module_list=None,
-                final=True):
+              final=True):
         # logging.info('task_id %s len(self.net.components) %s', task_id, len(self.net.components))
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
         if start_epoch == 0:
-        # zeroshot
+            # zeroshot
             self.save_data(start_epoch, task_id, testloaders, mode=train_mode)
 
         if self.T <= self.net.num_init_tasks:
@@ -387,7 +378,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
                         # with new module. Update struct + update the active
                         # candidate
-                        self.net.unfreeze_module(self.net.active_candidate_index)
+                        self.net.unfreeze_module(
+                            self.net.active_candidate_index)
                         self.update_structure(
                             X, Y, task_id, train_mode=train_mode)
                         # self.net.hide_tmp_module()
@@ -406,7 +398,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
             if final:
                 self.conditionally_add_module(valloader, task_id)
                 self.save_data(num_epochs + start_epoch + 1, task_id,
-                            testloaders, final_save=final, mode=train_mode)
+                               testloaders, final_save=final, mode=train_mode)
                 self.update_multitask_cost(trainloader, task_id)
 
     def conditionally_add_module(self, valloader, task_id):
@@ -414,36 +406,39 @@ class CompositionalDynamicLearner(CompositionalLearner):
         losses = {}
 
         # Set the active index to the first candidate module
-        self.net.select_active_module(self.net.candidate_indices[0])  # reset active module to the first one
+        # reset active module to the first one
+        self.net.select_active_module(self.net.candidate_indices[0])
 
         for idx in self.net.candidate_indices:
             self.test_loss, self.test_acc = self.evaluate({task_id: valloader})
             update_acc, no_update_acc = self.test_acc[task_id]
-            performances[idx] = (update_acc - no_update_acc) / no_update_acc 
+            performances[idx] = (update_acc - no_update_acc) / no_update_acc
             logging.info(
                 'candidate {}: W/update: {}, WO/update: {}, improv {}'.format(idx, update_acc, no_update_acc,
-                                                                               performances[idx]))
+                                                                              performances[idx]))
             self.net.select_active_module()  # select the next module in round-robin
 
             losses[idx] = self.test_loss[task_id]
-        
+
         # Decide the best candidate based on relative improvement
         best_candidate_idx = max(performances, key=performances.get)
         best_improvement = performances[best_candidate_idx]
-        
+
         # Check if the improvement is greater than the threshold, and if not, remove all candidates
         if best_improvement <= self.improvement_threshold:
             self.net.remove_tmp_modulev2(self.net.candidate_indices)
-            logging.info('Not keeping any new modules. Total: {}'.format(self.net.num_components))
+            logging.info('Not keeping any new modules. Total: {}'.format(
+                self.net.num_components))
             add_new_module = False
         else:
             # Keep the best candidate and remove others
-            exclude_indices = [idx for idx in self.net.candidate_indices if idx != best_candidate_idx]
+            exclude_indices = [
+                idx for idx in self.net.candidate_indices if idx != best_candidate_idx]
             self.net.remove_tmp_modulev2(exclude_indices)
-            logging.info('Keeping new module {}. Total: {}'.format(best_candidate_idx, 
+            logging.info('Keeping new module {}. Total: {}'.format(best_candidate_idx,
                                                                    self.net.num_components))
             add_new_module = True
-        
+
         self.dynamic_record.write(
             {
                 'task_id': task_id,
@@ -453,15 +448,10 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 'add_new_module': add_new_module,
             }
         )
-        
+
         self.dynamic_record.save()
 
-
         return performances, losses
-
-
-        
-
 
     # def conditionally_add_module(self, valloader, task_id):
     #     test_loss = self.test_loss
@@ -494,7 +484,6 @@ class CompositionalDynamicLearner(CompositionalLearner):
     #     self.dynamic_record.save()
     #     self.test_loss = test_loss
     #     self.test_acc = test_acc
-
 
     def evaluate(self, testloaders, eval_no_update=True, mode=None):
         was_training = self.net.training

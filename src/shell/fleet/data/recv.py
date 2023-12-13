@@ -107,6 +107,36 @@ SCORER_TYPE_LOOKUP = {
 }
 
 
+class OODSeparationLoss(torch.nn.Module):
+    def __init__(self, delta=1.0, lambda_ood=1.0):
+        """
+        OOD Separation Loss to push away OOD data from task-specific data.
+        :param delta: Margin threshold for the OOD separation.
+        :param lambda_ood: Weighting factor for the OOD loss.
+        """
+        super().__init__()
+        self.delta = delta
+        self.lambda_ood = lambda_ood
+
+    def forward(self, task_embeddings, ood_embeddings):
+        """
+        Compute the OOD separation loss.
+        :param task_embeddings: Embeddings of the current task data.
+        :param ood_embeddings: Embeddings of the OOD data.
+        :return: OOD separation loss.
+        """
+        # Compute pairwise distance matrix between task and OOD embeddings
+        dist_matrix = torch.cdist(task_embeddings, ood_embeddings, p=2)
+
+        # Apply margin threshold
+        margin_violations = torch.relu(self.delta - dist_matrix)
+
+        # Compute mean of the violations
+        ood_loss = margin_violations.mean()
+
+        return self.lambda_ood * ood_loss
+
+
 class RecvDataAgent(Agent):
     """
     Have two rounds of communications.
@@ -138,6 +168,35 @@ class RecvDataAgent(Agent):
     #     X2_embed = self.net.encode(X2.to(self.net.device), task_id=task_id)
     #     sim = torch.cdist(X1_embed, X2_embed)
     #     return sim.cpu()
+
+    def get_ood_data(self, task_id):
+        # Get the class labels for the current task
+        task_classes = list(self.dataset.class_sequence[task_id * self.dataset.num_classes_per_task:
+                                                        (task_id + 1) * self.dataset.num_classes_per_task])
+
+        # Gather data from replay buffers of all tasks except the current task
+        replay_buffers = {t: self.agent.replay_buffers[t] for t in range(self.agent.T)
+                          if t != task_id}
+
+        X_ood = torch.cat([rb.tensors[0]
+                           for t, rb in replay_buffers.items()], dim=0)
+        y_ood = torch.cat([torch.from_numpy(get_global_label(rb.tensors[1],
+                                                             t, self.dataset.class_sequence,
+                                                             self.dataset.num_classes_per_task))
+                           for t, rb in replay_buffers.items()], dim=0)
+
+        # Convert task_classes to a tensor for efficient comparison
+        task_classes_tensor = torch.tensor(task_classes)
+
+        # Find indices of samples in y_ood that do not belong to the current task's classes
+        mask = ~y_ood.unsqueeze(1).eq(task_classes_tensor).any(1)
+        X_ood_filtered = X_ood[mask]
+        y_ood_filtered = y_ood[mask]
+
+        X_iid_filtered = X_ood[~mask]
+        y_iid_filtered = y_ood[~mask]
+
+        return X_ood_filtered, y_ood_filtered, X_iid_filtered, y_iid_filtered
 
     def compute_raw_dist(self, X1, X2, task_id=None):
         # make sure X1.shape == X2.shape

@@ -59,6 +59,8 @@ def get_global_label(local_y: int, task_id: int, source_class_sequence, num_clas
 
 
 def get_global_labels(local_ys, task_ids, source_class_sequence, num_classes_per_task):
+    if isinstance(task_ids, int):
+        task_ids = [task_ids] * len(local_ys)
     global_ys = []
     for local_y, task_id in zip(local_ys, task_ids):
         global_y = get_global_label(

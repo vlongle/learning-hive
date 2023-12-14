@@ -12,6 +12,7 @@ agent:
   memory_size: 64
   improvement_threshold: 0.05
   use_contrastive: true
+  use_ood_separation_loss: false
 
 defaults:
   - train: monolithic

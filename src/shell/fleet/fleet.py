@@ -18,6 +18,7 @@ from shell.utils.experiment_utils import eval_net
 from copy import deepcopy
 import math
 import pandas as pd
+from shell.fleet.data.data_utilize import *
 
 SEED_SCALE = 1000
 
@@ -48,6 +49,37 @@ class Agent:
 
         self.sharing_strategy = sharing_strategy
 
+    def get_ood_data(self, task_id):
+        # Get the class labels for the current task
+        task_classes = list(self.dataset.class_sequence[task_id * self.dataset.num_classes_per_task:
+                                                        (task_id + 1) * self.dataset.num_classes_per_task])
+
+        # Gather data from replay buffers of all tasks except the current task
+        replay_buffers = {t: self.agent.replay_buffers[t] for t in range(self.agent.T)
+                          if t != task_id}
+        if len(replay_buffers) == 0:
+            return None, None, None, None
+
+        X_ood = torch.cat([rb.tensors[0]
+                           for t, rb in replay_buffers.items()], dim=0)
+        y_ood = torch.cat([torch.from_numpy(get_global_label(rb.tensors[1],
+                                                             t, self.dataset.class_sequence,
+                                                             self.dataset.num_classes_per_task))
+                           for t, rb in replay_buffers.items()], dim=0)
+
+        # Convert task_classes to a tensor for efficient comparison
+        task_classes_tensor = torch.tensor(task_classes)
+
+        # Find indices of samples in y_ood that do not belong to the current task's classes
+        mask = ~y_ood.unsqueeze(1).eq(task_classes_tensor).any(1)
+        X_ood_filtered = X_ood[mask]
+        y_ood_filtered = y_ood[mask]
+
+        X_iid_filtered = X_ood[~mask]
+        y_iid_filtered = y_ood[~mask]
+
+        return X_ood_filtered, y_ood_filtered, X_iid_filtered, y_iid_filtered
+
     def set_num_coms(self, task_id, num_coms):
         self.num_coms[task_id] = num_coms
 
@@ -62,6 +94,9 @@ class Agent:
 
     def train(self, task_id, start_epoch=0, communication_frequency=None,
               final=True):
+        for t in range(task_id+1):
+            self.agent.ood_data[t] = self.get_ood_data(t)
+
         if task_id >= self.net.num_tasks:
             return
         trainloader = (

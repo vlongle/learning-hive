@@ -62,17 +62,19 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
     def __init__(self, net, memory_size, save_dir='./tmp/results/',
                  improvement_threshold=0.05, use_contrastive=False, dataset_name=None,
                  fl_strategy=None,
-                 mu=None):
+                 mu=None,
+                 use_ood_separation_loss=False,):
         super().__init__(net, save_dir,  improvement_threshold=improvement_threshold,
                          use_contrastive=use_contrastive, dataset_name=dataset_name,
                          fl_strategy=fl_strategy,
-                         mu=mu)
+                         mu=mu,
+                         use_ood_separation_loss=use_ood_separation_loss,
+                         )
         self.replay_buffers = {}
-        self.shared_replay_buffers = {} # received from neighbors
+        self.shared_replay_buffers = {}  # received from neighbors
         self.aug_replay_buffers = {}
         self.memory_loaders = {}
         self.memory_size = memory_size
-
 
     def update_modules(self, trainloader, task_id, train_mode=None):
         """
@@ -83,15 +85,12 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         self.net.unfreeze_modules()
         self.net.freeze_structure()
 
-
         prev_reduction = self.get_loss_reduction()
         self.set_loss_reduction('sum')
-
 
         tmp_dataset = copy.deepcopy(trainloader.dataset)
         tmp_dataset.tensors = tmp_dataset.tensors + \
             (torch.full((len(tmp_dataset),), task_id, dtype=int),)
-       
 
         self.make_shared_memory_loaders(batch_size=trainloader.batch_size)
 
@@ -100,7 +99,7 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                                       use_contrastive=self.use_contrastive) for loader in self.memory_loaders.values()] + [tmp_dataset]
             + [get_custom_tensordataset(loader.dataset.tensors, name=self.dataset_name,
                                         use_contrastive=self.use_contrastive) for loader in self.shared_memory_loaders.values()]
-            )
+        )
 
         batch_size = trainloader.batch_size
 
@@ -111,7 +110,6 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                                                   pin_memory=True
                                                   )
 
-        
         for module_idx in self.net.candidate_indices:
             # Select the module to be used in this round
             self.net.select_active_module(module_idx)
@@ -141,9 +139,9 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                     else:
                         Xt = X[t == task_id_tmp]
                     l += self.compute_loss(Xt,
-                                        Yt, task_id_tmp,
-                                        mode=train_mode,
-                                        )
+                                           Yt, task_id_tmp,
+                                           mode=train_mode,
+                                           )
                 n = len(Y)
                 l /= n
                 self.optimizer.zero_grad()
@@ -164,16 +162,14 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                     else:
                         Xt = X[t == task_id_tmp]
                     l += self.compute_loss(Xt,
-                                        Yt, task_id_tmp,
-                                        mode=train_mode)
+                                           Yt, task_id_tmp,
+                                           mode=train_mode)
                 n = len(Y)
                 l /= n
                 self.optimizer.zero_grad()
                 l.backward()
                 self.optimizer.step()
                 self.net.recover_hidden_modulev2()
-
-
 
         # self.loss.reduction = prev_reduction
         self.set_loss_reduction(prev_reduction)

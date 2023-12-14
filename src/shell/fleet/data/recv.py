@@ -107,36 +107,6 @@ SCORER_TYPE_LOOKUP = {
 }
 
 
-class OODSeparationLoss(torch.nn.Module):
-    def __init__(self, delta=1.0, lambda_ood=1.0):
-        """
-        OOD Separation Loss to push away OOD data from task-specific data.
-        :param delta: Margin threshold for the OOD separation.
-        :param lambda_ood: Weighting factor for the OOD loss.
-        """
-        super().__init__()
-        self.delta = delta
-        self.lambda_ood = lambda_ood
-
-    def forward(self, task_embeddings, ood_embeddings):
-        """
-        Compute the OOD separation loss.
-        :param task_embeddings: Embeddings of the current task data.
-        :param ood_embeddings: Embeddings of the OOD data.
-        :return: OOD separation loss.
-        """
-        # Compute pairwise distance matrix between task and OOD embeddings
-        dist_matrix = torch.cdist(task_embeddings, ood_embeddings, p=2)
-
-        # Apply margin threshold
-        margin_violations = torch.relu(self.delta - dist_matrix)
-
-        # Compute mean of the violations
-        ood_loss = margin_violations.mean()
-
-        return self.lambda_ood * ood_loss
-
-
 class RecvDataAgent(Agent):
     """
     Have two rounds of communications.
@@ -146,6 +116,8 @@ class RecvDataAgent(Agent):
 
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
                  sharing_strategy):
+        self.use_ood_separation_loss = sharing_strategy.use_ood_separation_loss
+        agent_kwargs['use_ood_separation_loss'] = self.use_ood_separation_loss
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
                          net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
 
@@ -169,6 +141,11 @@ class RecvDataAgent(Agent):
     #     sim = torch.cdist(X1_embed, X2_embed)
     #     return sim.cpu()
 
+    def train(self, task_id, **kwargs):
+        for t in range(task_id+1):
+            self.agent.ood_data[t] = self.get_ood_data(t)
+        return super().train(task_id, **kwargs)
+
     def get_ood_data(self, task_id):
         # Get the class labels for the current task
         task_classes = list(self.dataset.class_sequence[task_id * self.dataset.num_classes_per_task:
@@ -177,6 +154,8 @@ class RecvDataAgent(Agent):
         # Gather data from replay buffers of all tasks except the current task
         replay_buffers = {t: self.agent.replay_buffers[t] for t in range(self.agent.T)
                           if t != task_id}
+        if len(replay_buffers) == 0:
+            return None, None, None, None
 
         X_ood = torch.cat([rb.tensors[0]
                            for t, rb in replay_buffers.items()], dim=0)

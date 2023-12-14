@@ -15,6 +15,7 @@ from shell.utils.record import Record
 from torch.utils.tensorboard import SummaryWriter
 import logging
 from shell.utils.supcontrast import SupConLoss
+from shell.utils.oodloss import OODSeparationLoss
 from shell.learners.fl_utils import *
 
 # write custom RandomGrayScale that operate on a per image
@@ -24,7 +25,7 @@ from shell.learners.fl_utils import *
 class Learner():
     def __init__(self, net, save_dir='./tmp/results/', improvement_threshold=0.05,
                  use_contrastive=False, dataset_name=None, fl_strategy=None,
-                 mu=None):
+                 mu=None, use_ood_separation_loss=False):
         self.net = net
         self.ce_loss = nn.CrossEntropyLoss()
         self.use_contrastive = use_contrastive
@@ -60,6 +61,10 @@ class Learner():
         if fl_strategy is not None:
             self.global_model = None
             self.mu = mu
+
+        self.use_ood_separation_loss = use_ood_separation_loss
+        self.ood_loss = OODSeparationLoss()
+        self.ood_data = {}
 
     # def apply_transform(self, X):
     #     # X: (batch_size, n_channels, height, width)
@@ -121,13 +126,8 @@ class Learner():
         ce = self.ce_loss(Y_hat, Y)
         return ce
 
-    def compute_loss(self, X, Y, task_id, mode=None, log=False):
-        """
-        Compute main loss + (optional aux loss for FL)
-        """
-        loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log)
-        # logging.info("before %s", loss)
-        # print("task_loss:", loss, "mu", self.mu)
+    def compute_auxillary_loss(self, X, Y, task_id):
+        loss = 0.
         if self.fl_strategy is not None:
             if self.fl_strategy == "fedprox":
                 loss += compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model,
@@ -135,6 +135,28 @@ class Learner():
             else:
                 raise NotImplementedError(
                     "FL strategy %s not implemented" % self.fl_strategy)
+
+        if self.use_ood_separation_loss:
+            if X.shape[0] != Y.shape[0]:
+                # using contrastive so we have two views
+                X, _ = torch.split(X, X.shape[0] // 2, dim=0)
+            X_encode = self.net.encode(X, task_id)
+            X_ood, *_ = self.ood_data[task_id]
+            X_ood = X_ood.to(self.net.device, non_blocking=True)
+            ood_encode = self.net.encode(X_ood, task_id)
+            loss += self.ood_loss(X_encode, ood_encode)
+
+        return loss
+
+    def compute_loss(self, X, Y, task_id, mode=None, log=False):
+        """
+        Compute main loss + (optional aux loss for FL)
+        """
+        loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log)
+        # logging.info("before %s", loss)
+        # print("task_loss:", loss, "mu", self.mu)
+        loss += self.compute_auxillary_loss(X, Y, task_id)
+
         # print("combined loss:", loss)
 
         # save loss to self.log_file
@@ -163,7 +185,7 @@ class Learner():
             # only train ce (backpropage through the entire model)
             return self.compute_cross_entropy_loss(X, Y, task_id, detach=False)
         elif mode == "finetune_ce":
-            # train ce to only finetune the last layer
+            # train ce to only finetune the last layer (stop gradient so the rest of the model is not updated)
             return self.compute_cross_entropy_loss(X, Y, task_id, detach=True)
         elif mode == "cl":
             # only train supcon loss
@@ -222,7 +244,7 @@ class Learner():
                     X = X.to(self.net.device, non_blocking=True)
                     Y = Y.to(self.net.device, non_blocking=True)
                     Y_hat = self.net(X, task)
-                    l += self.compute_loss(X, Y, task, mode='ce').item()
+                    l += self.compute_task_loss(X, Y, task, mode='ce').item()
                     a += (Y_hat.argmax(dim=1) == Y).sum().item()
                     # a += ((Y_hat > 0) == (Y == 1)
                     #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
@@ -503,7 +525,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                     X = X.to(self.net.device, non_blocking=True)
                     Y = Y.to(self.net.device, non_blocking=True)
                     Y_hat = self.net(X, task)
-                    l += self.compute_loss(X, Y, task, mode='ce').item()
+                    l += self.compute_task_loss(X, Y, task, mode='ce').item()
                     a += (Y_hat.argmax(dim=1) == Y).sum().item()
                     # a += ((Y_hat > 0) == (Y == 1)
                     #       if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()
@@ -517,7 +539,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         X = X.to(self.net.device, non_blocking=True)
                         Y = Y.to(self.net.device, non_blocking=True)
                         Y_hat = self.net(X, task)
-                        l1 += self.compute_loss(X, Y, task, mode='ce').item()
+                        l1 += self.compute_task_loss(X,
+                                                     Y, task, mode='ce').item()
                         a1 += (Y_hat.argmax(dim=1) == Y).sum().item()
                         # a1 += ((Y_hat > 0) == (Y == 1)
                         #        if self.net.binary else Y_hat.argmax(dim=1) == Y).sum().item()

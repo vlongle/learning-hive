@@ -64,3 +64,10 @@ TODO: just viz the embedding 2D projection with OOD vs IID data.
 - Eric: Train a global meta-model to do this embedding visualization.
 - Me: send the prototype of the class as well (?)
 - Do consistency-based stuff.
+
+
+
+
+
+Contrastive.
+Actually, we can do the 

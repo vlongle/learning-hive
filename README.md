@@ -188,3 +188,16 @@ There's a bug somewhere in our code!! No dropout for cifar is significantly WORS
 ## NOTE TO FL STUFF
 
 One thing that happens with modular is the previous structure is not optimized again, and so they became fcked.
+
+
+
+## Interesting Note
+
+0.9713408393039918
+with training the contrastive stuff alone (mode='cl') and use a random decoder, we still get 97% accuracy on MNIST.
+
+with mode='both' (contrast + cross entropy)
+0.9790174002047083
+
+with mode='ce_finetune' (only train the last layer keeping the random encoder fixed)
+0.5015353121801432

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # LOCAL_FOLDER="cifar_no_updates_contrastive_results"
-LOCAL_FOLDER="experiment_results/fedavg"
+LOCAL_FOLDER="experiment_results/vanilla_ood_separation_loss"
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
 REMOTE_PATH="/home/vlongle/code/learning-hive/experiment_results/"

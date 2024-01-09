@@ -54,7 +54,8 @@ prefilter_strategy = args.prefilter_strategy
 scorer = args.scorer
 
 experiment_folder = "experiment_results"
-experiment_name = "vanilla_fix_bug_compute_loss_encodev2"
+# experiment_name = "vanilla_fix_bug_compute_loss_encodev2"
+experiment_name = "test_lambda_2"
 
 use_contrastive = True
 num_trains_per_class = 64
@@ -80,6 +81,7 @@ cfg.sharing_strategy = DictConfig({
     "shared_memory_size": 50,
     "comm_freq": comm_freq,
     "prefilter_strategy": prefilter_strategy,
+    "use_ood_separation_loss": True,
 })
 
 

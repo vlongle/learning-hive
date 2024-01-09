@@ -25,7 +25,8 @@ from shell.learners.fl_utils import *
 class Learner():
     def __init__(self, net, save_dir='./tmp/results/', improvement_threshold=0.05,
                  use_contrastive=False, dataset_name=None, fl_strategy=None,
-                 mu=None, use_ood_separation_loss=False):
+                 mu=None, use_ood_separation_loss=False, lambda_ood=2.0,
+                 delta_ood=1.0):
         self.net = net
         self.ce_loss = nn.CrossEntropyLoss()
         self.use_contrastive = use_contrastive
@@ -48,8 +49,8 @@ class Learner():
         self.record = Record(os.path.join(self.save_dir, "record.csv"))
         self.dynamic_record = Record(os.path.join(
             self.save_dir, "add_modules_record.csv"))
-        # self.writer = SummaryWriter(
-        #     log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
+        self.writer = SummaryWriter(
+            log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
         self.init_trainloaders = None
 
         self.mode = "ce"
@@ -63,7 +64,10 @@ class Learner():
             self.mu = mu
 
         self.use_ood_separation_loss = use_ood_separation_loss
-        self.ood_loss = OODSeparationLoss()
+        self.lambda_ood = lambda_ood
+        self.delta_ood = delta_ood
+        self.ood_loss = OODSeparationLoss(lambda_ood=self.lambda_ood,
+                                          delta=self.delta_ood)
         self.ood_data = {}
 
     # def apply_transform(self, X):
@@ -141,6 +145,9 @@ class Learner():
                 # using contrastive so we have two views
                 X, _ = torch.split(X, X.shape[0] // 2, dim=0)
             X_encode = self.net.encode(X, task_id)
+            # task_id might be a one value tensor, convert to int
+            if isinstance(task_id, torch.Tensor):
+                task_id = task_id.item()
             X_ood, *_ = self.ood_data[task_id]
             X_ood = X_ood.to(self.net.device, non_blocking=True)
             ood_encode = self.net.encode(X_ood, task_id)
@@ -148,14 +155,20 @@ class Learner():
 
         return loss
 
-    def compute_loss(self, X, Y, task_id, mode=None, log=False):
+    def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=True):
         """
         Compute main loss + (optional aux loss for FL)
         """
         loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log)
+        self.writer.add_scalar(
+            f'loss/train_{self.T-1}/task_{task_id}/loss', loss, global_step)
         # logging.info("before %s", loss)
         # print("task_loss:", loss, "mu", self.mu)
-        loss += self.compute_auxillary_loss(X, Y, task_id)
+        if use_aux:
+            aux_loss = self.compute_auxillary_loss(X, Y, task_id)
+            self.writer.add_scalar(
+                f'aux_loss/train_{self.T-1}/task_{task_id}/loss', aux_loss, global_step)
+            loss += aux_loss
 
         # print("combined loss:", loss)
 
@@ -212,7 +225,7 @@ class Learner():
                                 X = torch.cat([X[0], X[1]], dim=0)
                             X = X.to(self.net.device, non_blocking=True)
                             Y = Y.to(self.net.device, non_blocking=True)
-                            self.gradient_step(X, Y, task)
+                            self.gradient_step(X, Y, task, global_step=i)
                 if i % save_freq == 0:
                     self.save_data(i + 1, task_id, testloaders)
 
@@ -257,11 +270,12 @@ class Learner():
             self.net.train()
         return test_loss, test_acc
 
-    def gradient_step(self, X, Y, task_id, train_mode=None):
+    def gradient_step(self, X, Y, task_id, train_mode=None, global_step=None):
         # Y_hat = self.net(X, task_id=task_id)
         X = X.to(self.net.device, non_blocking=True)
         Y = Y.to(self.net.device, non_blocking=True)
-        l = self.compute_loss(X, Y, task_id, mode=train_mode, log=True)
+        l = self.compute_loss(X, Y, task_id, mode=train_mode,
+                              log=True, global_step=global_step)
         self.optimizer.zero_grad()
         l.backward()
         self.optimizer.step()
@@ -323,9 +337,10 @@ class Learner():
 
 
 class CompositionalLearner(Learner):
-    def update_structure(self, X, Y, task_id, train_mode=None):
+    def update_structure(self, X, Y, task_id, train_mode=None, global_step=None):
         # assume shared parameters are frozen and just take a gradient step on the structure
-        self.gradient_step(X, Y, task_id, train_mode=train_mode)
+        self.gradient_step(
+            X, Y, task_id, train_mode=train_mode, global_step=global_step)
 
     def update_modules(self, *args, **kwargs):
         raise NotImplementedError('Update modules is algorithm specific')
@@ -389,7 +404,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 if (i + 1) % component_update_freq == 0:
                     # print('UPDATING MODULES')
                     self.update_modules(
-                        trainloader, task_id, train_mode=train_mode)
+                        trainloader, task_id, train_mode=train_mode, global_step=i,
+                        use_aux=True)
                 else:
                     for X, Y in trainloader:
                         if isinstance(X, list):
@@ -403,14 +419,16 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         self.net.unfreeze_module(
                             self.net.active_candidate_index)
                         self.update_structure(
-                            X, Y, task_id, train_mode=train_mode)
+                            X, Y, task_id, train_mode=train_mode,
+                            global_step=i)
                         # self.net.hide_tmp_module()
 
                         # without new module
                         self.net.freeze_module(self.net.active_candidate_index)
                         self.net.hide_tmp_modulev2()
                         self.update_structure(
-                            X, Y, task_id, train_mode=train_mode)
+                            X, Y, task_id, train_mode=train_mode,
+                            global_step=i)
                         # self.net.recover_hidden_module()
                         self.net.recover_hidden_modulev2()
                         self.net.select_active_module()  # select the next module in round-robin

@@ -13,6 +13,8 @@ agent:
   improvement_threshold: 0.05
   use_contrastive: true
   use_ood_separation_loss: false
+  lambda_ood: 2.0
+  delta_ood: 1.0
 
 defaults:
   - train: monolithic

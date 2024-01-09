@@ -136,10 +136,11 @@ class RecvDataAgent(Agent):
     # @torch.inference_mode()
     # def compute_embedding_dist(self, X1, X2, task_id):
     #     self.net.eval()
-    #     X1_embed = self.net.encode(X1.to(self.net.device), task_id=task_id) # (B, hidden_dim)
+    #     X1_embed = self.net.encode(
+    #         X1.to(self.net.device), task_id=task_id)  # (B, hidden_dim)
     #     X2_embed = self.net.encode(X2.to(self.net.device), task_id=task_id)
     #     sim = torch.cdist(X1_embed, X2_embed)
-    #     return sim.cpu()
+    #     return 1.0 - sim.cpu()
 
     def compute_raw_dist(self, X1, X2, task_id=None):
         # make sure X1.shape == X2.shape
@@ -203,7 +204,8 @@ class RecvDataAgent(Agent):
         return sims, Xs, ys, tasks
 
     @torch.inference_mode()
-    def extract_topk_from_similarity(self, sims, Xs, ys, tasks, neighbors, candidate_tasks=None):
+    def extract_topk_from_similarity(self, sims, Xs, ys, tasks, num_neighbors, candidate_tasks=None,
+                                     map_to_globals=False):
         """
         candidate_tasks.shape = [N, n_filter_neighbors] where N is the number of
         query points and n_filter_neighbors is the number of neighbors to consider
@@ -238,7 +240,11 @@ class RecvDataAgent(Agent):
             sims = torch.where(
                 invalid_mask, torch.tensor(-float('inf'), device=sims.device), sims)
 
-        top_k = torch.topk(sims, k=neighbors, dim=1).indices
+        top_k = torch.topk(sims, k=num_neighbors, dim=1).indices
+        if map_to_globals:
+            # first convert ys to global labels using tasks
+            ys = get_global_labels(
+                ys, tasks, self.dataset.class_sequence, self.dataset.num_classes_per_task)
 
         X_neighbors = Xs[top_k.flatten()]
         Y_neighbors = ys[top_k.flatten()]
@@ -246,9 +252,9 @@ class RecvDataAgent(Agent):
 
         # reshape to (N, n_neighbor, c, h, w)
         X_neighbors = X_neighbors.reshape(
-            sims.shape[0], neighbors, *Xs.shape[1:])
-        Y_neighbors = Y_neighbors.reshape(sims.shape[0], neighbors)
-        task_neighbors = task_neighbors.reshape(sims.shape[0], neighbors)
+            sims.shape[0], num_neighbors, *Xs.shape[1:])
+        Y_neighbors = Y_neighbors.reshape(sims.shape[0], num_neighbors)
+        task_neighbors = task_neighbors.reshape(sims.shape[0], num_neighbors)
 
         return X_neighbors, Y_neighbors, task_neighbors
 
@@ -302,7 +308,7 @@ class RecvDataAgent(Agent):
         # print("tasks.shape:", tasks.shape, "Xs:", Xs.shape, "ys:", ys.shape, "sims_prefilter:", sims_prefilter.shape)
         X_n_prefilter, y_n_prefilter, task_neighbors_prefilter = self.extract_topk_from_similarity(
             sims_prefilter, Xs, ys, tasks,
-            neighbors=n_filter_neighbors
+            num_neighbors=n_filter_neighbors
         )
         return {
             "X_n_prefilter": X_n_prefilter,
@@ -328,7 +334,7 @@ class RecvDataAgent(Agent):
         # 3. Extract top neighbors considering the pre-filtered tasks
         X_neighbors, Y_neighbors, task_neighbors = self.extract_topk_from_similarity(
             sims, Xs, ys, tasks,
-            neighbors=n_neighbors,
+            num_neighbors=n_neighbors,
             # candidate_tasks=task_lists,
             candidate_tasks=prefilter_info['task_neighbors_prefilter'],
         )

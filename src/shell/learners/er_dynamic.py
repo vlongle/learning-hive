@@ -63,20 +63,24 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                  improvement_threshold=0.05, use_contrastive=False, dataset_name=None,
                  fl_strategy=None,
                  mu=None,
-                 use_ood_separation_loss=False,):
+                 use_ood_separation_loss=False,
+                 lambda_ood=2.0,
+                 delta_ood=1.0,):
         super().__init__(net, save_dir,  improvement_threshold=improvement_threshold,
                          use_contrastive=use_contrastive, dataset_name=dataset_name,
                          fl_strategy=fl_strategy,
                          mu=mu,
                          use_ood_separation_loss=use_ood_separation_loss,
-                         )
+                         lambda_ood=lambda_ood,
+                         delta_ood=delta_ood,)
         self.replay_buffers = {}
         self.shared_replay_buffers = {}  # received from neighbors
         self.aug_replay_buffers = {}
         self.memory_loaders = {}
         self.memory_size = memory_size
 
-    def update_modules(self, trainloader, task_id, train_mode=None):
+    def update_modules(self, trainloader, task_id, train_mode=None, global_step=None,
+                       use_aux=True):
         """
         NOTE: for contrastive, during accommodation,
         we should also allow past decoders to change so that gradients can flow
@@ -141,6 +145,8 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                     l += self.compute_loss(Xt,
                                            Yt, task_id_tmp,
                                            mode=train_mode,
+                                           global_step=global_step,
+                                           use_aux=use_aux,
                                            )
                 n = len(Y)
                 l /= n
@@ -163,7 +169,10 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                         Xt = X[t == task_id_tmp]
                     l += self.compute_loss(Xt,
                                            Yt, task_id_tmp,
-                                           mode=train_mode)
+                                           mode=train_mode,
+                                           global_step=global_step,
+                                           use_aux=use_aux,
+                                           )
                 n = len(Y)
                 l /= n
                 self.optimizer.zero_grad()

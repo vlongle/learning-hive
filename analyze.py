@@ -21,15 +21,19 @@ For cifar100, epochs=500 is stored in
 
 # result_dir = "finding_hyper_for_mod_contrastive_large_deeper_projector_results"
 # result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_1.5_results"
-import os
-import re
-from shell.utils.metric import Metric
-from  shell.utils.record import Record
 # result_dir = "cifar_lasttry_im_done_results"
 # result_dir = "experiment_results/vanilla"
 # result_dir = "experiment_results/vanilla_small"
 # result_dir = "cifar_longer_results"
-result_dir = "experiment_results/vanilla_fix_bug_compute_loss_encodev2"
+# result_dir = "experiment_results/vanilla_fix_bug_compute_loss_encodev2"
+from  shell.utils.record import Record
+from shell.utils.metric import Metric
+import re
+import os
+result_dir = "experiment_results/test_lambda_10.0_num_epochs_200"
+# result_dir = "experiment_results/vanilla_ood_separation_loss"
+# result_dir = "experiment_results/test"
+# result_dir = "experiment_results/vanilla_ood_separation_loss"
 # result_dir = "experiment_results/toy_fedavg"
 # result_dir = "experiment_results/fedavg_transfer_also_projection_100"
 # result_dir = "experiment_results/fedavg_transfer_also_projection_10_only_final_always"

@@ -35,14 +35,17 @@ if __name__ == "__main__":
     seed = args.seed
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
     num_epochs = 100
+    lambda_ood = 10.
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64
 
     dataset = args.dataset
+    delta_ood = 2.0
 
     config = {
-        "algo": ["monolithic", "modular"],
+        # "algo": ["monolithic", "modular"],
+        "algo": "modular",
         "agent.batch_size": batch_size,
         "seed": seed,
         "parallel": True,
@@ -70,7 +73,9 @@ if __name__ == "__main__":
         "dataset": dataset,  # use the dataset from arguments
         # "root_save_dir": "experiment_results/vanilla_tune_fashionmnist",
         "agent.use_ood_separation_loss": True,
-        "root_save_dir": "experiment_results/vanilla_ood_separation_loss"
+        "agent.lambda_ood": lambda_ood,
+        "agent.delta_ood": delta_ood,
+        "root_save_dir": f"experiment_results/test_lambda_{lambda_ood}_num_epochs_{num_epochs}_delta_{delta_ood}"
     }
 
     # # # === CNN experiments: CIFAR100 ===

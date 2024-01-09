@@ -71,3 +71,74 @@ TODO: just viz the embedding 2D projection with OOD vs IID data.
 
 Contrastive.
 Actually, we can do the 
+
+
+### Thresholding
+
+Either KNN or Local density
+
+https://kunalbharadkar.medium.com/outlier-anomalies-detection-using-unsupervised-machine-learning-8a25e66de85c#:~:text=An%20absolute%20gem!-,Detecting%20outliers%20using%20KNN,and%20measures%20the%20average%20distance.
+
+
+
+__results on the self stuff for tuning__
+
+without separation training, task_acc=95.627534
+    accuracy     0.594661
+    precision    0.956400
+    recall       0.520961
+    f1           0.651315
+
+
+test_lambda=1, task_acc=94.799746
+    accuracy     0.677214
+    precision    0.959260
+    recall       0.618850
+    f1           0.711905
+
+test_lambda=2, task_acc=93.382346
+
+using training set
+    accuracy     0.727517
+    precision    0.982794
+    recall       0.678459
+    f1           0.76904
+using replay
+    accuracy     0.705599
+    precision    0.982619
+    recall       0.653694
+    f1           0.73981
+
+test_lambda=5, task_acc=89.095391
+using replay
+    accuracy     0.710590
+    precision    0.966659
+    recall       0.664180
+    f1           0.747241
+
+test_lambda=10, task_acc=85.104223
+using replay
+    accuracy     0.677214
+    precision    0.959260
+    recall       0.618850
+    f1           0.71190
+
+__results on search quality__
+
+without separation training,
+- Oracle: 85.17% (same as before)
+- prefilter with raw images: 45.64%
+- No prefilter: 24.47%
+
+with lambda=2
+- Oracle: 78%
+- prefilter with raw image: 31%, 40%
+- No prefilter: 19%, 24%
+
+TO DEBUG: wtf, why lambda doesn't improve the no_prefilter performance?
+
+Open a notebook and debug the receiver KNN stuff,
+
+
+
+Must be bug somewhere. Oracle got 80% which means that as long as the OOD stuff is fixed, the embedding search is very strong.

@@ -50,9 +50,6 @@ class Agent:
         self.sharing_strategy = sharing_strategy
 
     def get_ood_data(self, task_id):
-        # Get the class labels for the current task
-        task_classes = list(self.dataset.class_sequence[task_id * self.dataset.num_classes_per_task:
-                                                        (task_id + 1) * self.dataset.num_classes_per_task])
 
         # Gather data from replay buffers of all tasks except the current task
         replay_buffers = {t: self.agent.replay_buffers[t] for t in range(self.agent.T)
@@ -60,25 +57,39 @@ class Agent:
         if len(replay_buffers) == 0:
             return None, None, None, None
 
-        X_ood = torch.cat([rb.tensors[0]
+        X_past = torch.cat([rb.tensors[0]
                            for t, rb in replay_buffers.items()], dim=0)
-        y_ood = torch.cat([torch.from_numpy(get_global_label(rb.tensors[1],
-                                                             t, self.dataset.class_sequence,
-                                                             self.dataset.num_classes_per_task))
+        y_past = torch.cat([torch.from_numpy(get_global_label(rb.tensors[1],
+                                                              t, self.dataset.class_sequence,
+                                                              self.dataset.num_classes_per_task))
                            for t, rb in replay_buffers.items()], dim=0)
 
+        mask = self.get_ood_data_helper(task_id, y_past)
+        X_ood_filtered = X_past[mask]
+        y_ood_filtered = y_past[mask]
+
+        X_iid_filtered = X_past[~mask]
+        y_iid_filtered = y_past[~mask]
+
+        return X_ood_filtered, y_ood_filtered, X_iid_filtered, y_iid_filtered
+
+    def get_task_class(self, task_id):
+        # Get the class labels for the current task
+        task_classes = list(self.dataset.class_sequence[task_id * self.dataset.num_classes_per_task:
+                                                        (task_id + 1) * self.dataset.num_classes_per_task])
+        return task_classes
+
+    def get_all_classes(self, task_id):
+        return set([c for t in range(task_id+1) for c in self.get_task_class(t)])
+
+    def get_ood_data_helper(self, task_id, candidate_ys):
+        task_classes = self.get_task_class(task_id)
         # Convert task_classes to a tensor for efficient comparison
         task_classes_tensor = torch.tensor(task_classes)
 
         # Find indices of samples in y_ood that do not belong to the current task's classes
-        mask = ~y_ood.unsqueeze(1).eq(task_classes_tensor).any(1)
-        X_ood_filtered = X_ood[mask]
-        y_ood_filtered = y_ood[mask]
-
-        X_iid_filtered = X_ood[~mask]
-        y_iid_filtered = y_ood[~mask]
-
-        return X_ood_filtered, y_ood_filtered, X_iid_filtered, y_iid_filtered
+        mask = ~candidate_ys.unsqueeze(1).eq(task_classes_tensor).any(1)
+        return mask
 
     def set_num_coms(self, task_id, num_coms):
         self.num_coms[task_id] = num_coms
@@ -382,12 +393,15 @@ class Fleet:
 
     def communicate(self, task_id, start_com_round=0, final=False):
         for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
-            for agent in self.agents:
-                agent.prepare_communicate(task_id, communication_round, final)
-            for agent in self.agents:
-                agent.communicate(task_id, communication_round, final)
-            for agent in self.agents:
-                agent.process_communicate(task_id, communication_round, final)
+            self.communicate_round(task_id, communication_round, final=final)
+
+    def communicate_round(self, task_id, communication_round, final=False):
+        for agent in self.agents:
+            agent.prepare_communicate(task_id, communication_round, final)
+        for agent in self.agents:
+            agent.communicate(task_id, communication_round, final)
+        for agent in self.agents:
+            agent.process_communicate(task_id, communication_round, final)
 
 
 class ParallelFleet:

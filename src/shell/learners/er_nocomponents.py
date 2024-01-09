@@ -21,12 +21,16 @@ class NoComponentsER(Learner):
                  use_contrastive=False, dataset_name=None,
                  fl_strategy=None,
                  mu=None,
-                 use_ood_separation_loss=False,):
+                 use_ood_separation_loss=False,
+                 lambda_ood=2.0,
+                 delta_ood=1.0,):
         super().__init__(net, save_dir,  improvement_threshold=improvement_threshold,
                          use_contrastive=use_contrastive, dataset_name=dataset_name,
                          fl_strategy=fl_strategy,
                          mu=mu,
                          use_ood_separation_loss=use_ood_separation_loss,
+                         lambda_ood=lambda_ood,
+                         delta_ood=delta_ood,
                          )
         self.replay_buffers = {}
         self.shared_replay_buffers = {}  # received from neighbors
@@ -117,7 +121,8 @@ class NoComponentsER(Learner):
 
                     l += self.compute_loss(Xt,
                                            Yt,
-                                           task_id_tmp, mode=train_mode)
+                                           task_id_tmp, mode=train_mode,
+                                           global_step=i,)
                     # n += X.shape[0]
                 n = len(Y)
                 l /= n

@@ -70,6 +70,14 @@ class Learner():
                                           delta=self.delta_ood)
         self.ood_data = {}
 
+    def change_save_dir(self, save_dir):
+        self.save_dir = create_dir_if_not_exist(save_dir)
+        self.record = Record(os.path.join(self.save_dir, "record.csv"))
+        self.dynamic_record = Record(os.path.join(
+            self.save_dir, "add_modules_record.csv"))
+        self.writer = SummaryWriter(
+            log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
+
     # def apply_transform(self, X):
     #     # X: (batch_size, n_channels, height, width)
     #     # apply self.transform to each image in X
@@ -81,6 +89,8 @@ class Learner():
     def make_shared_memory_loaders(self, batch_size=32):
         self.shared_memory_loaders = {}
         for task_id in self.shared_replay_buffers.keys():
+            if len(self.shared_replay_buffers[task_id]) == 0:
+                continue
             self.shared_memory_loaders[task_id] = (
                 torch.utils.data.DataLoader(self.shared_replay_buffers[task_id],
                                             batch_size=batch_size,
@@ -127,6 +137,17 @@ class Learner():
         if detach:
             X_encode = X_encode.detach()
         Y_hat = self.net.decoder[task_id](X_encode)
+        # check if Y is flaoat if yes, raise error
+        if Y.dtype == torch.float32:
+            print('Y:', Y)
+            raise ValueError(
+                "?????????????/// Y is float32, make sure to convert to long before passing to compute_cross_entropy_loss")
+        # check that Y is either 0 or 1
+        if Y.max() > 1 or Y.min() < 0:
+            print('Y:', Y)
+            raise ValueError(
+                "?????????????/// Y is not binary, make sure to convert to binary before passing to compute_cross_entropy_loss")
+
         ce = self.ce_loss(Y_hat, Y)
         return ce
 
@@ -350,7 +371,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
     def train(self, trainloader, task_id, valloader,
               component_update_freq=100, start_epoch=0, num_epochs=100, save_freq=1, testloaders=None,
               train_mode=None, num_candidate_modules=None, module_list=None,
-              final=True):
+              final=True,
+              train_candidate_module=True,):
         # logging.info('task_id %s len(self.net.components) %s', task_id, len(self.net.components))
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
@@ -381,15 +403,13 @@ class CompositionalDynamicLearner(CompositionalLearner):
             #     {'params': self.net.components[-1].parameters()})
 
             if start_epoch == 0:
-                if num_candidate_modules is None:
-                    num_candidate_modules = 1
-
                 if module_list is None:
                     module_list = []
-                else:
+                if num_candidate_modules is None:
                     num_candidate_modules = len(module_list) + 1
 
-                # print("NUM_CANDIDATE_MODULES", num_candidate_modules, 'len(module_list)', len(module_list))
+                # print("NUM_CANDIDATE_MODULES", num_candidate_modules,
+                #       'len(module_list)', len(module_list))
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
                 self.net.receive_modules(task_id, module_list)
 
@@ -416,8 +436,9 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
                         # with new module. Update struct + update the active
                         # candidate
-                        self.net.unfreeze_module(
-                            self.net.active_candidate_index)
+                        if train_candidate_module:
+                            self.net.unfreeze_module(
+                                self.net.active_candidate_index)
                         self.update_structure(
                             X, Y, task_id, train_mode=train_mode,
                             global_step=i)

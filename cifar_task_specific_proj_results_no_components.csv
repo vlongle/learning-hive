@@ -1,9 +1,0 @@
-dataset,algo,use_contrastive,seed,agent_id,no_components
-cifar100,modular,True,seed_0,agent_1,16
-cifar100,modular,True,seed_0,agent_2,13
-cifar100,modular,True,seed_0,agent_6,14
-cifar100,modular,True,seed_0,agent_7,15
-cifar100,modular,True,seed_0,agent_4,14
-cifar100,modular,True,seed_0,agent_3,15
-cifar100,modular,True,seed_0,agent_0,14
-cifar100,modular,True,seed_0,agent_5,15

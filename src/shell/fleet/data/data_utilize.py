@@ -159,6 +159,39 @@ def get_local_labels(global_ys, target_class_sequence, num_classes_per_task):
     return torch.tensor(local_ys), torch.tensor(local_task_ids)
 
 
+# def get_all_local_labels(global_ys, target_class_sequence, num_classes_per_task):
+#     local_ys, local_task_ids = [], []
+#     for global_y in global_ys:
+#         all_local_y, all_local_task_id = [], []
+#         for task_id, class_sequence in enumerate(target_class_sequence):
+#             if global_y in class_sequence:
+#                 local_y = class_sequence.index(global_y)
+#                 all_local_y.append(local_y)
+#                 all_local_task_id.append(task_id)
+#         local_ys.append(all_local_y)
+#         local_task_ids.append(all_local_task_id)
+#     return local_ys, local_task_ids
+
+def get_all_local_labels(global_ys, target_class_sequence, num_classes_per_task):
+    num_tasks = len(target_class_sequence) // num_classes_per_task
+    all_local_ys, all_local_task_ids = [], []
+
+    for global_y in global_ys:
+        local_ys_for_global_y = []
+        task_ids_for_global_y = []
+        for task_id in range(num_tasks):
+            local_y = get_local_label_for_task(
+                global_y, task_id, target_class_sequence, num_classes_per_task)
+            if local_y != -1:
+                local_ys_for_global_y.append(local_y)
+                task_ids_for_global_y.append(task_id)
+
+        all_local_ys.append(local_ys_for_global_y)
+        all_local_task_ids.append(task_ids_for_global_y)
+
+    return all_local_ys, all_local_task_ids
+
+
 def remap_to_local_labels(data, class_sequence, num_classes_per_task):
     """Remap global labels to the agent's local labels and determine the corresponding local task."""
 

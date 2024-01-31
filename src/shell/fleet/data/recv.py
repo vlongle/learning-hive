@@ -240,23 +240,28 @@ class RecvDataAgent(Agent):
             sims = torch.where(
                 invalid_mask, torch.tensor(-float('inf'), device=sims.device), sims)
 
-        top_k = torch.topk(sims, k=num_neighbors, dim=1).indices
+        top_k = torch.topk(sims, k=num_neighbors, dim=1)
+        top_k_indices = top_k.indices
+        top_k_values = top_k.values
+
         if map_to_globals:
             # first convert ys to global labels using tasks
             ys = get_global_labels(
                 ys, tasks, self.dataset.class_sequence, self.dataset.num_classes_per_task)
 
-        X_neighbors = Xs[top_k.flatten()]
-        Y_neighbors = ys[top_k.flatten()]
-        task_neighbors = tasks[top_k.flatten()]
+        X_neighbors = Xs[top_k_indices.flatten()]
+        Y_neighbors = ys[top_k_indices.flatten()]
+        task_neighbors = tasks[top_k_indices.flatten()]
+        sim_neighbors = top_k_values.flatten()
 
         # reshape to (N, n_neighbor, c, h, w)
         X_neighbors = X_neighbors.reshape(
             sims.shape[0], num_neighbors, *Xs.shape[1:])
         Y_neighbors = Y_neighbors.reshape(sims.shape[0], num_neighbors)
         task_neighbors = task_neighbors.reshape(sims.shape[0], num_neighbors)
+        sim_neighbors = sim_neighbors.reshape(sims.shape[0], num_neighbors)
 
-        return X_neighbors, Y_neighbors, task_neighbors
+        return X_neighbors, Y_neighbors, task_neighbors, sim_neighbors
 
     def prefilter(self, qX, neighbor_id, n_filter_neighbors):
         if self.sharing_strategy['prefilter_strategy'] == 'raw_distance':
@@ -285,7 +290,8 @@ class RecvDataAgent(Agent):
             "task_neighbors_prefilter": self.prefilter_oracle_helper(qX, query_global_y, n_filter_neighbors)
         }
 
-    def prefilter_oracle_helper(self, qX, q_global_Y, n_filter_neighbors):
+    # NOTE: might not get all possible tasks...
+    def prefilter_oracle_helper_legacy(self, qX, q_global_Y, n_filter_neighbors):
         assert q_global_Y.shape[0] == qX.shape[0]
         _, task_ids = get_local_labels(
             q_global_Y, self.dataset.class_sequence, self.dataset.num_classes_per_task)
@@ -297,6 +303,30 @@ class RecvDataAgent(Agent):
             else:
                 ret[i, :] = torch.full(
                     (n_filter_neighbors,), task_id, dtype=torch.long)
+        return ret
+
+    def prefilter_oracle_helper(self, qX, q_global_Y, n_filter_neighbors):
+        assert q_global_Y.shape[0] == qX.shape[0]
+        local_ys, task_ids_list = get_all_local_labels(
+            q_global_Y, self.dataset.class_sequence, self.dataset.num_classes_per_task)
+        ret = torch.full(
+            (q_global_Y.size(0), n_filter_neighbors), -1, dtype=torch.long)
+
+        for i, task_ids in enumerate(task_ids_list):
+            # Filter out task IDs that exceed the current time horizon
+            valid_task_ids = [
+                task_id for task_id in task_ids if task_id < self.agent.T]
+
+            n_valid_tasks = len(valid_task_ids)
+            if n_valid_tasks == 0:
+                continue
+            else:
+                # Fill with valid tasks and replicate the last valid task if necessary
+                ret[i, :n_valid_tasks] = torch.tensor(
+                    valid_task_ids, dtype=torch.long)
+                if n_valid_tasks < n_filter_neighbors:
+                    ret[i, n_valid_tasks:] = torch.full(
+                        (n_filter_neighbors - n_valid_tasks,), valid_task_ids[-1], dtype=torch.long)
         return ret
 
     def prefilter_raw_distance(self, qX, n_filter_neighbors):
@@ -332,7 +362,7 @@ class RecvDataAgent(Agent):
             qX, computer=self.compute_embedding_dist)
 
         # 3. Extract top neighbors considering the pre-filtered tasks
-        X_neighbors, Y_neighbors, task_neighbors = self.extract_topk_from_similarity(
+        X_neighbors, Y_neighbors, task_neighbors, sims = self.extract_topk_from_similarity(
             sims, Xs, ys, tasks,
             num_neighbors=n_neighbors,
             # candidate_tasks=task_lists,
@@ -344,6 +374,7 @@ class RecvDataAgent(Agent):
                 "X_neighbors": X_neighbors,
                 "Y_neighbors": Y_neighbors,
                 "task_neighbors": task_neighbors,
+                "sims": sims,
             } | prefilter_info
         return X_neighbors
 
@@ -361,6 +392,98 @@ class RecvDataAgent(Agent):
 
     @torch.inference_mode()
     def compute_query(self, task_id, mode="all", debug_return=False):
+        """
+        Compute query using a validation
+
+        If mode="all", get the query for all tasks up to `task_id`,
+        If mode="current", get the query for the current task only.
+
+        Rank all instances across all tasks together based on their scores,
+        and then select the top `num_queries` instances in a vectorized manner.
+        """
+
+        was_training = self.net.training
+        if mode == "all":
+            tasks = range(task_id + 1)
+        elif mode == "current":
+            tasks = [task_id]
+        else:
+            raise ValueError(f"Invalid mode {mode}")
+
+        X_vals, y_vals = self.get_valset(tasks)
+
+        all_scores = []
+        all_y_pred = []
+        all_indices = {}
+        cumulative_instance_count = 0
+
+        # Collect scores and indices for all tasks
+        for t in tasks:
+            X_val = X_vals[t].to(self.net.device)
+            y_val = y_vals[t].to(self.net.device)
+            logits = self.net(X_val, task_id=t)
+            y_pred = torch.argmax(logits, dim=1)
+            scores = self.scorer(
+                logits) if self.scorer_type == "unsupervised" else self.scorer(logits, y_val)
+            all_scores.append(scores)
+            all_y_pred.append(y_pred)
+            all_indices[t] = torch.tensor([i for i in range(
+                cumulative_instance_count, scores.size(0) + cumulative_instance_count)])
+            cumulative_instance_count += scores.size(0)
+
+        # Concatenate and rank all scores
+        all_scores = torch.cat(all_scores)
+        all_y_pred = torch.cat(all_y_pred)
+        rank = torch.argsort(all_scores, descending=True)
+
+        # Select the top k scores across all tasks
+        top_k_indices = rank[:self.sharing_strategy.num_queries].cpu()
+
+        X_queries = {t: torch.tensor([], dtype=torch.float32) for t in tasks}
+        y_queries = {t: torch.tensor([], dtype=torch.int64) for t in tasks}
+        y_pred_queries = {t: torch.tensor(
+            [], dtype=torch.int64) for t in tasks}
+        score_queries = {t: torch.tensor(
+            [], dtype=torch.float32) for t in tasks}
+        # print('top_k_indices', top_k_indices)
+        # print('top_k_scores', all_scores[top_k_indices])
+
+        # Vectorized approach to distribute queries back to their respective tasks
+        for t in tasks:
+            task_indices = all_indices[t]
+            # Check if any of these indices are in the top k
+            mask = torch.isin(task_indices, top_k_indices)
+
+            # selected_indices = task_indices[mask]
+
+            # If there are matches, process them
+            if mask.any():
+                # Get the global indices for the current task
+                selected_global_indices = task_indices[mask]
+
+                selected_scores = all_scores[selected_global_indices]
+                sorted_indices = selected_global_indices[torch.argsort(
+                    selected_scores, descending=True).cpu()]
+
+                # Convert global indices to local indices
+                # The starting index of the current task in the global indexing
+                task_start_index = task_indices[0].item()
+                selected_local_indices = sorted_indices - task_start_index
+
+                # Retrieve the corresponding data using local indices
+                X_queries[t] = X_vals[t][selected_local_indices].cpu()
+                y_queries[t] = y_vals[t][selected_local_indices].cpu()
+                y_pred_queries[t] = all_y_pred[sorted_indices].cpu()
+                score_queries[t] = all_scores[sorted_indices].cpu()
+
+        if was_training:
+            self.net.train()
+        if debug_return:
+            return X_queries, y_queries, y_pred_queries, score_queries
+        return X_queries, y_queries
+
+    @torch.inference_mode()
+    def compute_query_legacy(self, task_id, mode="all", debug_return=False):
         """
         Compute query using a validation
 
@@ -386,26 +509,25 @@ class RecvDataAgent(Agent):
 
         X_vals, y_vals = self.get_valset(tasks)
 
-        with torch.inference_mode():
-            for t in tasks:
-                X_val = X_vals[t].to(self.net.device)
-                y_val = y_vals[t].to(self.net.device)
-                logits = self.net(X_val, task_id=t)
-                y_pred = torch.argmax(logits, dim=1)
-                if self.scorer_type == "unsupervised":
-                    scores = self.scorer(logits)
-                elif self.scorer_type == "supervised":
-                    scores = self.scorer(logits, y_val)
-                else:
-                    raise ValueError("Invalid query method")
-                rank = torch.argsort(scores, descending=True)
-                top_k = rank[:self.sharing_strategy.num_queries]
-                top_k = top_k[scores[top_k] >
-                              self.sharing_strategy.query_score_threshold]
-                X_queries[t] = X_val[top_k].cpu()
-                y_queries[t] = y_val[top_k].cpu()
-                y_pred_queries[t] = y_pred[top_k].cpu()
-                score_queries[t] = scores[top_k].cpu()
+        for t in tasks:
+            X_val = X_vals[t].to(self.net.device)
+            y_val = y_vals[t].to(self.net.device)
+            logits = self.net(X_val, task_id=t)
+            y_pred = torch.argmax(logits, dim=1)
+            if self.scorer_type == "unsupervised":
+                scores = self.scorer(logits)
+            elif self.scorer_type == "supervised":
+                scores = self.scorer(logits, y_val)
+            else:
+                raise ValueError("Invalid query method")
+            rank = torch.argsort(scores, descending=True)
+            top_k = rank[:self.sharing_strategy.num_queries]
+            top_k = top_k[scores[top_k] >
+                          self.sharing_strategy.query_score_threshold]
+            X_queries[t] = X_val[top_k].cpu()
+            y_queries[t] = y_val[top_k].cpu()
+            y_pred_queries[t] = y_pred[top_k].cpu()
+            score_queries[t] = scores[top_k].cpu()
 
         if was_training:
             self.net.train()
@@ -465,26 +587,57 @@ class RecvDataAgent(Agent):
         # get the data and now learn from it
         for neighbor_id, neighbor_data in self.incoming_data.items():
             for task_id, task_data in neighbor_data.items():
-                # task_data.shape = (N, n_neighbor, C, H, W)
+                # task_data.shape = (N_query, N_neighbor, C, H, W)
                 if task_id not in self.agent.shared_replay_buffers:
                     self.agent.shared_replay_buffers[task_id] = ReplayBufferReservoir(
                         self.sharing_strategy.shared_memory_size, task_id)
-                Y = self.query_y[task_id]  # Y.shape = (N)
-                # Extracting n_neighbor from task_data shape
-                n_neighbor = task_data.shape[1]
+                Y = self.query_y[task_id]  # Y.shape = (N_query)
 
-                # Expanding Y to shape (N, n_neighbor)
-                # and then flattening it to (N*n_neighbor,)
+                # Get the task_neighbors_prefilter for the current task
+                task_neighbors_prefilter = self.incoming_extra_info[
+                    neighbor_id]['task_neighbors_prefilter'][task_id]
+                # print('task_id', task_id, 'neighbor_id', neighbor_id)
+                # print('task_neighbors_prefilter', task_neighbors_prefilter)
+                # Mask to identify valid rows (not all -1)
+                valid_rows_mask = ~torch.all(
+                    task_neighbors_prefilter == -1, dim=1)
+                # print('valid_rows_mask', valid_rows_mask)
+
+                # Filter task_data based on valid_rows_mask
+                filtered_task_data = task_data[valid_rows_mask]
+
+                # Extracting n_neighbor from filtered_task_data shape
+                n_neighbor = filtered_task_data.shape[1]
+
+                # Expanding Y to shape (N_query, n_neighbor)
+                # and then flattening it to (N_query * n_neighbor,)
                 Y_expanded = Y.unsqueeze(1).expand(-1, n_neighbor).reshape(-1)
 
-                # Flattening task_data to (N*n_neighbor, C, H, W)
-                X_flattened = task_data.reshape(-1, *task_data.shape[2:])
+                # Correctly reshape the mask to match Y_expanded
+                correct_shape_mask = valid_rows_mask.unsqueeze(
+                    1).expand(-1, n_neighbor).reshape(-1)
 
+                # Filter Y_expanded to match the filtered task_data
+                Y_expanded = Y_expanded[correct_shape_mask]
+
+                # Flattening (N_query, n_neighbor, C, H, W)
+                # filtered_task_data to (N_query' * n_neighbor, C, H, W)
+                X_flattened = filtered_task_data.reshape(
+                    -1, *filtered_task_data.shape[2:])
+
+                # print("X_flattened.shape", X_flattened.shape)
+                # print('Y_expanded', Y_expanded)
+
+                # print("Y_query", Y, Y.dtype)
+                # print("Y_expanded:", Y_expanded, Y_expanded.dtype)
                 # Storing flattened X and Y into the replay buffer
                 self.agent.shared_replay_buffers[task_id].push(
                     X_flattened, Y_expanded)
-
-        # TODO: start learning now!
+                # print(
+                #     len(self.agent.shared_replay_buffers[task_id]), '\n')
+                # if len(self.agent.shared_replay_buffers[task_id]) > 0:
+                #     print(
+                #         self.agent.shared_replay_buffers[task_id].tensors[1], '\n')
 
     def get_query_global_labels(self, y):
         ret = {}
@@ -629,16 +782,28 @@ class RecvDataAgent(Agent):
         return data_dict
 
 
+@ray.remote
 class ParallelRecvDataAgent(RecvDataAgent):
     def communicate(self, task_id, communication_round, final=False):
+        if task_id < self.agent.net.num_init_tasks - 1:
+            # NOTE: don't communicate for the first few tasks to
+            # allow agents some initital training to find their weakness
+            return
         if communication_round % 2 == 0:
             # send query to neighbors
-            for neighbor in self.neighbors:
-                neighbor.remote.receive(self.node_id, self.query, "query")
+            for neighbor in self.neighbors.values():
+                ray.get(neighbor.receive.remote(
+                    self.node_id, self.query, "query"))
+                ray.get(neighbor.receive.remote(
+                    self.node_id, self.query_extra_info, "query_extra_info"
+                ))
         elif communication_round % 2 == 1:
             # send data to the requester
             for requester in self.incoming_query:
-                requester.remote.receive(
-                    self.node_id, self.data[requester], "data")
+                requester_node = self.neighbors[requester]
+                ray.get(requester_node.receive.remote(
+                    self.node_id, self.data[requester], "data"))
+                ray.get(requester_node.receive.remote(
+                    self.node_id, self.extra_info[requester], "extra_info"))
         else:
             raise ValueError(f"Invalid round number {communication_round}")

@@ -50,11 +50,9 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         self.maxpool = nn.MaxPool2d(maxpool_kernel)
         self.dropout = nn.Dropout(dropout)
 
-
         self.active_candidate_index = None  # Initialize as no active candidate modules
         self.candidate_indices = []  # To hold indices of candidate modules in self.components
         self.last_active_candidate_index = None
-
 
         out_h = self.i_size[0]
         for i in range(self.depth):
@@ -84,41 +82,40 @@ class CNNSoftLLDynamic(SoftOrderingNet):
             ) for t in range(self.num_tasks)])
         self.to(self.device)
 
-
-
     def add_tmp_modules(self, task_id, num_modules):
-            self.active_candidate_index = None  # Initialize as no active candidate modules
-            self.candidate_indices = []  # To hold indices of candidate modules in self.components
-            
-            # print('BEFORE ADDING TMP_MODULES', self.structure)
-            for _ in range(num_modules):
-                if self.num_components < self.max_components:
-                    for t in range(self.num_tasks):
-                        self.structure[t].data = torch.cat((self.structure[t].data, torch.full(
-                            (1, self.depth), -np.inf if t < task_id else 1, device=self.device)), dim=0)
-                    conv = nn.Conv2d(self.channels, self.channels,
-                             self.conv_kernel, padding=self.padding).to(self.device)
-                    self.components.append(conv)
-                    self.candidate_indices.append(self.num_components)
-                    
-                    if self.active_candidate_index is None:  # Activate the first candidate by default
-                        self.active_candidate_index = self.num_components
-                        
-                    self.num_components += 1
+        if num_modules == 0:
+            return
+        self.active_candidate_index = None  # Initialize as no active candidate modules
+        self.candidate_indices = []  # To hold indices of candidate modules in self.components
 
+        # print('BEFORE ADDING TMP_MODULES', self.structure)
+        for _ in range(num_modules):
+            if self.num_components < self.max_components:
+                for t in range(self.num_tasks):
+                    self.structure[t].data = torch.cat((self.structure[t].data, torch.full(
+                        (1, self.depth), -np.inf if t < task_id else 1, device=self.device)), dim=0)
+                conv = nn.Conv2d(self.channels, self.channels,
+                                 self.conv_kernel, padding=self.padding).to(self.device)
+                self.components.append(conv)
+                self.candidate_indices.append(self.num_components)
 
-    
+                if self.active_candidate_index is None:  # Activate the first candidate by default
+                    self.active_candidate_index = self.num_components
+
+                self.num_components += 1
 
     def receive_modules(self, task_id, module_list):
         # Number of temporary modules added in the last step
         num_tmp_modules = len(self.candidate_indices)
-        
-        assert len(module_list) <= num_tmp_modules, 'Number of modules received must be less than or equal to the number of temporary modules'
+
+        assert len(
+            module_list) <= num_tmp_modules, 'Number of modules received must be less than or equal to the number of temporary modules'
         # Loop over the temporary modules, excluding the last one
         for i in range(len(module_list)):
             tmp_module_idx = self.candidate_indices[i]
             # Replacing the state_dict of the temporary module with the corresponding one in the module_list
-            self.components[tmp_module_idx].load_state_dict(module_list[i].state_dict())
+            self.components[tmp_module_idx].load_state_dict(
+                module_list[i].state_dict())
 
     def hide_tmp_modulev2(self):
         if self.active_candidate_index is not None:
@@ -134,7 +131,6 @@ class CNNSoftLLDynamic(SoftOrderingNet):
 
     def recover_hidden_modulev2(self):
         self.active_candidate_index = self.last_active_candidate_index
-    
 
     def select_active_module(self, index=None):
         if index is not None:
@@ -152,8 +148,10 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         # Create a new ParameterList and add structure elements that are not in the excluded list
         new_structure = nn.ParameterList()
         for t in range(self.num_tasks):
-            rows_to_keep = [idx for idx in range(self.num_components) if idx not in excluded_candidate_list]
-            new_structure.append(self.structure[t].data[rows_to_keep, :])  # Keeping rows not in the excluded_candidate_list
+            rows_to_keep = [idx for idx in range(
+                self.num_components) if idx not in excluded_candidate_list]
+            # Keeping rows not in the excluded_candidate_list
+            new_structure.append(self.structure[t].data[rows_to_keep, :])
         # for idx, structure in enumerate(self.structure):
         #     if idx not in self.candidate_indices or idx not in excluded_candidate_list:
         #         new_structure.append(structure)
@@ -163,13 +161,12 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         for s in self.structure:
             s.data = s.data[:self.num_components, :]
 
-
         # Copy the state_dict of new components and structure to the original ones
         self.components.load_state_dict(new_components.state_dict())
         self.structure.load_state_dict(new_structure.state_dict())
 
         # Update candidate_indices and num_components
-        
+
         # Reset the round-robin variables
         self.active_candidate_index = None
         self.last_active_candidate_index = None
@@ -178,7 +175,6 @@ class CNNSoftLLDynamic(SoftOrderingNet):
     def get_hidden_size(self):
         return self.size
 
-    
     def encode(self, X, task_id):
         X = self.transform(X)
         c = X.shape[1]

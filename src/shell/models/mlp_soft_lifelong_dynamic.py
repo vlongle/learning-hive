@@ -14,7 +14,6 @@ from shell.models.base_net_classes import SoftOrderingNet
 import torch.nn.functional as F
 
 
-
 class MLPSoftLLDynamic(SoftOrderingNet):
     def __init__(self,
                  i_size,
@@ -50,13 +49,10 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.candidate_indices = []  # To hold indices of candidate modules in self.components
         self.last_active_candidate_index = None
 
-
-
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(dropout)
         self.random_linear_projection = nn.Linear(
             self.i_size[0] * self.i_size[0], self.size)
-        
 
         # freeze the random linear projection (preprocessing)
         for param in self.random_linear_projection.parameters():
@@ -89,9 +85,11 @@ class MLPSoftLLDynamic(SoftOrderingNet):
             param.requires_grad = False
 
     def add_tmp_modules(self, task_id, num_modules):
+        if num_modules == 0:
+            return
         self.active_candidate_index = None  # Initialize as no active candidate modules
         self.candidate_indices = []  # To hold indices of candidate modules in self.components
-        
+
         # print('BEFORE ADDING TMP_MODULES', self.structure)
         for _ in range(num_modules):
             if self.num_components < self.max_components:
@@ -101,24 +99,26 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                 fc = nn.Linear(self.size, self.size).to(self.device)
                 self.components.append(fc)
                 self.candidate_indices.append(self.num_components)
-                
+
                 if self.active_candidate_index is None:  # Activate the first candidate by default
                     self.active_candidate_index = self.num_components
-                    
+
                 self.num_components += 1
         # print('ADDED TMP MODULES', self.structure[task_id])
 
     def receive_modules(self, task_id, module_list):
         # Number of temporary modules added in the last step
         num_tmp_modules = len(self.candidate_indices)
-        
-        assert len(module_list) <= num_tmp_modules, 'Number of modules received must be less than or equal to the number of temporary modules'
-        # Loop over the temporary modules, excluding the last one
+
+        assert len(
+            module_list) <= num_tmp_modules, 'Number of modules received must be less than or equal to the number of temporary modules'
+        # Loop over the temporary modules, (implicitly excluding the last one due to
+        # how base_learning_classes.py is written)
         for i in range(len(module_list)):
             tmp_module_idx = self.candidate_indices[i]
             # Replacing the state_dict of the temporary module with the corresponding one in the module_list
-            self.components[tmp_module_idx].load_state_dict(module_list[i].state_dict())
-
+            self.components[tmp_module_idx].load_state_dict(
+                module_list[i].state_dict())
 
     def hide_tmp_modulev2(self):
         if self.active_candidate_index is not None:
@@ -134,7 +134,6 @@ class MLPSoftLLDynamic(SoftOrderingNet):
 
     def recover_hidden_modulev2(self):
         self.active_candidate_index = self.last_active_candidate_index
-    
 
     def select_active_module(self, index=None):
         if index is not None:
@@ -152,8 +151,10 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         # Create a new ParameterList and add structure elements that are not in the excluded list
         new_structure = nn.ParameterList()
         for t in range(self.num_tasks):
-            rows_to_keep = [idx for idx in range(self.num_components) if idx not in excluded_candidate_list]
-            new_structure.append(self.structure[t].data[rows_to_keep, :])  # Keeping rows not in the excluded_candidate_list
+            rows_to_keep = [idx for idx in range(
+                self.num_components) if idx not in excluded_candidate_list]
+            # Keeping rows not in the excluded_candidate_list
+            new_structure.append(self.structure[t].data[rows_to_keep, :])
         # for idx, structure in enumerate(self.structure):
         #     if idx not in self.candidate_indices or idx not in excluded_candidate_list:
         #         new_structure.append(structure)
@@ -163,25 +164,22 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         for s in self.structure:
             s.data = s.data[:self.num_components, :]
 
-
         # Copy the state_dict of new components and structure to the original ones
         self.components.load_state_dict(new_components.state_dict())
         self.structure.load_state_dict(new_structure.state_dict())
 
         # Update candidate_indices and num_components
-        
+
         # Reset the round-robin variables
         self.active_candidate_index = None
         self.last_active_candidate_index = None
         self.candidate_indices = []
-        
 
     def preprocess(self, X):
         # if X shape is (b, c, h, w) then flatten to (b, c*h*w)
         if len(X.shape) > 2:
             X = X.view(X.shape[0], -1)
         return self.random_linear_projection(X)
-
 
     def encode(self, X, task_id):
         X = self.preprocess(X)
@@ -195,7 +193,6 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                     X_tmp += s[j, k] * self.dropout(self.relu(fc(X)))
             X = X_tmp
         return X
-
 
     def contrastive_embedding(self, X, task_id):
         """

@@ -34,14 +34,14 @@ if __name__ == "__main__":
 
     seed = args.seed
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
-    num_epochs = 100
-    lambda_ood = 10.
+    num_epochs = 400
+    lambda_ood = 7.5
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64
 
     dataset = args.dataset
-    delta_ood = 2.0
+    delta_ood = 1.0
 
     config = {
         # "algo": ["monolithic", "modular"],

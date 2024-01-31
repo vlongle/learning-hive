@@ -49,21 +49,29 @@ class Agent:
 
         self.sharing_strategy = sharing_strategy
 
-    def get_ood_data(self, task_id):
+    def get_ood_data(self, task_id, mode='replay'):
 
-        # Gather data from replay buffers of all tasks except the current task
-        replay_buffers = {t: self.agent.replay_buffers[t] for t in range(self.agent.T)
-                          if t != task_id}
-        if len(replay_buffers) == 0:
-            return None, None, None, None
+        if mode == 'replay':
+            # Gather data from replay buffers of all tasks except the current task
+            replay_buffers = {t: self.agent.replay_buffers[t] for t in range(self.agent.T)
+                              if t != task_id}
+            if len(replay_buffers) == 0:
+                return None, None, None, None
 
-        X_past = torch.cat([rb.tensors[0]
-                           for t, rb in replay_buffers.items()], dim=0)
-        y_past = torch.cat([torch.from_numpy(get_global_label(rb.tensors[1],
-                                                              t, self.dataset.class_sequence,
-                                                              self.dataset.num_classes_per_task))
-                           for t, rb in replay_buffers.items()], dim=0)
-
+            X_past = torch.cat([rb.tensors[0]
+                                for t, rb in replay_buffers.items()], dim=0)
+            y_past = torch.cat([torch.from_numpy(get_global_label(rb.tensors[1],
+                                                                  t, self.dataset.class_sequence,
+                                                                  self.dataset.num_classes_per_task))
+                                for t, rb in replay_buffers.items()], dim=0)
+        elif mode == 'training':
+            # Gather data from training sets of all tasks except the current task
+            X_past = torch.cat([self.dataset.trainset[t].tensors[0]
+                                for t in range(self.agent.T) if t != task_id], dim=0)
+            y_past = torch.cat([torch.from_numpy(get_global_label(self.dataset.trainset[t].tensors[1],
+                                                                  t, self.dataset.class_sequence,
+                                                                  self.dataset.num_classes_per_task))
+                                for t in range(self.agent.T) if t != task_id], dim=0)
         mask = self.get_ood_data_helper(task_id, y_past)
         X_ood_filtered = X_past[mask]
         y_ood_filtered = y_past[mask]
@@ -72,6 +80,9 @@ class Agent:
         y_iid_filtered = y_past[~mask]
 
         return X_ood_filtered, y_ood_filtered, X_iid_filtered, y_iid_filtered
+
+    def get_T(self):
+        return self.agent.T
 
     def get_task_class(self, task_id):
         # Get the class labels for the current task
@@ -104,9 +115,11 @@ class Agent:
         self.neighbors = neighbors
 
     def train(self, task_id, start_epoch=0, communication_frequency=None,
-              final=True):
-        for t in range(task_id+1):
-            self.agent.ood_data[t] = self.get_ood_data(t)
+              final=True, **kwargs):
+
+        if start_epoch == 0:
+            for t in range(task_id+1):
+                self.agent.ood_data[t] = self.get_ood_data(t)
 
         if task_id >= self.net.num_tasks:
             return
@@ -154,6 +167,8 @@ class Agent:
         adjusted_num_epochs = end_epoch - start_epoch
         train_kwargs["num_epochs"] = adjusted_num_epochs
         train_kwargs["final"] = final
+
+        train_kwargs.update(kwargs)
 
         self.agent.train(trainloader, task_id, testloaders=testloaders,
                          valloader=valloader, start_epoch=start_epoch, **train_kwargs)
@@ -214,9 +229,6 @@ class Agent:
     def get_model(self):
         return self.net.state_dict()
 
-    def get_num_components(self):
-        return len(self.net.components)
-
     def replace_dataset(self, dataset, task):
         self.dataset.trainset[task] = dataset.trainset[task]
         self.dataset.testset[task] = dataset.testset[task]
@@ -227,7 +239,6 @@ class Agent:
                                     ] = dataset.class_sequence[:task * (self.dataset.num_classes_per_task)]
 
     def replace_model(self, new_model, strict=True):
-        # print("replacing model with strict:", strict)
         self.net.load_state_dict(new_model, strict=strict)
         self.net.to(self.net.device)
 
@@ -263,7 +274,7 @@ class Agent:
             # get task_id from task_path
             task_id = int(task_path.split("_")[-1])
 
-        print("Loading model from ckpoint", task_path)
+        logging.debug("Loading model from ckpoint {task_path}")
         agent_path = os.path.dirname(task_path)
         get_num_components = self.get_num_components(
             agent_path, task_id)
@@ -289,6 +300,12 @@ class Agent:
             self.agent.update_multitask_cost(trainloader, task)
             # self.agent.T += 1
         self.agent.T = len(self.agent.replay_buffers)
+
+    def change_save_dir(self, save_dir):
+        self.agent.change_save_dir(save_dir)
+
+    def get_save_dir(self):
+        return self.agent.save_dir
 
 
 @ray.remote
@@ -384,8 +401,10 @@ class Fleet:
                 agent.train(task_id, start_epoch, comm_freq, final=final)
 
             end_epoch = min(start_epoch + comm_freq, num_epochs)
+            print('>> TRAINING FROM', start_epoch,
+                  'TO', end_epoch)
             if comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                print('COMMUNICATING')
+                print('>>> COMM AT EPOCH', end_epoch)
                 self.communicate(task_id if not final else task_id + 1,
                                  start_com_round=(
                                      start_epoch // comm_freq) * self.num_coms_per_round,
@@ -402,6 +421,15 @@ class Fleet:
             agent.communicate(task_id, communication_round, final)
         for agent in self.agents:
             agent.process_communicate(task_id, communication_round, final)
+
+    def get_save_dir(self):
+        return [agent.get_save_dir() for agent in self.agents]
+
+    def change_save_dir(self, save_dir):
+        for agent in self.agents:
+            node_id = agent.get_node_id()
+            agent_save_dir = os.path.join(save_dir, f"agent_{node_id}")
+            agent.change_save_dir(agent_save_dir)
 
 
 class ParallelFleet:
@@ -430,9 +458,20 @@ class ParallelFleet:
             paths = [None] * len(self.agents)
         if task_ids is None:
             task_ids = [None] * len(self.agents)
+        if isinstance(task_ids, int):
+            task_ids = [task_ids] * len(self.agents)
         for agent, path, task_id in zip(self.agents, paths, task_ids):
             ray.get(agent.load_model_from_ckpoint.remote(
                 task_path=path, task_id=task_id))
+
+    def update_replay_buffers(self, task_id):
+        for agent in self.agents:
+            ray.get(agent.update_replay_buffer.remote(task_id))
+
+    def eval_test(self, task_id=None):
+        if task_id is None:
+            task_id = ray.get(self.agents[0].get_T.remote()) - 1
+        return ray.get([agent.eval_test.remote(task_id) for agent in self.agents])
 
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
         self.agents = [
@@ -461,8 +500,8 @@ class ParallelFleet:
         # adding neighbors
         for agent in self.agents:
             agent_id = ray.get(agent.get_node_id.remote())
-            neighbors = [self.agents[neighbor_id]
-                         for neighbor_id in self.graph.neighbors(agent_id)]
+            neighbors = {ray.get(self.agents[neighbor_id].get_node_id.remote()): self.agents[neighbor_id]
+                         for neighbor_id in self.graph.neighbors(agent_id)}
             agent.add_neighbors.remote(neighbors)
 
     def train_and_comm(self, task_id):
@@ -483,7 +522,9 @@ class ParallelFleet:
                                         final=final) for agent in self.agents])
 
             end_epoch = min(start_epoch + comm_freq, num_epochs)
+            print('training from', start_epoch, 'to', end_epoch)
             if comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
+                print('comm at epoch', end_epoch)
                 self.communicate(task_id if not final else task_id + 1,
                                  start_com_round=(
                                      start_epoch // comm_freq) * self.num_coms_per_round,
@@ -507,3 +548,12 @@ class ParallelFleet:
 
             ray.get([agent.process_communicate.remote(task_id, communication_round, final)
                     for agent in self.agents])
+
+    def get_save_dir(self):
+        return ray.get([agent.get_save_dir.remote() for agent in self.agents])
+
+    def change_save_dir(self, save_dir):
+        for agent in self.agents:
+            node_id = ray.get(agent.get_node_id.remote())
+            agent_save_dir = os.path.join(save_dir, f"agent_{node_id}")
+            ray.get(agent.change_save_dir.remote(agent_save_dir))

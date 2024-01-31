@@ -32,12 +32,20 @@ class ReplayBufferReservoir(ReplayBufferBase):
         super().__init__(memory_size)
         self.task_id = task_id
 
+    def get_tensors(self):
+        # return tensors but with self.__len__ length
+        return (self.tensors[0][:len(self)], self.tensors[1][:len(self)],
+                self.tensors[2][:len(self)])
+
     def push(self, X, Y):
         if not self.is_dataset_init:
             self.tensors = (torch.empty(self.memory_size, *X.shape[1:], device=X.device, dtype=X.dtype),
                             torch.empty(
                                 self.memory_size, *Y.shape[1:], device=Y.device, dtype=Y.dtype),
                             torch.full((self.memory_size,), self.task_id, dtype=int))
+            if Y.dtype == torch.float32 or self.tensors[1].dtype == torch.float32:
+                print(">>>>> WTF???? Y:", Y)
+                raise ValueError("WTF????")
             self.is_dataset_init = True
         for j, (x, y) in enumerate(zip(X, Y)):
             if self.observed + j < self.memory_size:
@@ -48,5 +56,4 @@ class ReplayBufferReservoir(ReplayBufferBase):
                 if idx < self.memory_size:
                     self.tensors[0].data[idx] = x
                     self.tensors[1].data[idx] = y
-            j += 1
-        self.observed += j
+        self.observed += len(X)

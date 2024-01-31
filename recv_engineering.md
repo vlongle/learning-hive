@@ -142,3 +142,5 @@ Open a notebook and debug the receiver KNN stuff,
 
 
 Must be bug somewhere. Oracle got 80% which means that as long as the OOD stuff is fixed, the embedding search is very strong.
+
+Just going to use the global labels.

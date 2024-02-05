@@ -17,6 +17,7 @@ from torchmetrics.functional import pairwise_cosine_similarity
 from shell.utils.replay_buffers import ReplayBufferReservoir
 from shell.fleet.data.data_utilize import *
 import pickle
+from shell.learners.base_learning_classes import CompositionalDynamicLearner
 """
 Receiver-first procedure.
 Scorers return higher scores for more valuable instances (need to train more on).
@@ -123,6 +124,8 @@ class RecvDataAgent(Agent):
 
         self.scorer = SCORER_FN_LOOKUP[self.sharing_strategy.scorer]
         self.scorer_type = SCORER_TYPE_LOOKUP[self.sharing_strategy.scorer]
+
+        self.is_modular = isinstance(self.agent, CompositionalDynamicLearner)
 
     @torch.inference_mode()
     def compute_embedding_dist(self, X1, X2, task_id):
@@ -646,13 +649,19 @@ class RecvDataAgent(Agent):
                 y_t, [task] * len(y_t), self.dataset.class_sequence, self.dataset.num_classes_per_task)
         return ret
 
-    def prepare_communicate(self, task_id, communication_round, final=False):
+    def prepare_communicate(self, task_id, end_epoch, communication_round, final=False,):
         if communication_round % 2 == 0:
             self.incoming_query, self.incoming_data, self.incoming_extra_info, self.incoming_query_extra_info = {}, {}, {}, {}
         if task_id < self.agent.net.num_init_tasks - 1:
             return
         if communication_round % 2 == 0:
-            X, y = self.compute_query(task_id)
+            mode = "all"
+            if self.is_modular:
+                component_update_freq = self.train_kwargs['component_update_freq']
+                has_comp_update = component_update_freq is not None and end_epoch % component_update_freq == 0 and end_epoch != 0
+                if not has_comp_update:
+                    mode = "current"
+            X, y = self.compute_query(task_id, mode=mode)
             self.query = X
             self.query_y = y
             self.query_extra_info = {

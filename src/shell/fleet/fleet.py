@@ -19,8 +19,54 @@ from copy import deepcopy
 import math
 import pandas as pd
 from shell.fleet.data.data_utilize import *
+from torch.utils.data.dataset import ConcatDataset, TensorDataset
+from shell.datasets.datasets import get_custom_tensordataset
 
 SEED_SCALE = 1000
+
+
+class CustomConcatDataset(TensorDataset):
+    def __init__(self, *tensors_groups):
+        """
+        Initializes the dataset with groups of tensors. Each group is a tuple of tensors.
+        Tensors within a group are concatenated along the first dimension.
+
+        :param tensors_groups: A sequence of tuples, where each tuple contains tensors to be concatenated.
+        """
+        # Verify that all groups have the same number of tensors and compatible dimensions
+        assert all(len(tensors) == len(tensors_groups[0]) for tensors in tensors_groups), \
+            "All tensor groups must contain the same number of tensors."
+
+        self._tensors = tuple(
+            torch.cat(tensors, dim=0) for tensors in zip(*tensors_groups)
+        )
+
+        # Since all tensors in a group are concatenated along the first dimension,
+        # the length of the dataset is the length of the first tensor in the concatenated group
+        self._length = self._tensors[0].size(0)
+
+    def __len__(self):
+        return self._length
+
+    def __getitem__(self, idx):
+        # Return a tuple with the corresponding slice from each tensor in the dataset
+        return tuple(tensor[idx] for tensor in self._tensors)
+
+    @property
+    def tensors(self):
+        return self._tensors
+
+    @tensors.setter
+    def tensors(self, new_tensors):
+        if not isinstance(new_tensors, tuple):
+            raise TypeError(
+                "New tensors must be provided as a tuple of tensors.")
+        if not all(isinstance(t, torch.Tensor) for t in new_tensors):
+            raise TypeError(
+                "All elements of the new tensors tuple must be torch.Tensor.")
+        # Update the dataset's tensors, assuming they're correctly formatted and compatible
+        self._tensors = new_tensors
+        self._length = self._tensors[0].size(0)
 
 
 class Agent:
@@ -123,8 +169,24 @@ class Agent:
 
         if task_id >= self.net.num_tasks:
             return
+
+        dataset = deepcopy(self.dataset.trainset[task_id])
+
+        self.agent.make_shared_memory_loaders(
+            batch_size=self.batch_size)
+
+        if task_id in self.agent.shared_memory_loaders:
+            loader = self.agent.shared_memory_loaders[task_id]
+            shared_tensors = loader.dataset.get_tensors()  # X, y, t
+            # throw away the task id
+            shared_tensors = shared_tensors[:2]
+            dataset = CustomConcatDataset(
+                dataset.tensors, shared_tensors)
+            dataset = get_custom_tensordataset(dataset.tensors, name=self.dataset.name,
+                                               use_contrastive=self.agent.use_contrastive)
+
         trainloader = (
-            torch.utils.data.DataLoader(self.dataset.trainset[task_id],
+            torch.utils.data.DataLoader(dataset,
                                         batch_size=self.batch_size,
                                         shuffle=True,
                                         num_workers=4,
@@ -256,6 +318,8 @@ class Agent:
         return self.agent.record
 
     def get_num_components(self, agent_path, task_id):
+        if "monolithic" in agent_path:
+            return len(self.net.components)
         # agent_path = {something}/agent_{node_id}
         add_modules_record = os.path.join(
             agent_path, "add_modules_record.csv")
@@ -406,17 +470,20 @@ class Fleet:
             if comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
                 print('>>> COMM AT EPOCH', end_epoch)
                 self.communicate(task_id if not final else task_id + 1,
+                                 end_epoch,
                                  start_com_round=(
                                      start_epoch // comm_freq) * self.num_coms_per_round,
                                  final=final)
 
-    def communicate(self, task_id, start_com_round=0, final=False):
+    def communicate(self, task_id, end_epoch, start_com_round=0, final=False):
         for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
-            self.communicate_round(task_id, communication_round, final=final)
+            self.communicate_round(
+                task_id, end_epoch, communication_round, final=final)
 
-    def communicate_round(self, task_id, communication_round, final=False):
+    def communicate_round(self, task_id, end_epoch, communication_round, final=False):
         for agent in self.agents:
-            agent.prepare_communicate(task_id, communication_round, final)
+            agent.prepare_communicate(
+                task_id, end_epoch, communication_round, final)
         for agent in self.agents:
             agent.communicate(task_id, communication_round, final)
         for agent in self.agents:
@@ -526,15 +593,16 @@ class ParallelFleet:
             if comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
                 print('comm at epoch', end_epoch)
                 self.communicate(task_id if not final else task_id + 1,
+                                 end_epoch,
                                  start_com_round=(
                                      start_epoch // comm_freq) * self.num_coms_per_round,
                                  final=final)
 
-    def communicate(self, task_id, start_com_round=0, final=False):
+    def communicate(self, task_id, end_epoch, start_com_round=0, final=False):
         for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
             # parallelize preprocessing to prepare neccessary data
             # before the communication round.
-            ray.get([agent.prepare_communicate.remote(task_id, communication_round, final)
+            ray.get([agent.prepare_communicate.remote(task_id, end_epoch, communication_round, final)
                     for agent in self.agents])
             # NOTE: HACK: communicate in done in sequence to avoid dysnc issues,
             # if the sender sends something to the receiver but the receiver is not paying

@@ -96,17 +96,12 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         tmp_dataset.tensors = tmp_dataset.tensors + \
             (torch.full((len(tmp_dataset),), task_id, dtype=int),)
 
-        # print('DEBUG::: tmp_dataset.tensors', len(tmp_dataset.tensors),
-        #       tmp_dataset.tensors[0].shape, tmp_dataset.tensors[1].shape, tmp_dataset.tensors[2].shape)
-
-        # TODO: dedup shared_replay_buffers current task since
-        # it is already included in the trainloader
         mega_dataset = ConcatDataset(
             [get_custom_tensordataset(loader.dataset.get_tensors(), name=self.dataset_name,
                                       use_contrastive=self.use_contrastive) for t, loader in self.memory_loaders.items() if t != task_id] + [tmp_dataset]
-            # + [get_custom_tensordataset(loader.dataset.get_tensors(), name=self.dataset_name,
-            #                             use_contrastive=self.use_contrastive) for t, loader in self.shared_memory_loaders.items()
-            #    if t != task_id]
+            + [get_custom_tensordataset(loader.dataset.get_tensors(), name=self.dataset_name,
+                                        use_contrastive=self.use_contrastive) for t, loader in self.shared_memory_loaders.items()
+               if t != task_id]
         )
 
         batch_size = trainloader.batch_size

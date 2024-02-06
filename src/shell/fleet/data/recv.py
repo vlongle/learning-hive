@@ -208,7 +208,7 @@ class RecvDataAgent(Agent):
 
     @torch.inference_mode()
     def extract_topk_from_similarity(self, sims, Xs, ys, tasks, num_neighbors, candidate_tasks=None,
-                                     map_to_globals=False):
+                                     map_to_globals=True):
         """
         candidate_tasks.shape = [N, n_filter_neighbors] where N is the number of
         query points and n_filter_neighbors is the number of neighbors to consider
@@ -269,7 +269,7 @@ class RecvDataAgent(Agent):
     def prefilter(self, qX, neighbor_id, n_filter_neighbors):
         if self.sharing_strategy['prefilter_strategy'] == 'raw_distance':
             return self.prefilter_raw_distance(qX, n_filter_neighbors)
-        elif self.sharing_strategy['prefilter_strategy'] == 'None':
+        elif self.sharing_strategy['prefilter_strategy'] == 'none':
             return self.prefilter_none(qX, n_filter_neighbors)
         elif self.sharing_strategy['prefilter_strategy'] == 'oracle':
             return self.prefilter_oracle(qX, neighbor_id, n_filter_neighbors)
@@ -586,6 +586,62 @@ class RecvDataAgent(Agent):
             self.data[requester] = structured_data['X_neighbors']
             self.extra_info[requester] = structured_data
 
+    def add_data_task_neighbors_prefilter(self, neighbor_id, task_id):
+        extra_info = self.incoming_extra_info[neighbor_id]
+        task_neighbors_prefilter = extra_info[
+            'task_neighbors_prefilter'][task_id]
+        valid_rows_mask = ~torch.all(
+            task_neighbors_prefilter == -1, dim=1)
+        n_neighbor = task_neighbors_prefilter.shape[1]
+        valid_mask = valid_rows_mask.unsqueeze(
+            1).expand(-1, n_neighbor).reshape(-1)
+        return valid_mask
+
+    def add_data_global_y_prefilter(self, neighbor_id, task_id):
+        extra_info = self.incoming_extra_info[neighbor_id]
+        shared_global_Y = extra_info['Y_neighbors'][task_id]
+        shared_local_Y = get_local_labels_for_task(
+            shared_global_Y.flatten(), task_id, self.dataset.class_sequence, self.dataset.num_classes_per_task)
+        valid_mask = shared_local_Y != -1
+        return valid_mask
+
+    def add_data_prefilter(self, neighbor_id, task_id):
+        if self.sharing_strategy['add_data_prefilter_strategy'] == 'task_neighbors_prefilter':
+            return self.add_data_task_neighbors_prefilter(neighbor_id, task_id)
+        elif self.sharing_strategy['add_data_prefilter_strategy'] == 'global_y_prefilter':
+            return self.add_data_global_y_prefilter(neighbor_id, task_id)
+        elif self.sharing_strategy['add_data_prefilter_strategy'] == 'both':
+            return self.add_data_task_neighbors_prefilter(neighbor_id, task_id) & self.add_data_global_y_prefilter(
+                neighbor_id, task_id)
+        else:
+            raise ValueError(
+                f"Invalid prefilter strategy {self.sharing_strategy['add_data_prefilter_strategy']}")
+
+    def assign_labels_same_as_query(self, neighbor_id, task_id):
+        Y = self.query_y[task_id]  # Y.shape = (N_query)
+        n_neighbor = self.incoming_data[neighbor_id][task_id].shape[1]
+        Y = Y.unsqueeze(1).expand(-1, n_neighbor).reshape(-1)
+        return Y
+
+    def get_query(self):
+        return self.query
+
+    def assign_labels_groundtruth(self, neighbor_id, task_id):
+        extra_info = self.incoming_extra_info[neighbor_id]
+        shared_global_Y = extra_info['Y_neighbors'][task_id]
+        shared_local_Y = get_local_labels_for_task(
+            shared_global_Y.flatten(), task_id, self.dataset.class_sequence, self.dataset.num_classes_per_task)
+        return shared_local_Y
+
+    def assign_labels_to_shared_data(self, neighbor_id, task_id):
+        if self.sharing_strategy['assign_labels_strategy'] == 'same_as_query':
+            return self.assign_labels_same_as_query(neighbor_id, task_id)
+        elif self.sharing_strategy['assign_labels_strategy'] == 'groundtruth':
+            return self.assign_labels_groundtruth(neighbor_id, task_id)
+        else:
+            raise ValueError(
+                f"Invalid assign labels strategy {self.sharing_strategy['assign_labels_strategy']}")
+
     def add_incoming_data(self):
         # get the data and now learn from it
         for neighbor_id, neighbor_data in self.incoming_data.items():
@@ -594,53 +650,20 @@ class RecvDataAgent(Agent):
                 if task_id not in self.agent.shared_replay_buffers:
                     self.agent.shared_replay_buffers[task_id] = ReplayBufferReservoir(
                         self.sharing_strategy.shared_memory_size, task_id)
-                Y = self.query_y[task_id]  # Y.shape = (N_query)
 
-                # Get the task_neighbors_prefilter for the current task
-                task_neighbors_prefilter = self.incoming_extra_info[
-                    neighbor_id]['task_neighbors_prefilter'][task_id]
-                # print('task_id', task_id, 'neighbor_id', neighbor_id)
-                # print('task_neighbors_prefilter', task_neighbors_prefilter)
-                # Mask to identify valid rows (not all -1)
-                valid_rows_mask = ~torch.all(
-                    task_neighbors_prefilter == -1, dim=1)
-                # print('valid_rows_mask', valid_rows_mask)
+                valid_mask = self.add_data_prefilter(neighbor_id, task_id)
+                if len(valid_mask) == 0:
+                    continue
 
-                # Filter task_data based on valid_rows_mask
-                filtered_task_data = task_data[valid_rows_mask]
+                Y = self.assign_labels_to_shared_data(neighbor_id, task_id)
+                Y = Y[valid_mask]
 
-                # Extracting n_neighbor from filtered_task_data shape
-                n_neighbor = filtered_task_data.shape[1]
+                X = task_data.reshape(
+                    -1, *task_data.shape[2:])
+                X = X[valid_mask]
 
-                # Expanding Y to shape (N_query, n_neighbor)
-                # and then flattening it to (N_query * n_neighbor,)
-                Y_expanded = Y.unsqueeze(1).expand(-1, n_neighbor).reshape(-1)
-
-                # Correctly reshape the mask to match Y_expanded
-                correct_shape_mask = valid_rows_mask.unsqueeze(
-                    1).expand(-1, n_neighbor).reshape(-1)
-
-                # Filter Y_expanded to match the filtered task_data
-                Y_expanded = Y_expanded[correct_shape_mask]
-
-                # Flattening (N_query, n_neighbor, C, H, W)
-                # filtered_task_data to (N_query' * n_neighbor, C, H, W)
-                X_flattened = filtered_task_data.reshape(
-                    -1, *filtered_task_data.shape[2:])
-
-                # print("X_flattened.shape", X_flattened.shape)
-                # print('Y_expanded', Y_expanded)
-
-                # print("Y_query", Y, Y.dtype)
-                # print("Y_expanded:", Y_expanded, Y_expanded.dtype)
-                # Storing flattened X and Y into the replay buffer
                 self.agent.shared_replay_buffers[task_id].push(
-                    X_flattened, Y_expanded)
-                # print(
-                #     len(self.agent.shared_replay_buffers[task_id]), '\n')
-                # if len(self.agent.shared_replay_buffers[task_id]) > 0:
-                #     print(
-                #         self.agent.shared_replay_buffers[task_id].tensors[1], '\n')
+                    X, Y)
 
     def get_query_global_labels(self, y):
         ret = {}
@@ -649,7 +672,7 @@ class RecvDataAgent(Agent):
                 y_t, [task] * len(y_t), self.dataset.class_sequence, self.dataset.num_classes_per_task)
         return ret
 
-    def prepare_communicate(self, task_id, end_epoch, communication_round, final=False,):
+    def prepare_communicate(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False,):
         if communication_round % 2 == 0:
             self.incoming_query, self.incoming_data, self.incoming_extra_info, self.incoming_query_extra_info = {}, {}, {}, {}
         if task_id < self.agent.net.num_init_tasks - 1:
@@ -658,7 +681,8 @@ class RecvDataAgent(Agent):
             mode = "all"
             if self.is_modular:
                 component_update_freq = self.train_kwargs['component_update_freq']
-                has_comp_update = component_update_freq is not None and end_epoch % component_update_freq == 0 and end_epoch != 0
+                next_end_epoch = min(end_epoch + comm_freq, num_epochs)
+                has_comp_update = component_update_freq is not None and next_end_epoch % component_update_freq == 0
                 if not has_comp_update:
                     mode = "current"
             X, y = self.compute_query(task_id, mode=mode)

@@ -49,6 +49,9 @@ class Learner():
         self.record = Record(os.path.join(self.save_dir, "record.csv"))
         self.dynamic_record = Record(os.path.join(
             self.save_dir, "add_modules_record.csv"))
+        self.sharing_data_record = Record(os.path.join(
+            self.save_dir, "sharing_data_record.csv"))
+
         self.writer = SummaryWriter(
             log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
         self.init_trainloaders = None
@@ -75,6 +78,8 @@ class Learner():
         self.record = Record(os.path.join(self.save_dir, "record.csv"))
         self.dynamic_record = Record(os.path.join(
             self.save_dir, "add_modules_record.csv"))
+        self.sharing_data_record = Record(os.path.join(
+            self.save_dir, "sharing_data_record.csv"))
         self.writer = SummaryWriter(
             log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
 
@@ -85,6 +90,19 @@ class Learner():
     #     return self.train_transform(X)
         # morally correct way but it's too slow
         # return torch.stack([self.train_transform(x) for x in X])
+
+    def record_shared_data_stats(self, train_task_id, epoch):
+        for task_id, replay in sorted(self.shared_replay_buffers.items()):
+            self.sharing_data_record.write(
+                {
+                    'train_task': train_task_id,
+                    'task_id': task_id,
+                    'epoch': epoch,
+                    'num_samples': len(replay),
+                }
+            )
+
+        self.sharing_data_record.save()
 
     def make_shared_memory_loaders(self, batch_size=32):
         self.shared_memory_loaders = {}
@@ -352,6 +370,8 @@ class Learner():
             }, path)
             record.save()
 
+        self.record_shared_data_stats(task_id, epoch)
+
     def update_multitask_cost(self, loader, task_id):
         raise NotImplementedError(
             'Update update_multitask is algorithm specific')
@@ -513,38 +533,6 @@ class CompositionalDynamicLearner(CompositionalLearner):
         self.dynamic_record.save()
 
         return performances, losses
-
-    # def conditionally_add_module(self, valloader, task_id):
-    #     test_loss = self.test_loss
-    #     test_acc = self.test_acc
-
-    #     self.test_loss, self.test_acc = self.evaluate({task_id: valloader})
-    #     update_loss, no_update_loss = self.test_loss[task_id]
-    #     update_acc, no_update_acc = self.test_acc[task_id]
-    #     logging.info(
-    #         'W/update: {}, WO/update: {}'.format(update_acc, no_update_acc))
-    #     if no_update_acc == 0 or (update_acc - no_update_acc) / no_update_acc > self.improvement_threshold:
-    #         add_new_module = True
-    #         logging.info('Keeping new module. Total: {}'.format(
-    #             self.net.num_components))
-    #     else:
-    #         add_new_module = False
-    #         self.net.remove_tmp_module()
-    #         logging.info('Not keeping new module. Total: {}'.format(
-    #             self.net.num_components))
-
-    #     self.dynamic_record.write(
-    #         {
-    #             'task_id': task_id,
-    #             'update_acc': update_acc,
-    #             'no_update_acc': no_update_acc,
-    #             'num_components': self.net.num_components,
-    #             'add_new_module': add_new_module,
-    #         }
-    #     )
-    #     self.dynamic_record.save()
-    #     self.test_loss = test_loss
-    #     self.test_acc = test_acc
 
     def evaluate(self, testloaders, eval_no_update=True, mode=None):
         was_training = self.net.training

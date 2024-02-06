@@ -127,6 +127,12 @@ class Agent:
 
         return X_ood_filtered, y_ood_filtered, X_iid_filtered, y_iid_filtered
 
+    def get_shared_replay_buffers(self):
+        return self.agent.shared_replay_buffers
+
+    def get_replay_buffers(self):
+        return self.agent.replay_buffers
+
     def get_T(self):
         return self.agent.T
 
@@ -471,19 +477,21 @@ class Fleet:
                 print('>>> COMM AT EPOCH', end_epoch)
                 self.communicate(task_id if not final else task_id + 1,
                                  end_epoch,
+                                 comm_freq,
+                                 num_epochs,
                                  start_com_round=(
                                      start_epoch // comm_freq) * self.num_coms_per_round,
                                  final=final)
 
-    def communicate(self, task_id, end_epoch, start_com_round=0, final=False):
+    def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False):
         for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
             self.communicate_round(
-                task_id, end_epoch, communication_round, final=final)
+                task_id, end_epoch, comm_freq, num_epochs, communication_round, final=final)
 
-    def communicate_round(self, task_id, end_epoch, communication_round, final=False):
+    def communicate_round(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False):
         for agent in self.agents:
             agent.prepare_communicate(
-                task_id, end_epoch, communication_round, final)
+                task_id, end_epoch, comm_freq, num_epochs, communication_round, final)
         for agent in self.agents:
             agent.communicate(task_id, communication_round, final)
         for agent in self.agents:
@@ -594,15 +602,19 @@ class ParallelFleet:
                 print('comm at epoch', end_epoch)
                 self.communicate(task_id if not final else task_id + 1,
                                  end_epoch,
+                                 comm_freq,
+                                 num_epochs,
                                  start_com_round=(
                                      start_epoch // comm_freq) * self.num_coms_per_round,
                                  final=final)
 
-    def communicate(self, task_id, end_epoch, start_com_round=0, final=False):
+    def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False):
         for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
             # parallelize preprocessing to prepare neccessary data
             # before the communication round.
-            ray.get([agent.prepare_communicate.remote(task_id, end_epoch, communication_round, final)
+            ray.get([agent.prepare_communicate.remote(task_id, end_epoch, comm_freq,
+                                                      num_epochs,
+                                                      communication_round, final)
                     for agent in self.agents])
             # NOTE: HACK: communicate in done in sequence to avoid dysnc issues,
             # if the sender sends something to the receiver but the receiver is not paying

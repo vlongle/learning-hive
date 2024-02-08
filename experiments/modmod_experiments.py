@@ -15,8 +15,8 @@ parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
 # parser.add_argument('--seed', type=int, default=0,
 #                     help='Seed for the experiment.')
-# parser.add_argument('--dataset', type=str, default="mnist", choices=[
-#                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
+parser.add_argument('--dataset', type=str, default="mnist", choices=[
+                    "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
 parser.add_argument('--sync_base', type=bool, default=False,
                     help='Sync base for the experiment.')
 parser.add_argument('--opt_with_random', type=bool, default=False,
@@ -36,7 +36,7 @@ if __name__ == "__main__":
     config = {
         "algo": "modular",
         "agent.batch_size": batch_size,
-        "seed": 0,
+        "seed": [0, 1, 2, 3],
         "parallel": True,
         "num_agents": 8,
         "dataset": "mnist",
@@ -57,7 +57,7 @@ if __name__ == "__main__":
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
         # "dataset": ["mnist", "kmnist", "fashionmnist"],
-        "dataset": "mnist",
+        "dataset": args.dataset,
         "sharing_strategy": "modmod",
         "sharing_strategy.comm_freq": num_epochs,  # once per task
         "sharing_strategy.opt_with_random": args.opt_with_random,

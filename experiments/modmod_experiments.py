@@ -6,15 +6,6 @@ Author: Long Le (vlongle@seas.upenn.edu)
 
 Copyright (c) 2023 Long Le
 '''
-'''
-File: /experiments.py
-Project: experiments
-Created Date: Thursday March 16th 2023
-Author: Long Le (vlongle@seas.upenn.edu)
-
-Copyright (c) 2023 Long Le
-'''
-
 
 import time
 import datetime
@@ -26,6 +17,10 @@ parser = argparse.ArgumentParser(
 #                     help='Seed for the experiment.')
 # parser.add_argument('--dataset', type=str, default="mnist", choices=[
 #                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
+parser.add_argument('--sync_base', type=bool, default=False,
+                    help='Sync base for the experiment.')
+parser.add_argument('--opt_with_random', type=bool, default=False,
+                    help='Opt with random for the experiment.')
 args = parser.parse_args()
 
 
@@ -41,7 +36,7 @@ if __name__ == "__main__":
     config = {
         "algo": "modular",
         "agent.batch_size": batch_size,
-        "seed": range(8),
+        "seed": 0,
         "parallel": True,
         "num_agents": 8,
         "dataset": "mnist",
@@ -61,8 +56,13 @@ if __name__ == "__main__":
         "train.save_freq": 10,
         "agent.use_contrastive": True,
         "agent.memory_size": 32,
-        "dataset": ["mnist", "kmnist", "fashionmnist"],
-        "root_save_dir": f"experiment_results/modmod_test",
+        # "dataset": ["mnist", "kmnist", "fashionmnist"],
+        "dataset": "mnist",
+        "sharing_strategy": "modmod",
+        "sharing_strategy.comm_freq": num_epochs,  # once per task
+        "sharing_strategy.opt_with_random": args.opt_with_random,
+        "sharing_strategy.sync_base": args.sync_base,
+        "root_save_dir": f"experiment_results/modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}",
     }
 
     # # # === CNN experiments: CIFAR100 ===

@@ -13,14 +13,16 @@ from shell.fleet.fleet import Fleet, ParallelFleet
 import networkx as nx
 from shell.fleet.utils.model_sharing_utils import exclude_model
 import torch
+import shutil
 
 
-class GradFleet(Fleet):
+class SyncBaseFleet(Fleet):
     """
     TODO: rename GradFleet to something else.
     This class is used to train agents on the same initial tasks, and then proceed with individual local training.
     This is used for both sharing weights (grad) and modules (mod)
     """
+
     def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs,
                  fake_dataset):
         # NOTE: We create a fake agent to jointly train all agents in the same initial tasks. Then,
@@ -30,15 +32,14 @@ class GradFleet(Fleet):
         tmp_agent_kwargs["fl_strategy"] = None
 
         self.jointly_trained_agent = AgentCls(69420, seed, fake_dataset, NetCls, LearnerCls,
-                                   deepcopy(net_kwargs), deepcopy(
-                                       tmp_agent_kwargs),
-                                   deepcopy(train_kwargs), deepcopy(sharing_strategy))
+                                              deepcopy(net_kwargs), deepcopy(
+                                                  tmp_agent_kwargs),
+                                              deepcopy(train_kwargs), deepcopy(sharing_strategy))
         self.num_init_tasks = net_kwargs["num_init_tasks"]
         super().__init__(graph, seed, datasets, sharing_strategy, AgentCls,
                          NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
-        
-        self.uniformize_init_tasks()
 
+        self.uniformize_init_tasks()
 
     def uniformize_init_tasks(self, dataset=None):
         """
@@ -48,8 +49,6 @@ class GradFleet(Fleet):
         for agent in self.agents:
             for task in range(self.num_init_tasks):
                 agent.replace_dataset(dataset, task)
- 
-
 
     def train_and_comm(self, task_id):
         if task_id < self.num_init_tasks:
@@ -59,9 +58,9 @@ class GradFleet(Fleet):
             if task_id == self.num_init_tasks:
                 # now that we are done with joint training, we can delete the jointly_trained_agent
                 self.copy_from_jointly_trained_agent()
-                del self.jointly_trained_agent
-            return super(GradFleet, self).train_and_comm(task_id)
-    
+                self.delete_jointly_trained_agent()
+            return super(SyncBaseFleet, self).train_and_comm(task_id)
+
     def copy_from_jointly_trained_agent(self, net=None, dataset=None,
                                         record=None):
         """
@@ -81,23 +80,29 @@ class GradFleet(Fleet):
 
         for task_id in range(self.num_init_tasks):
             train_loader = (
-            torch.utils.data.DataLoader(dataset.trainset[task_id],
-                                        batch_size=64,
-                                        shuffle=True,
-                                        num_workers=4,
-                                        pin_memory=True,
-                                        ))
+                torch.utils.data.DataLoader(dataset.trainset[task_id],
+                                            batch_size=64,
+                                            shuffle=True,
+                                            num_workers=4,
+                                            pin_memory=True,
+                                            ))
 
             for node in self.agents:
                 node.replace_dataset(train_loader, task_id)
 
-
         for node in self.agents:
             node.replace_record(node, record)
 
+    def delete_jointly_trained_agent(self):
+        # delete the self.jointly_trained_agent.save_dir folder
+        # to prevent the statististics of this fake agent from being saved
+        save_dir = self.jointly_trained_agent.get_save_dir()
+        # delete the save_dir
+        shutil.rmtree(save_dir)
+        del self.jointly_trained_agent
 
 
-class ParallelGradFleet(ParallelFleet):
+class ParallelSyncBaseFleet(ParallelFleet):
     def __init__(self, graph: nx.Graph, seed, datasets, sharing_strategy, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs,
                  fake_dataset):
         tmp_agent_kwargs = deepcopy(agent_kwargs)
@@ -105,12 +110,21 @@ class ParallelGradFleet(ParallelFleet):
         self.fake_dataset = fake_dataset
 
         self.jointly_trained_agent = AgentCls.options(num_gpus=1).remote(69420, seed, fake_dataset, NetCls, LearnerCls,
-                                   deepcopy(net_kwargs), deepcopy(
-                                       tmp_agent_kwargs),
-                                   deepcopy(train_kwargs), deepcopy(sharing_strategy))
+                                                                         deepcopy(net_kwargs), deepcopy(
+                                                                             tmp_agent_kwargs),
+                                                                         deepcopy(train_kwargs), deepcopy(sharing_strategy))
         self.num_init_tasks = net_kwargs["num_init_tasks"]
         self.args = (graph, seed, datasets, sharing_strategy, AgentCls,
-                         NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
+                     NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs)
+
+    def delete_jointly_trained_agent(self):
+        # delete the self.jointly_trained_agent.save_dir folder
+        # to prevent the statististics of this fake agent from being saved
+        save_dir = self.jointly_trained_agent.get_save_dir()
+        # delete the save_dir
+        shutil.rmtree(save_dir)
+        ray.kill(self.jointly_trained_agent)
+        del self.jointly_trained_agent
 
     def train_and_comm(self, task_id):
         if task_id < self.num_init_tasks:
@@ -119,14 +133,16 @@ class ParallelGradFleet(ParallelFleet):
         else:
             if task_id == self.num_init_tasks:
                 net = ray.get(self.jointly_trained_agent.get_model.remote())
-                record = ray.get(self.jointly_trained_agent.get_record.remote())
+                record = ray.get(
+                    self.jointly_trained_agent.get_record.remote())
                 # now that we are done with joint training, we can delete the jointly_trained_agent
                 # to free up GPU for the fleet
-                del self.jointly_trained_agent        
                 super().__init__(*self.args)
                 self.uniformize_init_tasks(self.fake_dataset)
-                self.copy_from_jointly_trained_agent(net, self.fake_dataset, record)
-            return super(ParallelGradFleet, self).train_and_comm(task_id)
+                self.copy_from_jointly_trained_agent(
+                    net, self.fake_dataset, record)
+                self.delete_jointly_trained_agent()
+            return super(ParallelSyncBaseFleet, self).train_and_comm(task_id)
 
     def copy_from_jointly_trained_agent(self, net, dataset, record):
         ray.get([
@@ -135,15 +151,15 @@ class ParallelGradFleet(ParallelFleet):
 
         for task_id in range(self.num_init_tasks):
             train_loader = (
-            torch.utils.data.DataLoader(dataset.trainset[task_id],
-                                        batch_size=64,
-                                        shuffle=True,
-                                        num_workers=4,
-                                        pin_memory=True,
-                                        ))
+                torch.utils.data.DataLoader(dataset.trainset[task_id],
+                                            batch_size=64,
+                                            shuffle=True,
+                                            num_workers=4,
+                                            pin_memory=True,
+                                            ))
             ray.get([
                 agent.replace_replay.remote(train_loader, task_id) for agent in self.agents
-            ]) 
+            ])
 
         ray.get([
             agent.replace_record.remote(record) for agent in self.agents
@@ -151,5 +167,5 @@ class ParallelGradFleet(ParallelFleet):
 
     def uniformize_init_tasks(self, dataset):
         for agent in self.agents:
-                for task in range(self.num_init_tasks):
-                    ray.get(agent.replace_dataset.remote(deepcopy(dataset), task))
+            for task in range(self.num_init_tasks):
+                ray.get(agent.replace_dataset.remote(deepcopy(dataset), task))

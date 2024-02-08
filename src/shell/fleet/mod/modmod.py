@@ -12,12 +12,34 @@ from shell.fleet.fleet import Agent
 from shell.fleet.data.data_utilize import compute_tasks_sim
 import ray
 
+# NOTE: HACK: we ignore sharing in the first num_init_tasks + 1 tasks
+# because there's no dynamically added module yet in these. Although
+# for sync=False, each agent trained their base modules separately. In
+# princeiple, we could have pick the module that is most activated
+# for a given task to send (e.g., by looking at the softmax structure)
+
 
 class ModModAgent(Agent):
     def compute_task_similarity(self, neighbor_task, task_id):
         candidate_tasks = [self.dataset.class_sequence[t *
                                                        self.dataset.num_classes_per_task: (t+1) * self.dataset.num_classes_per_task] for t in range(task_id + 1)]
         return [compute_tasks_sim(task, neighbor_task) for task in candidate_tasks]
+
+    def train(self, task_id, start_epoch=0, communication_frequency=None,
+              final=True, **kwargs):
+
+        module_list = self.train_kwargs.get("module_list", [])
+        if self.sharing_strategy.opt_with_random:
+            # optimize the received module along with a random module
+            # as well
+            num_candidate_modules = len(module_list)
+        else:
+            num_candidate_modules = len(module_list) + 1
+
+        if len(module_list) == 0:
+            num_candidate_modules = 1  # at the very least, we need to consider a random module
+
+        return super().train(task_id, start_epoch, communication_frequency, final, num_candidate_modules=num_candidate_modules, **kwargs)
 
     def select_module(self, neighbor_id, task_id):
         outgoing_modules = {}
@@ -57,12 +79,14 @@ class ModModAgent(Agent):
 
     def prepare_communicate(self,  task_id, end_epoch, comm_freq, num_epochs, communication_round,
                             final=None):
+        if task_id < self.net.num_init_tasks + 1:
+            return
         if communication_round % 2 == 1:
             self.outgoing_modules = {}
             self.incoming_modules = {}
-            for neighbor in self.neighbors:
-                self.outgoing_modules[neighbor.node_id] = self.select_module(
-                    neighbor.node_id, task_id)
+            for neighbor_id, neighbor in self.neighbors.items():
+                self.outgoing_modules[neighbor_id] = self.select_module(
+                    neighbor_id, task_id)
         else:
             self.query_tasks = {}
 
@@ -73,39 +97,61 @@ class ModModAgent(Agent):
             self.incoming_modules[sender_id] = data
 
     def communicate(self, task_id, communication_round, final=None):
+        if task_id < self.net.num_init_tasks + 1:
+            return
         if communication_round % 2 == 0:
             self.send_query_task(task_id)
         else:
-            for neighbor in self.neighbors:
+            for neighbor_id, neighbor in self.neighbors.items():
                 neighbor.receive(
-                    self.node_id, self.outgoing_modules[neighbor.node_id], "module")
+                    self.node_id, self.outgoing_modules[neighbor_id], "module")
 
     def process_communicate(self, task_id, communication_round, final=None):
+        if task_id < self.net.num_init_tasks + 1:
+            return
         if communication_round % 2 == 1:
             module_list = []
-            for neighbor in self.neighbors:
-                module_list += self.incoming_modules[neighbor.node_id]
+            for neighbor_id in self.neighbors:
+                module_list += self.incoming_modules[neighbor_id]
+
+            if len(module_list) == 0:
+                self.train_kwargs["module_list"] = []
+                return
 
             # module_list is a list of (t, sim, module)
             # find the most similar task based on the similarity score. Break ties by the task id
             # (highest task id wins)
             best_match = max(module_list, key=lambda x: (
                 x[1], x[0]))
-            self.train_kwargs["module_list"] = best_match[-1]
+            self.train_kwargs["module_list"] = [best_match[-1]]
         else:
             self.task_sims = {}
-            for neighbor in self.neighbors:
-                neighbor_task = self.query_tasks[neighbor.node_id]
-                self.task_sims[neighbor.node_id] = self.compute_task_similarity(
+            for neighbor_id in self.neighbors:
+                neighbor_task = self.query_tasks[neighbor_id]
+                self.task_sims[neighbor_id] = self.compute_task_similarity(
                     neighbor_task, task_id)
 
     def send_query_task(self, task_id):
         task = self.dataset.class_sequence[task_id *
                                            self.dataset.num_classes_per_task: (task_id + 1) * self.dataset.num_classes_per_task]
-        for neighbor in self.neighbors:
+        for neighbor in self.neighbors.values():
             neighbor.receive(self.node_id, task, "query_task")
 
 
 @ray.remote
 class ParallelModModAgent(ModModAgent):
-    pass
+    def send_query_task(self, task_id):
+        task = self.dataset.class_sequence[task_id *
+                                           self.dataset.num_classes_per_task: (task_id + 1) * self.dataset.num_classes_per_task]
+        for neighbor in self.neighbors.values():
+            ray.get(neighbor.receive.remote(self.node_id, task, "query_task"))
+
+    def communicate(self, task_id, communication_round, final=None):
+        if task_id < self.net.num_init_tasks + 1:
+            return
+        if communication_round % 2 == 0:
+            self.send_query_task(task_id)
+        else:
+            for neighbor_id, neighbor in self.neighbors.items():
+                ray.get(neighbor.receive.remote(
+                    self.node_id, self.outgoing_modules[neighbor_id], "module"))

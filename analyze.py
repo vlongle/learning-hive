@@ -25,13 +25,13 @@ For cifar100, epochs=500 is stored in
 # result_dir = "experiment_results/vanilla"
 # result_dir = "experiment_results/vanilla_small"
 # result_dir = "cifar_longer_results"
-# result_dir = "experiment_results/vanilla_fix_bug_compute_loss_encodev2"
-# result_dir = "experiment_results/test_lambda_5_num_epochs_150"
-import os
-import re
-from shell.utils.metric import Metric
 from  shell.utils.record import Record
-result_dir = "experiment_results/test_lambda_5.0_num_epochs_300_delta_1.0"
+from shell.utils.metric import Metric
+import re
+import os
+result_dir = "experiment_results/modmod_test_sync_base_False_opt_with_random_True"
+# result_dir = "experiment_results/test_lambda_5_num_epochs_150"
+# result_dir = "experiment_results/test_lambda_5.0_num_epochs_300_delta_1.0"
 # result_dir = "experiment_results/vanilla_ood_separation_loss"
 # result_dir = "experiment_results/test"
 # result_dir = "experiment_results/vanilla_ood_separation_loss"

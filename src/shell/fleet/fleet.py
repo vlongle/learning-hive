@@ -456,8 +456,8 @@ class Fleet:
         # adding neighbors
         for agent in self.agents:
             agent_id = agent.get_node_id()
-            neighbors = [self.agents[neighbor_id]
-                         for neighbor_id in self.graph.neighbors(agent_id)]
+            neighbors = {self.agents[neighbor_id].get_node_id(): self.agents[neighbor_id]
+                         for neighbor_id in self.graph.neighbors(agent_id)}
             agent.add_neighbors(neighbors)
 
     def train_and_comm(self, task_id):
@@ -473,18 +473,28 @@ class Fleet:
         num_coms = math.ceil(num_epochs / comm_freq)
 
         for start_epoch in range(0, num_epochs, comm_freq):
+            end_epoch = min(start_epoch + comm_freq, num_epochs)
+            final = start_epoch + comm_freq >= num_epochs
+            if self.sharing_strategy.pre_or_post_comm == "pre" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
+                # print('>>> COMM AT EPOCH', end_epoch)
+                self.communicate(task_id,
+                                 end_epoch,
+                                 comm_freq,
+                                 num_epochs,
+                                 start_com_round=(
+                                     start_epoch // comm_freq) * self.num_coms_per_round,
+                                 final=final)
+
             for agent in self.agents:
                 # only remove modules for the last epoch
-                final = start_epoch + comm_freq >= num_epochs
                 agent.set_num_coms(task_id, num_coms)
                 agent.train(task_id, start_epoch, comm_freq, final=final)
 
-            end_epoch = min(start_epoch + comm_freq, num_epochs)
-            print('>> TRAINING FROM', start_epoch,
-                  'TO', end_epoch)
-            if comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                print('>>> COMM AT EPOCH', end_epoch)
-                self.communicate(task_id if not final else task_id + 1,
+            # print('>> TRAINING FROM', start_epoch,
+            #       'TO', end_epoch)
+            if self.sharing_strategy.pre_or_post_comm == "post" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
+                # print('>>> COMM AT EPOCH', end_epoch)
+                self.communicate(task_id,
                                  end_epoch,
                                  comm_freq,
                                  num_epochs,
@@ -600,16 +610,27 @@ class ParallelFleet:
 
         for start_epoch in range(0, num_epochs, comm_freq):
             final = start_epoch + comm_freq >= num_epochs
+            end_epoch = min(start_epoch + comm_freq, num_epochs)
+
+            if self.sharing_strategy.pre_or_post_comm == "pre" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
+                # print('comm at epoch', end_epoch)
+                self.communicate(task_id,
+                                 end_epoch,
+                                 comm_freq,
+                                 num_epochs,
+                                 start_com_round=(
+                                     start_epoch // comm_freq) * self.num_coms_per_round,
+                                 final=final)
+
             ray.get([agent.set_num_coms.remote(
                 task_id, num_coms) for agent in self.agents])
             ray.get([agent.train.remote(task_id, start_epoch, comm_freq,
                                         final=final) for agent in self.agents])
 
-            end_epoch = min(start_epoch + comm_freq, num_epochs)
-            print('training from', start_epoch, 'to', end_epoch)
-            if comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                print('comm at epoch', end_epoch)
-                self.communicate(task_id if not final else task_id + 1,
+            # print('training from', start_epoch, 'to', end_epoch)
+            if self.sharing_strategy.pre_or_post_comm == "post" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
+                # print('comm at epoch', end_epoch)
+                self.communicate(task_id,
                                  end_epoch,
                                  comm_freq,
                                  num_epochs,

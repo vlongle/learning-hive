@@ -505,6 +505,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
         best_candidate_idx = max(performances, key=performances.get)
         best_improvement = performances[best_candidate_idx]
 
+        num_candidate_modules = len(self.net.candidate_indices)
+
         # Check if the improvement is greater than the threshold, and if not, remove all candidates
         if best_improvement <= self.improvement_threshold:
             self.net.remove_tmp_modulev2(self.net.candidate_indices)
@@ -524,6 +526,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
             {
                 'task_id': task_id,
                 'best_candidate_idx': best_candidate_idx,
+                'num_candidates': num_candidate_modules,
                 'best_improvement': best_improvement,
                 'num_components': self.net.num_components,
                 'add_new_module': add_new_module,

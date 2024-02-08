@@ -332,6 +332,11 @@ class Agent:
         df = pd.read_csv(add_modules_record)
         return df[df["task_id"] == task_id]["num_components"].sum()
 
+    def load_records(self):
+        add_modules_record = os.path.join(
+            self.agent.save_dir, "add_modules_record.csv")
+        self.agent.dynamic_record.df = pd.read_csv(add_modules_record)
+
     def load_model_from_ckpoint(self, task_path=None, task_id=None):
         # path = {something}/agent_{node_id}/task_{task_id}
         if task_path is None:
@@ -420,6 +425,10 @@ class Fleet:
             task_ids = [task_ids] * len(self.agents)
         for agent, path, task_id in zip(self.agents, paths, task_ids):
             agent.load_model_from_ckpoint(task_path=path, task_id=task_id)
+
+    def load_records(self):
+        for agent in self.agents:
+            agent.load_records()
 
     def update_replay_buffers(self, task_id):
         for agent in self.agents:

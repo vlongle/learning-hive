@@ -427,3 +427,10 @@ def filter_dataset_by_label(dataset, target_label):
     labels = dataset.tensors[1]
     mask = labels == target_label
     return torch.utils.data.TensorDataset(*[t[mask] for t in dataset.tensors])
+
+
+def compute_tasks_sim(task1, task2):
+    assert len(task1) == len(task2)
+    union = len(set(task1) | set(task2))
+    intersection = len(set(task1) & set(task2))
+    return intersection / union if union > 0 else 0

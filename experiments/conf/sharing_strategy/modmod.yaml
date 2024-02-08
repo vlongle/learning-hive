@@ -1,0 +1,3 @@
+name: modmod
+num_coms_per_round: 2
+module_selection: gt_most_similar

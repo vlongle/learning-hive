@@ -10,3 +10,4 @@ src/shell/datasets/*/
 *.csv
 *.gz
 **engineering/
+**slurm**

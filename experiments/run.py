@@ -11,6 +11,7 @@ import hydra
 from omegaconf import DictConfig
 
 from shell.fleet.utils.fleet_utils import get_fleet, get_agent_cls
+import os
 
 import time
 import datetime
@@ -27,18 +28,25 @@ def main(cfg: DictConfig) -> None:
 
     graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg = setup_experiment(
         cfg)
+    
+    # check if cfg.root_save_dir already exists
+    if os.path.exists(cfg.root_save_dir):
+        print(cfg.root_save_dir, "already exists")
+    else:
+        print(cfg.root_save_dir, "DOES NOT exists")
 
-    FleetCls = get_fleet(cfg.sharing_strategy, cfg.parallel)
 
-    fleet = FleetCls(graph, cfg.seed, datasets, cfg.sharing_strategy, AgentCls, NetCls=NetCls,
-                     LearnerCls=LearnerCls, net_kwargs=net_cfg, agent_kwargs=agent_cfg,
-                     train_kwargs=train_cfg, **fleet_additional_cfg)
+    # FleetCls = get_fleet(cfg.sharing_strategy, cfg.parallel)
 
-    for task_id in range(cfg.dataset.num_tasks):
-        fleet.train_and_comm(task_id)
+    # fleet = FleetCls(graph, cfg.seed, datasets, cfg.sharing_strategy, AgentCls, NetCls=NetCls,
+    #                  LearnerCls=LearnerCls, net_kwargs=net_cfg, agent_kwargs=agent_cfg,
+    #                  train_kwargs=train_cfg, **fleet_additional_cfg)
 
-    end = time.time()
-    logging.info(f"Run took {datetime.timedelta(seconds=end-start)}")
+    # for task_id in range(cfg.dataset.num_tasks):
+    #     fleet.train_and_comm(task_id)
+
+    # end = time.time()
+    # logging.info(f"Run took {datetime.timedelta(seconds=end-start)}")
 
 
 if __name__ == "__main__":

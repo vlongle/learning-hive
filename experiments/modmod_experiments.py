@@ -11,16 +11,27 @@ import time
 import datetime
 from shell.utils.experiment_utils import run_experiment
 import argparse
+
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
+
 parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
 # parser.add_argument('--seed', type=int, default=0,
 #                     help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
-parser.add_argument('--sync_base', type=bool, default=False,
-                    help='Sync base for the experiment.')
-parser.add_argument('--opt_with_random', type=bool, default=False,
-                    help='Opt with random for the experiment.')
+parser.add_argument('--sync_base', type=str2bool, default=False)
+parser.add_argument('--opt_with_random', type=str2bool, default=False)
 args = parser.parse_args()
 
 
@@ -94,6 +105,7 @@ if __name__ == "__main__":
     #     "root_save_dir": "experiment_results/vanilla_cifar",
     # }
 
+    # print('args', args, type(args.sync_base), type(args.opt_with_random))
     run_experiment(config, strict=False)
     end = time.time()
     print(f"Experiment runs took {datetime.timedelta(seconds=end-start)}")

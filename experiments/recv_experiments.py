@@ -22,8 +22,10 @@ from shell.utils.experiment_utils import run_experiment
 import argparse
 parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
-parser.add_argument('--seed', type=int, default=0,
-                    help='Seed for the experiment.')
+# parser.add_argument('--seed', type=int, default=0,
+#                     help='Seed for the experiment.')
+parser.add_argument('--algo', type=str, default="modular", choices=[
+                    "modular", "monolithic"], help='Algorithm for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
 parser.add_argument('--prefilter_strategy', type=str, default="oracle", choices=[
@@ -32,27 +34,35 @@ parser.add_argument('--scorer', type=str, default="cross_entropy", choices=[
     'cross_entropy', 'least_confidence', 'margin', 'entropy', 'random'], help='Scorer for the experiment.')
 parser.add_argument('--add_data_prefilter_strategy', type=str, default="both", choices=[
     'task_neighbors_prefilter', 'global_y_prefilter', 'both'], help='Add data prefilter strategy for the experiment.')
-parser.add_argument('--assign_labels_strategy', type=str, default="groundtruth", choices=[
+parser.add_argument('--assign_labels_strategy', type=str, default="same_as_query", choices=[
     'groundtruth', 'same_as_query'], help='Assign labels strategy for the experiment.')
-
+parser.add_argument('--num_data_neighbors', type=int, default=5,
+                    help='Number of data neighbors for the experiment.')
+parser.add_argument('--num_queries', type=int, default=20,
+                    help='Number of queries for the experiment.')
+parser.add_argument('--num_comms_per_task', type=int, default=5,
+                    help='Number of communications per task for the experiment.')
 args = parser.parse_args()
 
 
 if __name__ == "__main__":
     start = time.time()
 
-    seed = args.seed
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64
-    num_epochs = 100
+    num_epochs = 10
     memory_size = 32
 
+    query_task_mode = 'current' if args.algo == 'modular' else 'all'
+    comm_freq = num_epochs // (args.num_comms_per_task + 1)
+
     config = {
-        "algo": "modular",
+        "algo": args.algo,
         "agent.batch_size": batch_size,
-        "seed": seed,
+        # "seed": args.seed,
+        "seed": [0, 1, 2, 3, 4, 5, 6, 7],
         "parallel": True,
         "num_agents": 8,
         "dataset": "mnist",
@@ -74,15 +84,17 @@ if __name__ == "__main__":
         "agent.memory_size": memory_size,
         "dataset": args.dataset,
         "agent.use_ood_separation_loss": False,
-        "root_save_dir": "",
+        "root_save_dir": f"experiment_results/recv_query_task_mode_{query_task_mode}",
         "sharing_strategy": "recv_data",
-
         "sharing_strategy.shared_memory_size": memory_size,
-
-        'num_data_neighbors': 5,
-        'num_filter_neighbors': 5,
-        'num_coms_per_round': 2,
-        "query_score_threshold": 0.0,
+        "sharing_strategy.query_task_mode": query_task_mode,
+        "sharing_strategy.num_data_neighbors": args.num_data_neighbors,
+        "sharing_strategy.num_queries": args.num_queries,
+        "sharing_strategy.comm_freq": comm_freq,
+        "sharing_strategy.prefilter_strategy": args.prefilter_strategy,
+        "sharing_strategy.add_data_prefilter_strategy": args.add_data_prefilter_strategy,
+        "sharing_strategy.assign_labels_strategy": args.assign_labels_strategy,
+        "sharing_strategy.scorer": args.scorer,
     }
 
     run_experiment(config, strict=False)

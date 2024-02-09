@@ -12,16 +12,16 @@ import datetime
 from shell.utils.experiment_utils import run_experiment
 import argparse
 
+
 def str2bool(v):
     if isinstance(v, bool):
-       return v
+        return v
     if v.lower() in ('yes', 'true', 't', 'y', '1'):
         return True
     elif v.lower() in ('no', 'false', 'f', 'n', '0'):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
-
 
 
 parser = argparse.ArgumentParser(
@@ -74,6 +74,7 @@ if __name__ == "__main__":
         "sharing_strategy.opt_with_random": args.opt_with_random,
         "sharing_strategy.sync_base": args.sync_base,
         "root_save_dir": f"experiment_results/modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}",
+        "overwrite": False,
     }
 
     # # # === CNN experiments: CIFAR100 ===

@@ -96,7 +96,7 @@ def setup_experiment(cfg: DictConfig):
     REQUIRED_JOINT_TRAINING_STRAT = ["fedprox", "gradient"]
 
     # if cfg.sharing_strategy.name in REQUIRED_JOINT_TRAINING_STRAT:
-    if cfg.sharing_strategy.sync_base:
+    if getattr(cfg.sharing_strategy, 'sync_base', False):
         fleet_additional_cfg['fake_dataset'] = get_dataset(
             **process_dataset_cfg(cfg))
     return graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg
@@ -211,6 +211,10 @@ def get_save_dir(experiment_folder, experiment_name, dataset, algo, num_trains_p
     job_name = get_job_name(
         dataset, algo, num_trains_per_class, use_contrastive)
     return f"{root_save_dir}/{job_name}/{dataset}/{algo}/seed_{seed}"
+
+
+def get_save_dirv2(root_save_dir, job_name, dataset_name, algo, seed):
+    return f"{root_save_dir}/{job_name}/{dataset_name}/{algo}/seed_{seed}"
 
 
 def get_cfg(save_dir):

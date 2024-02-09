@@ -678,13 +678,16 @@ class RecvDataAgent(Agent):
         if task_id < self.agent.net.num_init_tasks - 1:
             return
         if communication_round % 2 == 0:
-            mode = "all"
-            if self.is_modular:
-                component_update_freq = self.train_kwargs['component_update_freq']
-                next_end_epoch = min(end_epoch + comm_freq, num_epochs)
-                has_comp_update = component_update_freq is not None and next_end_epoch % component_update_freq == 0
-                if not has_comp_update:
-                    mode = "current"
+            if 'query_task_mode' not in self.sharing_strategy:
+                mode = "all"
+                if self.is_modular:
+                    component_update_freq = self.train_kwargs['component_update_freq']
+                    next_end_epoch = min(end_epoch + comm_freq, num_epochs)
+                    has_comp_update = component_update_freq is not None and next_end_epoch % component_update_freq == 0
+                    if not has_comp_update:
+                        mode = "current"
+            else:
+                mode = self.sharing_strategy['query_task_mode']
             X, y = self.compute_query(task_id, mode=mode)
             self.query = X
             self.query_y = y
@@ -704,7 +707,7 @@ class RecvDataAgent(Agent):
             return
         if communication_round % 2 == 0:
             # send query to neighbors
-            for neighbor in self.neighbors:
+            for neighbor in self.neighbors.values():
                 neighbor.receive(self.node_id, self.query, "query")
                 neighbor.receive(
                     self.node_id, self.query_extra_info, "query_extra_info")
@@ -713,11 +716,11 @@ class RecvDataAgent(Agent):
             # for requester in self.incoming_query:
             #     self.neighbors[requester].receive(
             #         self.node_id, self.data[requester], "data")
-            for neighbor in self.neighbors:
+            for neighbor_id, neighbor in self.neighbors.items():
                 neighbor.receive(
-                    self.node_id, self.data[neighbor.node_id], "data")
+                    self.node_id, self.data[neighbor_id], "data")
                 neighbor.receive(
-                    self.node_id, self.extra_info[neighbor.node_id], "extra_info")
+                    self.node_id, self.extra_info[neighbor_id], "extra_info")
         else:
             raise ValueError(f"Invalid round number {communication_round}")
 

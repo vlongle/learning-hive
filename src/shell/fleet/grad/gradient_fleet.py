@@ -120,7 +120,7 @@ class ParallelSyncBaseFleet(ParallelFleet):
     def delete_jointly_trained_agent(self):
         # delete the self.jointly_trained_agent.save_dir folder
         # to prevent the statististics of this fake agent from being saved
-        save_dir = self.jointly_trained_agent.get_save_dir()
+        save_dir = ray.get(self.jointly_trained_agent.get_save_dir.remote())
         # delete the save_dir
         shutil.rmtree(save_dir)
         ray.kill(self.jointly_trained_agent)
@@ -137,11 +137,11 @@ class ParallelSyncBaseFleet(ParallelFleet):
                     self.jointly_trained_agent.get_record.remote())
                 # now that we are done with joint training, we can delete the jointly_trained_agent
                 # to free up GPU for the fleet
+                self.delete_jointly_trained_agent()
                 super().__init__(*self.args)
                 self.uniformize_init_tasks(self.fake_dataset)
                 self.copy_from_jointly_trained_agent(
                     net, self.fake_dataset, record)
-                self.delete_jointly_trained_agent()
             return super(ParallelSyncBaseFleet, self).train_and_comm(task_id)
 
     def copy_from_jointly_trained_agent(self, net, dataset, record):

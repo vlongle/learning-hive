@@ -42,12 +42,12 @@ if __name__ == "__main__":
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64
-    num_epochs = 100
+    num_epochs = 10
 
     config = {
         "algo": "modular",
         "agent.batch_size": batch_size,
-        "seed": [0, 1, 2, 3],
+        "seed": 0,
         "parallel": True,
         "num_agents": 8,
         "dataset": "mnist",

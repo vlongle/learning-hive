@@ -32,9 +32,9 @@ class ModModAgent(Agent):
         if self.sharing_strategy.opt_with_random:
             # optimize the received module along with a random module
             # as well
-            num_candidate_modules = len(module_list)
-        else:
             num_candidate_modules = len(module_list) + 1
+        else:
+            num_candidate_modules = len(module_list)
 
         if len(module_list) == 0:
             num_candidate_modules = 1  # at the very least, we need to consider a random module

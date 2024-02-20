@@ -1,0 +1,6 @@
+name: send_data 
+num_coms_per_round: 2
+shared_memory_size: 64
+comm_freq: None
+pre_or_post_comm: post
+sync_base: False

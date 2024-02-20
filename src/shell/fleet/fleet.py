@@ -333,9 +333,26 @@ class Agent:
         return df[df["task_id"] == task_id]["num_components"].sum()
 
     def load_records(self):
+        perf_record = os.path.join(self.save_dir, "record.csv")
+        self.agent.record.df = pd.read_csv(
+            perf_record
+        )
         add_modules_record = os.path.join(
             self.agent.save_dir, "add_modules_record.csv")
-        self.agent.dynamic_record.df = pd.read_csv(add_modules_record)
+        if os.path.exists(add_modules_record):
+            try:
+                self.agent.dynamic_record.df = pd.read_csv(add_modules_record)
+            except pd.errors.EmptyDataError:
+                pass
+
+        sharing_data_record = os.path.join(
+            self.agent.save_dir, "sharing_data_record.csv")
+        if os.path.exists(sharing_data_record):
+            try:
+                self.agent.sharing_data_record.df = pd.read_csv(
+                    sharing_data_record)
+            except pd.errors.EmptyDataError:
+                pass
 
     def load_model_from_ckpoint(self, task_path=None, task_id=None):
         # path = {something}/agent_{node_id}/task_{task_id}

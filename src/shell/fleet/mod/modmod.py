@@ -39,7 +39,10 @@ class ModModAgent(Agent):
         if len(module_list) == 0:
             num_candidate_modules = 1  # at the very least, we need to consider a random module
 
-        return super().train(task_id, start_epoch, communication_frequency, final, num_candidate_modules=num_candidate_modules, **kwargs)
+        if "num_candidate_modules" not in kwargs:
+            kwargs["num_candidate_modules"] = num_candidate_modules
+
+        return super().train(task_id, start_epoch, communication_frequency, final, **kwargs)
 
     def select_module(self, neighbor_id, task_id):
         outgoing_modules = {}
@@ -68,13 +71,21 @@ class ModModAgent(Agent):
                 task_sims[t] = 0
         # get the most similar task with the highest similarity. Break ties by the task id
         # (highest wins)
+        # most_similar_task = max(
+        #     range(len(task_sims)), key=lambda x: (task_sims[x], x))
+        # lowest task_id wins
         most_similar_task = max(
-            range(len(task_sims)), key=lambda x: (task_sims[x], x))
+            range(len(task_sims)), key=lambda x: (task_sims[x], -x))
         if task_sims[most_similar_task] == 0:
             return []
 
         task_module = module_record[module_record['task_id']
                                     == most_similar_task]['num_components'].item() - 1
+        # print('node', self.node_id, 'for neighbor', neighbor_id, '@ task', task_id, 'sending module', task_module, 'from task', most_similar_task,
+        #       'with similarity', task_sims[most_similar_task], 'current no. of modules', len(self.net.components))
+        # pathological for replaying ipynb
+        if task_module >= len(self.net.components):
+            return []
         return [(most_similar_task, task_sims[most_similar_task], self.net.components[task_module])]
 
     def prepare_communicate(self,  task_id, end_epoch, comm_freq, num_epochs, communication_round,
@@ -121,8 +132,11 @@ class ModModAgent(Agent):
             # module_list is a list of (t, sim, module)
             # find the most similar task based on the similarity score. Break ties by the task id
             # (highest task id wins)
+            # best_match = max(module_list, key=lambda x: (
+            #     x[1], x[0]))
+            # lowest task_id wins
             best_match = max(module_list, key=lambda x: (
-                x[1], x[0]))
+                x[1], -x[0]))
             self.train_kwargs["module_list"] = [best_match[-1]]
         else:
             self.task_sims = {}

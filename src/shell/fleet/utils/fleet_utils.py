@@ -14,6 +14,7 @@ from shell.fleet.grad.modgrad import ModGrad, ParallelModGrad
 from shell.fleet.data.data_fleet import DataFleet, ParallelDataFleet
 from shell.fleet.data.recv import RecvDataAgent, ParallelRecvDataAgent
 from shell.fleet.mod.modmod import ModModAgent, ParallelModModAgent
+from shell.utils.experiment_utils import get_cfg
 
 
 BASIC_FLEET_CLS = {
@@ -141,3 +142,22 @@ def get_agent_cls(sharing_strategy, algo, parallel=True):
     except KeyError:
         raise NotImplementedError(
             f"sharing strategy {sharing_strategy.name} with option parallel={parallel} not implemented.")
+
+
+def setup_fleet(save_dir, task_id=None, parallel=None, modify_cfg=None):
+    graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg, cfg = get_cfg(
+        save_dir)
+    if parallel is None:
+        parallel = cfg.parallel
+    if modify_cfg is not None:
+        net_cfg, agent_cfg, train_cfg, fleet_additional_cfg, cfg = modify_cfg(
+            net_cfg, agent_cfg, train_cfg, fleet_additional_cfg, cfg)
+    AgentCls = get_agent_cls(cfg.sharing_strategy, cfg.algo, parallel)
+    FleetCls = get_fleet(cfg.sharing_strategy, parallel)
+    fleet = FleetCls(graph, cfg.seed, datasets, cfg.sharing_strategy, AgentCls, NetCls=NetCls,
+                     LearnerCls=LearnerCls, net_kwargs=net_cfg, agent_kwargs=agent_cfg,
+                     train_kwargs=train_cfg, **fleet_additional_cfg)
+    if task_id is not None:
+        fleet.load_model_from_ckpoint(task_ids=task_id)
+        fleet.update_replay_buffers(task_id)
+    return fleet

@@ -434,3 +434,31 @@ def compute_tasks_sim(task1, task2):
     union = len(set(task1) | set(task2))
     intersection = len(set(task1) & set(task2))
     return intersection / union if union > 0 else 0
+
+
+def send_labels(Y_globals, task, add_offset=None,
+                to_tasks=True):
+    '''
+    Y_globals is a list of global labels, and task is a list of classes in the current task.
+    For example,
+    `Y_globals = [0, 0, 1, 0, 1, 4, 9, 8, 7]` and `task = [1,4]`
+
+    If `add_offset` is not None, then the global labels are offset by `add_offset` before sending.
+
+    If `to_tasks=True` then `add_offset` must not be None. In this case, the labels in the task are converted
+    to the local labels, and the rest are added with the offset to distinguish them from the local labels. For
+    example, `to_tasks=True` and `add_offsets=100` will yield
+    ```
+    [100, 100, 0, 100, 0, 1, 109, 108, 107]. Note that 1 and 4 are converted to 0 and 1, and the rest are added
+    with 100.
+    ```
+    '''
+    if to_tasks and add_offset is None:
+        raise ValueError(
+            "If `to_tasks=True` then `add_offset` must not be None.")
+
+    if to_tasks:
+        Y_globals = [y if y in task else y + add_offset for y in Y_globals]
+    elif add_offset is not None:
+        Y_globals = [y + add_offset for y in Y_globals]
+    return Y_globals

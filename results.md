@@ -139,3 +139,103 @@ result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_re
 ## TODO
 
 Actually compute the number of modules for each methods!
+
+
+
+
+## New Results
+
+Baseline
+
+
+=====FINAL ACC======
+algo     dataset       use_contrastive
+modular  fashionmnist  True               93.861719
+         kmnist        True               84.894922
+         mnist         True               95.621633
+Name: final_acc, dtype: float64
+
+
+monolithic  fashionmnist  
+                          True               92.608906
+            kmnist        
+                          True               82.660078
+            mnist         
+                          True               95.240861
+Name: final_acc, dtype: float64
+
+
+
+
+No sync base
+
+random
+
+=====FINAL ACC======
+algo     dataset       use_contrastive
+modular  fashionmnist  True               93.298516
+         kmnist        True               83.431484
+         mnist         True               94.460275
+Name: final_acc, dtype: float64
+
+
+
+No random
+
+=====FINAL ACC======
+algo     dataset       use_contrastive
+modular  fashionmnist  True               93.735859
+         kmnist        True               85.038672
+         mnist         True               95.332292
+Name: final_acc, dtype: float64
+
+
+Sync base
+
+Random
+=====FINAL ACC======
+algo     dataset       use_contrastive
+modular  fashionmnist  True               93.535781
+         kmnist        True               83.325938
+         mnist         True               94.257971
+Name: final_acc, dtype: float64
+
+
+No random
+=====FINAL ACC======
+algo     dataset       use_contrastive
+modular  fashionmnist  True               93.843616
+         kmnist        True               84.648281
+         mnist         True               95.265822
+Name: final_acc, dtype: float64
+
+
+
+Receiver
+
+=====FINAL ACC======
+algo        dataset       use_contrastive
+monolithic  fashionmnist  True               92.786406
+            kmnist        True               82.811563
+            mnist         True               95.029952
+Name: final_acc, dtype: float64
+
+
+Current: Something is really wrong... (BUG)
+=====FINAL ACC======
+algo     dataset       use_contrastive
+modular  fashionmnist  True               60.190000
+         kmnist        True               53.841328
+         mnist         True               56.127706
+Name: final_acc, dtype: float64
+
+
+
+
+
+Recv all for the monolithic is taking a lot of time to run for some reasons?
+
+
+
+TODO:
+need to control for randomness.

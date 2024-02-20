@@ -73,7 +73,7 @@ if __name__ == "__main__":
         "sharing_strategy.comm_freq": num_epochs,  # once per task
         "sharing_strategy.opt_with_random": args.opt_with_random,
         "sharing_strategy.sync_base": args.sync_base,
-        "root_save_dir": f"experiment_results/modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}",
+        "root_save_dir": f"experiment_results/lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}",
         "overwrite": False,
     }
 

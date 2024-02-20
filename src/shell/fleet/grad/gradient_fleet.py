@@ -120,9 +120,9 @@ class ParallelSyncBaseFleet(ParallelFleet):
     def delete_jointly_trained_agent(self):
         # delete the self.jointly_trained_agent.save_dir folder
         # to prevent the statististics of this fake agent from being saved
-        save_dir = ray.get(self.jointly_trained_agent.get_save_dir.remote())
-        # delete the save_dir
-        shutil.rmtree(save_dir)
+        # save_dir = ray.get(self.jointly_trained_agent.get_save_dir.remote())
+        # # delete the save_dir
+        # shutil.rmtree(save_dir)
         ray.kill(self.jointly_trained_agent)
         del self.jointly_trained_agent
 

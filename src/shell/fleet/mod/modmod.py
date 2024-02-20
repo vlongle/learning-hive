@@ -39,10 +39,13 @@ class ModModAgent(Agent):
         if len(module_list) == 0:
             num_candidate_modules = 1  # at the very least, we need to consider a random module
 
-        if "num_candidate_modules" not in kwargs:
+        if "num_candidate_modules" not in kwargs:  # HACK: to be compatible with the exploratory ipynb
             kwargs["num_candidate_modules"] = num_candidate_modules
 
-        return super().train(task_id, start_epoch, communication_frequency, final, **kwargs)
+        train_candidate_module = not self.sharing_strategy.freeze_candidate_module
+
+        return super().train(task_id, start_epoch, communication_frequency, final, train_candidate_module=train_candidate_module,
+                             **kwargs)
 
     def select_module(self, neighbor_id, task_id):
         outgoing_modules = {}

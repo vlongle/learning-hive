@@ -1,2 +1,4 @@
 name: no_sharing
 num_coms_per_round: 0
+sync_base: False
+pre_or_post_comm: post

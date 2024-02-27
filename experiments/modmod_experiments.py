@@ -43,7 +43,7 @@ if __name__ == "__main__":
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64
-    num_epochs = 10
+    num_epochs = 100
 
     config = {
         "algo": "modular",
@@ -60,13 +60,15 @@ if __name__ == "__main__":
         "net": "mlp",
         "net.depth": num_init_tasks,
         "num_init_tasks": num_init_tasks,
-        "net.dropout": 0.0,
+        # "net.dropout": 0.0,
+        "net.dropout": 0.5,
         "train.num_epochs": num_epochs,
         "train.component_update_freq": num_epochs,
         "train.init_num_epochs": num_epochs,
         "train.init_component_update_freq": num_epochs,
         "train.save_freq": 10,
-        "agent.use_contrastive": True,
+        # "agent.use_contrastive": True,
+        "agent.use_contrastive": False,
         "agent.memory_size": 32,
         # "dataset": ["mnist", "kmnist", "fashionmnist"],
         "dataset": args.dataset,
@@ -75,7 +77,7 @@ if __name__ == "__main__":
         "sharing_strategy.opt_with_random": args.opt_with_random,
         "sharing_strategy.sync_base": args.sync_base,
         "sharing_strategy.freeze_candidate_module": args.freeze_candidate_module,
-        "root_save_dir": f"experiment_results/lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}",
+        "root_save_dir": f"experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}",
         "overwrite": False,
     }
 

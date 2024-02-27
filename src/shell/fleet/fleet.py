@@ -372,6 +372,9 @@ class Agent:
             agent_path, task_id)
         num_added_components = get_num_components - \
             len(self.net.components)
+        # print('get_num_components', get_num_components, 'num_added_components',
+        #       num_added_components, 'len(self.net.components)', len(self.net.components))
+        # print(self.save_dir)
         for _ in range(num_added_components):
             self.net.add_tmp_modules(task_id=len(
                 self.net.components), num_modules=1)

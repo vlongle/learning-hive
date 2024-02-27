@@ -69,9 +69,13 @@ class ModModAgent(Agent):
     def send_most_similar_module(self, neighbor_id, task_id):
         task_sims = self.task_sims[neighbor_id]
         module_record = self.agent.dynamic_record.df
+
         for t in range(len(task_sims)):
-            if t not in set(module_record['task_id']) or not module_record[module_record['task_id'] == t]['add_new_module'].item():
+            if t not in set(module_record['task_id']):
                 task_sims[t] = 0
+            if t in set(module_record['task_id']) and not module_record[module_record['task_id'] == t]['add_new_module'].item():
+                task_sims[t] = 0
+
         # get the most similar task with the highest similarity. Break ties by the task id
         # (highest wins)
         # most_similar_task = max(
@@ -89,7 +93,8 @@ class ModModAgent(Agent):
         # pathological for replaying ipynb
         if task_module >= len(self.net.components):
             return []
-        return [(most_similar_task, task_sims[most_similar_task], self.net.components[task_module])]
+        return [{'task_id': most_similar_task, 'task_sim': task_sims[most_similar_task],
+                 'module_id': task_module, 'module': self.net.components[task_module]}]
 
     def prepare_communicate(self,  task_id, end_epoch, comm_freq, num_epochs, communication_round,
                             final=None):
@@ -120,27 +125,37 @@ class ModModAgent(Agent):
                 neighbor.receive(
                     self.node_id, self.outgoing_modules[neighbor_id], "module")
 
+    def choose_best_module_from_neighbors(self, module_list):
+        # module_list is a list of (t, sim, module)
+        # find the most similar task based on the similarity score. Break ties by the task id
+        # (highest task id wins)
+        # best_match = max(module_list, key=lambda x: (
+        #     x[1], x[0]))
+        # lowest task_id wins
+        best_match_index = max(enumerate(module_list),
+                               key=lambda x: (x[1]['task_sim'], -x[1]['task_id']))[0]
+        return best_match_index
+
+    def get_module_list(self):
+        module_list = []
+        for neighbor_id in self.neighbors:
+            extra_info_ls = [e | {'neighbor_id': neighbor_id}
+                             for e in self.incoming_modules[neighbor_id]]
+            module_list += extra_info_ls
+        return module_list
+
     def process_communicate(self, task_id, communication_round, final=None):
         if task_id < self.net.num_init_tasks + 1:
             return
         if communication_round % 2 == 1:
-            module_list = []
-            for neighbor_id in self.neighbors:
-                module_list += self.incoming_modules[neighbor_id]
-
+            module_list = self.get_module_list()
             if len(module_list) == 0:
                 self.train_kwargs["module_list"] = []
                 return
 
-            # module_list is a list of (t, sim, module)
-            # find the most similar task based on the similarity score. Break ties by the task id
-            # (highest task id wins)
-            # best_match = max(module_list, key=lambda x: (
-            #     x[1], x[0]))
-            # lowest task_id wins
-            best_match = max(module_list, key=lambda x: (
-                x[1], -x[0]))
-            self.train_kwargs["module_list"] = [best_match[-1]]
+            best_match = module_list[self.choose_best_module_from_neighbors(
+                module_list)]
+            self.train_kwargs["module_list"] = [best_match['module']]
         else:
             self.task_sims = {}
             for neighbor_id in self.neighbors:

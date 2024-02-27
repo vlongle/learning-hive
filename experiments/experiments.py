@@ -22,8 +22,8 @@ from shell.utils.experiment_utils import run_experiment
 import argparse
 parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
-parser.add_argument('--seed', type=int, default=0,
-                    help='Seed for the experiment.')
+# parser.add_argument('--seed', type=int, default=0,
+#                     help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
 args = parser.parse_args()
@@ -32,22 +32,19 @@ args = parser.parse_args()
 if __name__ == "__main__":
     start = time.time()
 
-    seed = args.seed
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
-    num_epochs = 400
-    lambda_ood = 7.5
+    num_epochs = 100
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64
 
     dataset = args.dataset
-    delta_ood = 1.0
-
     config = {
         # "algo": ["monolithic", "modular"],
         "algo": "modular",
         "agent.batch_size": batch_size,
-        "seed": seed,
+        "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+        # "seed": 0,
         "parallel": True,
         "num_agents": 8,
         "dataset": "mnist",
@@ -59,23 +56,18 @@ if __name__ == "__main__":
         "net": "mlp",
         "net.depth": num_init_tasks,
         "num_init_tasks": num_init_tasks,
-        "net.dropout": 0.0,
+        # "net.dropout": 0.0,
+        "net.dropout": 0.5,
         "train.num_epochs": num_epochs,
         "train.component_update_freq": num_epochs,
         "train.init_num_epochs": num_epochs,
         "train.init_component_update_freq": num_epochs,
-        "train.save_freq": 20,
-        "agent.use_contrastive": True,
+        "train.save_freq": 10,
         # "agent.use_contrastive": True,
-        # "agent.use_contrastive": False,
+        "agent.use_contrastive": False,
         "agent.memory_size": 32,
-        # "dataset": ["mnist", "kmnist", "fashionmnist"],
         "dataset": dataset,  # use the dataset from arguments
-        # "root_save_dir": "experiment_results/vanilla_tune_fashionmnist",
-        "agent.use_ood_separation_loss": True,
-        "agent.lambda_ood": lambda_ood,
-        "agent.delta_ood": delta_ood,
-        "root_save_dir": f"experiment_results/test_lambda_{lambda_ood}_num_epochs_{num_epochs}_delta_{delta_ood}"
+        "root_save_dir": f"experiment_results/vanilla_jorge_setting"
     }
 
     # # # === CNN experiments: CIFAR100 ===

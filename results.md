@@ -238,4 +238,11 @@ Recv all for the monolithic is taking a lot of time to run for some reasons?
 
 
 TODO:
-need to control for randomness.
+
+The gain from sharing module is kinda small. 
+- We can do `save_freq=10` to make the difference more visible
+or
+- We can improve the module selection heuristic using some sort of "compatibility" measure.
+
+- Should just empirically test the received modules.
+- Will also compare against testing a bunch of random modules.

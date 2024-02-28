@@ -29,6 +29,7 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                  use_contrastive=None,
                  normalize=False,
                  use_projector=False,
+                 no_sparse_basis=False,
                  ):
         super().__init__(i_size,
                          depth,
@@ -53,6 +54,8 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         self.dropout = nn.Dropout(dropout)
         self.random_linear_projection = nn.Linear(
             self.i_size[0] * self.i_size[0], self.size)
+        
+        self.no_sparse_basis = no_sparse_basis
 
         # freeze the random linear projection (preprocessing)
         for param in self.random_linear_projection.parameters():
@@ -198,7 +201,7 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                     # last ditch attempt
                     out = self.relu(fc(X))
                     # only dropout on non-basis modules
-                    if j >= self.num_init_tasks:
+                    if j >= self.num_init_tasks or not self.no_sparse_basis:
                         out = self.dropout(out)
                     X_tmp += s[j, k] * out
             X = X_tmp

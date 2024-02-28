@@ -35,6 +35,7 @@ parser.add_argument('--opt_with_random', type=str2bool, default=False)
 parser.add_argument('--freeze_candidate_module', type=str2bool, default=False)
 parser.add_argument('--transfer_decoder', type=str2bool, default=False)
 parser.add_argument('--transfer_structure', type=str2bool, default=False)
+parser.add_argument('--no_sparse_basis', type=str2bool, default=False)
 args = parser.parse_args()
 
 
@@ -63,6 +64,7 @@ if __name__ == "__main__":
         "dataset.num_tasks": num_tasks,
         "net": "mlp",
         "net.depth": num_init_tasks,
+        'net.no_sparse_basis': args.no_sparse_basis,
         "num_init_tasks": num_init_tasks,
         # "net.dropout": 0.0,
         "net.dropout": 0.5,
@@ -83,7 +85,7 @@ if __name__ == "__main__":
         "sharing_strategy.freeze_candidate_module": args.freeze_candidate_module,
         "sharing_strategy.transfer_decoder": args.transfer_decoder,
         "sharing_strategy.transfer_structure": args.transfer_structure,
-        "root_save_dir": f"experiment_results/jorge_setting_basis_no_sparse_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}_transfer_decoder_{args.transfer_decoder}_transfer_structure_{args.transfer_structure}",
+        "root_save_dir": f"experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}_transfer_decoder_{args.transfer_decoder}_transfer_structure_{args.transfer_structure}_no_sparse_basis_{args.no_sparse_basis}",
         "overwrite": False,
     }
 

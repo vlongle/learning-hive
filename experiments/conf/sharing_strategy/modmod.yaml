@@ -6,3 +6,5 @@ opt_with_random: False
 comm_freq: None
 sync_base: False
 freeze_candidate_module: False
+transfer_decoder: False
+transfer_structure: False

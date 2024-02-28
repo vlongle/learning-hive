@@ -11,6 +11,10 @@ Copyright (c) 2023 Long Le
 from shell.fleet.fleet import Agent
 from shell.fleet.data.data_utilize import compute_tasks_sim
 import ray
+from shell.utils.record import Record
+import torch
+import numpy as np
+import torch.nn as nn
 
 # NOTE: HACK: we ignore sharing in the first num_init_tasks + 1 tasks
 # because there's no dynamically added module yet in these. Although
@@ -19,7 +23,44 @@ import ray
 # for a given task to send (e.g., by looking at the softmax structure)
 
 
+def create_general_permutation_matrix(task1_classes, task2_classes):
+    # Initialize a zero matrix for the new definition
+    assert len(task1_classes) == len(task2_classes)
+    K = len(task2_classes)
+    P = torch.zeros(K, K)
+
+    task1_mapping = {c: i for i, c in enumerate(task1_classes)}
+    task2_mapping = {c: i for i, c in enumerate(task2_classes)}
+
+    for class_ in task1_classes:
+        if class_ in task2_mapping:
+            P[task2_mapping[class_], task1_mapping[class_]] = 1
+
+    return P
+
+
+# Function to apply transformation to D and create D'
+def transform_D(D, P):
+    F, K = D.weight.data.shape[1], D.weight.data.shape[0]
+
+    # transformed_weights = torch.matmul(P, D.weight.data)
+    # transformed_bias = torch.matmul(P, D.bias.data)
+    transformed_weights = torch.matmul(P, D.weight.data)
+    transformed_bias = torch.matmul(P, D.bias.data)
+    D_prime = nn.Linear(F, K, bias=True)
+    D_prime.weight.data = transformed_weights
+    D_prime.bias.data = transformed_bias
+    return D_prime
+
+
 class ModModAgent(Agent):
+    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
+        super().__init__(node_id, seed, dataset, NetCls, AgentCls,
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
+
+        self.modmod_record = Record(
+            f"{self.save_dir}/modmod_add_modules_record.csv")
+
     def compute_task_similarity(self, neighbor_task, task_id):
         candidate_tasks = [self.dataset.class_sequence[t *
                                                        self.dataset.num_classes_per_task: (t+1) * self.dataset.num_classes_per_task] for t in range(task_id + 1)]
@@ -44,8 +85,37 @@ class ModModAgent(Agent):
 
         train_candidate_module = not self.sharing_strategy.freeze_candidate_module
 
+        if self.sharing_strategy.transfer_decoder and "decoder_list" in self.train_kwargs and len(self.train_kwargs["decoder_list"]) > 0:
+            self.transfer_decoder(
+                task_id, self.train_kwargs["decoder_list"][0])
+        if self.sharing_strategy.transfer_structure and "structure_list" in self.train_kwargs and len(self.train_kwargs["structure_list"]) > 0:
+            self.transfer_structure(
+                task_id, self.train_kwargs["structure_list"][0])
+        if "decoder_list" in self.train_kwargs:
+            del self.train_kwargs["decoder_list"]
+        if "structure_list" in self.train_kwargs:
+            del self.train_kwargs["structure_list"]
+
         return super().train(task_id, start_epoch, communication_frequency, final, train_candidate_module=train_candidate_module,
                              **kwargs)
+
+    def transfer_decoder(self, task_id, decoder):
+        decoder, source_class_labels = decoder['decoder'], decoder['source_class_labels']
+
+        P = create_general_permutation_matrix(
+            source_class_labels, self.dataset.class_sequence[task_id * self.dataset.num_classes_per_task:
+                                                             (task_id + 1) * self.dataset.num_classes_per_task],)
+        new_decoder = transform_D(decoder, P.to(self.net.device))
+        self.net.decoder[task_id].load_state_dict(new_decoder.state_dict())
+
+    def transfer_structure(self, task_id, structure):
+        new_s = structure['structure'][:self.net.num_init_tasks, :].data
+        new_s = torch.cat((new_s, torch.full((len(self.net.components)-self.net.num_init_tasks, self.net.depth), -np.inf,
+                                             device=self.net.device)),
+                          dim=0)
+        shared_module_weight = structure['structure'][structure['module_id']].data
+        new_s = torch.cat((new_s, shared_module_weight.view(1, -1)), dim=0)
+        self.net.structure[task_id].data = new_s
 
     def select_module(self, neighbor_id, task_id):
         outgoing_modules = {}
@@ -93,8 +163,14 @@ class ModModAgent(Agent):
         # pathological for replaying ipynb
         if task_module >= len(self.net.components):
             return []
-        return [{'task_id': most_similar_task, 'task_sim': task_sims[most_similar_task],
-                 'module_id': task_module, 'module': self.net.components[task_module]}]
+        return [{'source_task_id': most_similar_task,
+                 'task_sim': task_sims[most_similar_task],
+                 'module_id': task_module,
+                 'module': self.net.components[task_module],
+                 'decoder': self.net.decoder[most_similar_task],
+                 'structure': self.net.structure[most_similar_task],
+                 'source_class_labels': self.dataset.class_sequence[most_similar_task * self.dataset.num_classes_per_task:
+                                                                    (most_similar_task + 1) * self.dataset.num_classes_per_task]},]
 
     def prepare_communicate(self,  task_id, end_epoch, comm_freq, num_epochs, communication_round,
                             final=None):
@@ -133,7 +209,7 @@ class ModModAgent(Agent):
         #     x[1], x[0]))
         # lowest task_id wins
         best_match_index = max(enumerate(module_list),
-                               key=lambda x: (x[1]['task_sim'], -x[1]['task_id']))[0]
+                               key=lambda x: (x[1]['task_sim'], -x[1]['source_task_id']))[0]
         return best_match_index
 
     def get_module_list(self):
@@ -151,11 +227,40 @@ class ModModAgent(Agent):
             module_list = self.get_module_list()
             if len(module_list) == 0:
                 self.train_kwargs["module_list"] = []
-                return
+                self.train_kwargs["decoder_list"] = []
+                self.train_kwargs["structure_list"] = []
+                row = {
+                    'task_id': task_id,
+                    "source_task_id": -1,
+                    'task_sim': 0,
+                    'module_id': -1,
+                    # 'source_class_labels': None,
+                    'neighbor_id': -1,
+                }
+            else:
+                best_match = module_list[self.choose_best_module_from_neighbors(
+                    module_list)]
+                self.train_kwargs["module_list"] = [best_match['module']]
+                self.train_kwargs["decoder_list"] = [{"decoder": best_match['decoder'],
+                                                      "source_class_labels": best_match['source_class_labels']}]
+                self.train_kwargs["structure_list"] = [{'structure': best_match['structure'],
+                                                        'module_id': best_match['module_id']}]
+                # Create a new dictionary with task_id as the first key
+                row = {"task_id": task_id}
+                # Update the new dictionary with the keys and values from best_match
+                row.update(best_match)
+                del row['module']
+                del row['decoder']
+                del row['structure']
+                del row['source_class_labels']
 
-            best_match = module_list[self.choose_best_module_from_neighbors(
-                module_list)]
-            self.train_kwargs["module_list"] = [best_match['module']]
+            # print('row', row)
+
+            # record for the modmod record
+            self.modmod_record.write(
+                row
+            )
+            self.modmod_record.save()
         else:
             self.task_sims = {}
             for neighbor_id in self.neighbors:

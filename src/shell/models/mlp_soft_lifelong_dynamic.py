@@ -94,8 +94,9 @@ class MLPSoftLLDynamic(SoftOrderingNet):
         for _ in range(num_modules):
             if self.num_components < self.max_components:
                 for t in range(self.num_tasks):
-                    self.structure[t].data = torch.cat((self.structure[t].data, torch.full(
-                        (1, self.depth), -np.inf if t < task_id else 1, device=self.device)), dim=0)
+                    if self.structure[t].shape[0] < self.num_components + 1:
+                        self.structure[t].data = torch.cat((self.structure[t].data, torch.full(
+                            (1, self.depth), -np.inf if t < task_id else 1, device=self.device)), dim=0)
                 fc = nn.Linear(self.size, self.size).to(self.device)
                 self.components.append(fc)
                 self.candidate_indices.append(self.num_components)
@@ -104,6 +105,10 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                     self.active_candidate_index = self.num_components
 
                 self.num_components += 1
+
+        # verify that structure[t] is of shape (num_components, depth)
+        for t in range(self.num_tasks):
+            assert self.structure[t].shape[0] == self.num_components
         # print('ADDED TMP MODULES', self.structure[task_id])
 
     def receive_modules(self, task_id, module_list):
@@ -190,7 +195,12 @@ class MLPSoftLLDynamic(SoftOrderingNet):
                 if j not in self.candidate_indices or j == self.active_candidate_index:  # Allow only active candidate
                     # or the ones that are not candidate modules (not in candidate_indices)
                     fc = self.components[j]
-                    X_tmp += s[j, k] * self.dropout(self.relu(fc(X)))
+                    # last ditch attempt
+                    out = self.relu(fc(X))
+                    # only dropout on non-basis modules
+                    if j >= self.num_init_tasks:
+                        out = self.dropout(out)
+                    X_tmp += s[j, k] * out
             X = X_tmp
         return X
 

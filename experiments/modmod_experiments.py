@@ -30,7 +30,7 @@ parser = argparse.ArgumentParser(
 #                     help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
-parser.add_argument('--sync_base', type=str2bool, default=False)
+parser.add_argument('--sync_base', type=str2bool, default=True)
 parser.add_argument('--opt_with_random', type=str2bool, default=False)
 parser.add_argument('--freeze_candidate_module', type=str2bool, default=False)
 args = parser.parse_args()
@@ -44,11 +44,13 @@ if __name__ == "__main__":
     num_tasks = 10
     batch_size = 64
     num_epochs = 100
+    # num_epochs = 10
 
     config = {
         "algo": "modular",
         "agent.batch_size": batch_size,
         "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+        # "seed": 0,
         "parallel": True,
         "num_agents": 8,
         "dataset": "mnist",
@@ -67,17 +69,17 @@ if __name__ == "__main__":
         "train.init_num_epochs": num_epochs,
         "train.init_component_update_freq": num_epochs,
         "train.save_freq": 10,
-        # "agent.use_contrastive": True,
-        "agent.use_contrastive": False,
+        "agent.use_contrastive": [True, False],
+        # "agent.use_contrastive": False,
         "agent.memory_size": 32,
-        # "dataset": ["mnist", "kmnist", "fashionmnist"],
-        "dataset": args.dataset,
+        "dataset": ["mnist", "kmnist", "fashionmnist"],
+        # "dataset": args.dataset,
         "sharing_strategy": "modmod",
         "sharing_strategy.comm_freq": num_epochs,  # once per task
         "sharing_strategy.opt_with_random": args.opt_with_random,
         "sharing_strategy.sync_base": args.sync_base,
         "sharing_strategy.freeze_candidate_module": args.freeze_candidate_module,
-        "root_save_dir": f"experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}",
+        "root_save_dir": f"experiment_results/jorge_setting_basis_no_sparse_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}",
         "overwrite": False,
     }
 

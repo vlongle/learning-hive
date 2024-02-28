@@ -19,7 +19,9 @@ import os
 # result_dir = "cifar_contrastive_no_dropout_results"
 # result_dir = "cifar_epochs_500_mild_dropout_memory_64_data_300_results"
 # result_dir = "vanilla_remove_datasets_hack_results"
-result_dir = "experiment_results/vanilla_fix_bug_compute_loss_encodev2"
+# result_dir = "experiment_results/vanilla_fix_bug_compute_loss_encodev2"
+result_dir = "experiment_results/vanilla_jorge_setting_basis_no_sparse"
+# result_dir = "experiment_results/vanilla_jorge_setting"
 pattern = r".*"
 
 

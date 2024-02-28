@@ -108,9 +108,12 @@ class ModModAgent(Agent):
         new_decoder = transform_D(decoder, P.to(self.net.device))
         self.net.decoder[task_id].load_state_dict(new_decoder.state_dict())
 
-    def transfer_structure(self, task_id, structure):
+    def transfer_structure(self, task_id, structure, value=None):
+        if value is None:
+            # value = -np.inf
+            value = 0.0
         new_s = structure['structure'][:self.net.num_init_tasks, :].data
-        new_s = torch.cat((new_s, torch.full((len(self.net.components)-self.net.num_init_tasks, self.net.depth), -np.inf,
+        new_s = torch.cat((new_s, torch.full((len(self.net.components)-self.net.num_init_tasks, self.net.depth), value,
                                              device=self.net.device)),
                           dim=0)
         shared_module_weight = structure['structure'][structure['module_id']].data

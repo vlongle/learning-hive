@@ -33,6 +33,8 @@ parser.add_argument('--dataset', type=str, default="mnist", choices=[
 parser.add_argument('--sync_base', type=str2bool, default=True)
 parser.add_argument('--opt_with_random', type=str2bool, default=False)
 parser.add_argument('--freeze_candidate_module', type=str2bool, default=False)
+parser.add_argument('--transfer_decoder', type=str2bool, default=False)
+parser.add_argument('--transfer_structure', type=str2bool, default=False)
 args = parser.parse_args()
 
 
@@ -79,7 +81,9 @@ if __name__ == "__main__":
         "sharing_strategy.opt_with_random": args.opt_with_random,
         "sharing_strategy.sync_base": args.sync_base,
         "sharing_strategy.freeze_candidate_module": args.freeze_candidate_module,
-        "root_save_dir": f"experiment_results/jorge_setting_basis_no_sparse_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}",
+        "sharing_strategy.transfer_decoder": args.transfer_decoder,
+        "sharing_strategy.transfer_structure": args.transfer_structure,
+        "root_save_dir": f"experiment_results/jorge_setting_basis_no_sparse_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}_transfer_decoder_{args.transfer_decoder}_transfer_structure_{args.transfer_structure}",
         "overwrite": False,
     }
 

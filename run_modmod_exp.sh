@@ -7,29 +7,22 @@
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
-#SBATCH --array=0-23 # This will run 24 jobs
+#SBATCH --array=0-11 # Now 12 jobs in total, for each combination of settings
 
 declare -a datasets=("mnist" "kmnist" "fashionmnist")
-declare -a sync_base_values=("0" "1") # Use 0 for False, 1 for True
-declare -a opt_with_random_values=("0" "1") # Use 0 for False, 1 for True
-declare -a freeze_candidate_module_values=("0" "1") # Use 0 for False, 1 for True
+declare -a transfer_decoder=("0" "1")
+declare -a transfer_structure=("0" "1")
 
 # Calculate dataset index
-DATASET_INDEX=$((SLURM_ARRAY_TASK_ID % 3))
+dataset_index=$(($SLURM_ARRAY_TASK_ID / 4)) # 4 combinations of transfer settings per dataset
+# Calculate transfer_decoder index
+transfer_decoder_index=$((($SLURM_ARRAY_TASK_ID / 2) % 2)) # Alternates every 2 jobs
+# Calculate transfer_structure index
+transfer_structure_index=$(($SLURM_ARRAY_TASK_ID % 2)) # Alternates every job
 
-# Calculate sync_base value index
-SYNC_BASE_INDEX=$(((SLURM_ARRAY_TASK_ID / 3) % 2))
+DATASET=${datasets[$dataset_index]}
+TRANSFER_DECODER=${transfer_decoder[$transfer_decoder_index]}
+TRANSFER_STRUCTURE=${transfer_structure[$transfer_structure_index]}
 
-# Calculate opt_with_random value index
-OPT_WITH_RANDOM_INDEX=$(((SLURM_ARRAY_TASK_ID / 6) % 2))
-
-# Calculate freeze_candidate_module value index
-FREEZE_CANDIDATE_MODULE_INDEX=$(((SLURM_ARRAY_TASK_ID / 12) % 2))
-
-DATASET=${datasets[$DATASET_INDEX]}
-SYNC_BASE=${sync_base_values[$SYNC_BASE_INDEX]}
-OPT_WITH_RANDOM=${opt_with_random_values[$OPT_WITH_RANDOM_INDEX]}
-FREEZE_CANDIDATE_MODULE=${freeze_candidate_module_values[$FREEZE_CANDIDATE_MODULE_INDEX]}
-
-srun bash -c "python experiments/modmod_experiments.py --dataset $DATASET --sync_base $SYNC_BASE --opt_with_random $OPT_WITH_RANDOM --freeze_candidate_module $FREEZE_CANDIDATE_MODULE"
-exit 3
+srun bash -c "python experiments/modmod_experiments.py --dataset $DATASET --transfer_decoder $TRANSFER_DECODER --transfer_structure $TRANSFER_STRUCTURE"
+exit 0

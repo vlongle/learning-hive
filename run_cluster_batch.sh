@@ -7,29 +7,23 @@
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
-#SBATCH --array=0-7 # This will run 4 jobs with seeds from 0 to 3
+#SBATCH --array=0-5 # Adjust this for 6 jobs, ranging from 0 to 5
 
-# SEED=$SLURM_ARRAY_TASK_ID  # This will retrieve the current job's array index, which we'll use as the seed
+# Declare the datasets
+declare -a datasets=("mnist" "kmnist" "fashionmnist")
 
-# Declare the datasets and seeds
-declare -a datasets=("mnist" "kmnist")
-# declare -a datasets=("cifar100")
-declare -a seeds=("4" "5" "6" "7")
+# Options for no_sparse_basis
+declare -a no_sparse_basis=("0" "1")
 
+# Calculate the dataset index and no_sparse_basis option based on SLURM_ARRAY_TASK_ID
+DATASET_INDEX=$((SLURM_ARRAY_TASK_ID / 2))
+NO_SPARSE_BASIS_INDEX=$((SLURM_ARRAY_TASK_ID % 2))
 
-# # Map the SLURM_ARRAY_TASK_ID to a dataset and seed
-DATASET=${datasets[$((SLURM_ARRAY_TASK_ID % 2))]}
-SEED=${seeds[$((SLURM_ARRAY_TASK_ID / 2))]}
+# Assign the dataset and no_sparse_basis option based on the calculated indices
+DATASET=${datasets[$DATASET_INDEX]}
+NO_SPARSE_BASIS=${no_sparse_basis[$NO_SPARSE_BASIS_INDEX]}
 
+# Run the command with the dataset and no_sparse_basis option
+srun bash -c "python experiments/experiments.py --seed $SLURM_ARRAY_TASK_ID --dataset $DATASET --no_sparse_basis $NO_SPARSE_BASIS"
 
-# Since you only have one dataset, you don't need the datasets array
-# DATASET="fashionmnist"
-
-# Use SLURM_ARRAY_TASK_ID directly to get the seed
-# SEED=$SLURM_ARRAY_TASK_ID
-
-
-srun bash -c "python experiments/experiments.py --seed $SEED --dataset $DATASET"
-
-
-exit 3
+exit 0

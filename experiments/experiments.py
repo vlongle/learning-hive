@@ -16,16 +16,30 @@ Copyright (c) 2023 Long Le
 '''
 
 
+
+
 import time
 import datetime
 from shell.utils.experiment_utils import run_experiment
 import argparse
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
 parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
 # parser.add_argument('--seed', type=int, default=0,
 #                     help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
+parser.add_argument('--no_sparse_basis', type=str2bool, default=True)
 args = parser.parse_args()
 
 
@@ -38,10 +52,10 @@ if __name__ == "__main__":
     num_tasks = 10
     batch_size = 64
 
-    dataset = args.dataset
     config = {
         # "algo": ["monolithic", "modular"],
-        "algo": "modular",
+        # "algo": "modular",
+        "algo": "monolithic",
         "agent.batch_size": batch_size,
         "seed": [0, 1, 2, 3, 4, 5, 6, 7],
         # "seed": 0,
@@ -66,9 +80,9 @@ if __name__ == "__main__":
         "agent.use_contrastive": [True, False],
         # "agent.use_contrastive": False,
         "agent.memory_size": 32,
-        # "dataset": dataset,  # use the dataset from arguments
-        "dataset": ["mnist", "kmnist", "fashionmnist"],
-        "root_save_dir": f"experiment_results/vanilla_jorge_setting_basis_no_sparse"
+        "dataset": args.dataset,  # use the dataset from arguments
+        # "dataset": ["mnist", "kmnist", "fashionmnist"],
+        "root_save_dir": f"experiment_results/vanilla_jorge_setting_basis__no_sparse_basis_{args.no_sparse_basis}"
     }
 
     # # # === CNN experiments: CIFAR100 ===

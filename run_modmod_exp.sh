@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --output=slurm_outs/modmod/slurm-%j.out
-#SBATCH --gpus=2
+#SBATCH --gpus=1
 #SBATCH --nodes=1
-#SBATCH --cpus-per-gpu=16
+#SBATCH --cpus-per-gpu=24
 #SBATCH --mem-per-cpu=4G
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med

@@ -47,12 +47,13 @@ if __name__ == "__main__":
     num_tasks = 10
     batch_size = 64
     num_epochs = 100
-    # num_epochs = 10
+    # num_epochs = 5
 
     config = {
         "algo": "modular",
         "agent.batch_size": batch_size,
         "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+        # "seed": [0, 1],
         # "seed": 0,
         "parallel": True,
         "num_agents": 8,
@@ -76,8 +77,8 @@ if __name__ == "__main__":
         "agent.use_contrastive": [True, False],
         # "agent.use_contrastive": False,
         "agent.memory_size": 32,
-        "dataset": ["mnist", "kmnist", "fashionmnist"],
-        # "dataset": args.dataset,
+        # "dataset": ["mnist", "kmnist", "fashionmnist"],
+        "dataset": args.dataset,
         "sharing_strategy": "modmod",
         "sharing_strategy.comm_freq": num_epochs,  # once per task
         "sharing_strategy.opt_with_random": args.opt_with_random,

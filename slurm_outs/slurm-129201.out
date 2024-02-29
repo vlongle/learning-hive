@@ -1,3 +1,0 @@
-slurmstepd: error: *** STEP 129201.0 ON ee-3090-0.grasp.maas CANCELLED AT 2023-10-05T03:10:35 ***
-slurmstepd: error: *** JOB 129201 ON ee-3090-0.grasp.maas CANCELLED AT 2023-10-05T03:10:35 ***
-srun: error: ee-3090-0.grasp.maas: task 0: Terminated

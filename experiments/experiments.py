@@ -35,8 +35,8 @@ def str2bool(v):
 
 parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
-# parser.add_argument('--seed', type=int, default=0,
-#                     help='Seed for the experiment.')
+parser.add_argument('--seed', type=int, default=0,
+                    help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
 parser.add_argument('--no_sparse_basis', type=str2bool, default=False)
@@ -57,8 +57,8 @@ if __name__ == "__main__":
         # "algo": "modular",
         "algo": "monolithic",
         "agent.batch_size": batch_size,
-        "seed": [0, 1, 2, 3, 4, 5, 6, 7],
-        # "seed": 0,
+        # "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+        "seed": args.seed,
         "parallel": True,
         "num_agents": 8,
         "dataset": "mnist",

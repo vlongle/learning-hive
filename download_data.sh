@@ -1,7 +1,27 @@
 #!/bin/bash
 
-# LOCAL_FOLDER="cifar_no_updates_contrastive_results"
-LOCAL_FOLDER="experiment_results/vanilla_ood_separation_loss"
+
+# Base path for the experiments
+BASE_PATH="experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False"
+
+# Possible states for the variables
+states=("True" "False")
+
+# Generate folder names based on combinations of no_sparse_basis, transfer_decoder, and transfer_structure
+LOCAL_FOLDERS=()
+for no_sparse_basis in "${states[@]}"; do
+    for transfer_decoder in "${states[@]}"; do
+        for transfer_structure in "${states[@]}"; do
+            folder="${BASE_PATH}_transfer_decoder_${transfer_decoder}_transfer_structure_${transfer_structure}_no_sparse_basis_${no_sparse_basis}"
+            LOCAL_FOLDERS+=("$folder")
+        done
+    done
+done
+
+
+
+# # Array of local folders to download
+# LOCAL_FOLDERS=("cifar_no_updates_contrastive_results" "experiment_results/vanilla_ood_separation_loss")
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
 REMOTE_PATH="/home/vlongle/code/learning-hive/experiment_results/"
@@ -12,7 +32,12 @@ if ! command -v rsync &> /dev/null; then
     exit 1
 fi
 
-# Upload the folder using rsync over SSH
-rsync -avzP --compress-level=9 -e ssh "${LOCAL_FOLDER}" "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}"
+# Download each folder using rsync over SSH in parallel
+for LOCAL_FOLDER in "${LOCAL_FOLDERS[@]}"; do
+    rsync -avzP --compress-level=9 -e ssh "${LOCAL_FOLDER}" "${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}" &
+done
 
-echo "Folder ${LOCAL_FOLDER} has been successfully uploaded to ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}"
+# Wait for all background jobs to finish
+wait
+
+echo "All folders have been successfully downloaded from ${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_PATH}"

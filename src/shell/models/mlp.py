@@ -23,6 +23,7 @@ class MLP(nn.Module):
                  use_contrastive=None,
                  normalize=False,
                  use_projector=False,
+                no_sparse_basis=True, # doesn't really matter
                  no_sparse_basis=True,  # doesn't matter
                  ):
         super().__init__()
@@ -41,6 +42,10 @@ class MLP(nn.Module):
         self.components = nn.ModuleList()
         self.relu = nn.ReLU()
         self.dropout = nn.Dropout(dropout)
+
+
+        self.no_sparse_basis = no_sparse_basis
+
 
         self.random_linear_projection = nn.Linear(
             self.i_size[0] * self.i_size[0], self.size)

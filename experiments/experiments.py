@@ -39,7 +39,7 @@ parser = argparse.ArgumentParser(
 #                     help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
-parser.add_argument('--no_sparse_basis', type=str2bool, default=True)
+parser.add_argument('--no_sparse_basis', type=str2bool, default=False)
 args = parser.parse_args()
 
 

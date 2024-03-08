@@ -91,7 +91,6 @@ class NoComponentsER(Learner):
         # self.loss.reduction = 'sum'     # make sure the loss is summed over instances
         prev_reduction = self.get_loss_reduction()
         self.set_loss_reduction('sum')
-        print("ER_NOCOMPONENTS len", len(mega_loader.dataset))
         for i in range(start_epoch, num_epochs + start_epoch):
             for X, Y, t in mega_loader:
                 if isinstance(X, list):

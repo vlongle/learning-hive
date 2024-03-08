@@ -69,11 +69,11 @@ class SyncBaseFleet(Fleet):
         3. Copy the logging to record.csv
         """
         if net is None:
-            net = self.jointly_trained_agent.net
+            net = self.jointly_trained_agent.get_model()
         if dataset is None:
             dataset = self.jointly_trained_agent.dataset
         if record is None:
-            record = self.jointly_trained_agent.agent.record
+            record = self.jointly_trained_agent.get_record()
 
         for node in self.agents:
             node.replace_model(net)
@@ -88,10 +88,10 @@ class SyncBaseFleet(Fleet):
                                             ))
 
             for node in self.agents:
-                node.replace_dataset(train_loader, task_id)
+                node.replace_replay(train_loader, task_id)
 
         for node in self.agents:
-            node.replace_record(node, record)
+            node.replace_record(record)
 
     def delete_jointly_trained_agent(self):
         # delete the self.jointly_trained_agent.save_dir folder

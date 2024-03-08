@@ -32,7 +32,6 @@ class ModGrad(ModelSyncAgent):
         self.aggregate_models()
         self.log(task_id, communication_round, info={'info': 'after'})
 
-
         if self.sharing_strategy.when_reoptimize_structure == 'never':
             return
         elif self.sharing_strategy.when_reoptimize_structure == 'final':
@@ -41,16 +40,17 @@ class ModGrad(ModelSyncAgent):
         elif self.sharing_strategy.when_reoptimize_structure == 'always':
             self.reoptimize_past_structures(task_id, communication_round)
         else:
-            raise NotImplementedError(f'when_reoptimize_structure: {self.sharing_strategy.when_reoptimize_structure} not implemented')
-
+            raise NotImplementedError(
+                f'when_reoptimize_structure: {self.sharing_strategy.when_reoptimize_structure} not implemented')
 
     def reoptimize_past_structures(self, task_id, communication_round, num_epochs=1):
         # optimize structures from 0--> task_id - 1 (excluding current task_id)
         # using the replay buffer
         # print("REOPTIMIZE TASK_ID:", task_id, len(self.agent.memory_loaders))
-        assert len(self.agent.memory_loaders.values()) == task_id, f"task_id: {task_id}, len(self.agent.memory_loaders.values()): {len(self.agent.memory_loaders.values())}"
+        assert len(self.agent.memory_loaders.values(
+        )) == task_id, f"task_id: {task_id}, len(self.agent.memory_loaders.values()): {len(self.agent.memory_loaders.values())}"
 
-        # TODO: handle the component dropout carefully. 
+        # TODO: handle the component dropout carefully.
         # print("BEFORE CURRENT_ACTIVE_CANDIDATE_INDEX", self.net.active_candidate_index)
         current_active_candidate_index = self.net.active_candidate_index
         self.net.active_candidate_index = None
@@ -61,11 +61,11 @@ class ModGrad(ModelSyncAgent):
         # This wasn't a problem before for some reasons, although re-optimizing past modules (using experience
         # replay) seems like it should cause the same problem.
         # if communication_round == self.num_coms[task_id]-1:
-        if task_id not in self.num_coms: 
-        # HACK: hacky way to identify the final communication round basically
-        # for the task. The task_id will be +1 the actual task because
-        # we've completed the last training epoch (communication happens AFTER
-        # training). So the current task is "just" considered past.
+        if task_id not in self.num_coms:
+            # HACK: hacky way to identify the final communication round basically
+            # for the task. The task_id will be +1 the actual task because
+            # we've completed the last training epoch (communication happens AFTER
+            # training). So the current task is "just" considered past.
             # print("RESETING OPTIMIZER")
             self.agent.optimizer = torch.optim.Adam(self.net.parameters(),)
         # print("STRUCTURE", self.net.structure)
@@ -77,13 +77,13 @@ class ModGrad(ModelSyncAgent):
 
                 # update structure for task
                 loader = torch.utils.data.DataLoader(get_custom_tensordataset(self.agent.memory_loaders[task].dataset.tensors,
-                                                  name=self.agent.dataset_name,
-                                      use_contrastive=self.agent.use_contrastive),
-                                      batch_size=self.batch_size,
-                                      shuffle=True,
-                                      num_workers=0,
-                                      pin_memory=True,
-                )
+                                                                              name=self.agent.dataset_name,
+                                                                              use_contrastive=self.agent.use_contrastive),
+                                                     batch_size=self.batch_size,
+                                                     shuffle=True,
+                                                     num_workers=0,
+                                                     pin_memory=True,
+                                                     )
 
                 for X, Y, _ in loader:
                     if isinstance(X, list):
@@ -96,11 +96,11 @@ class ModGrad(ModelSyncAgent):
                     self.agent.update_structure(
                         X, Y, task)
         self.net.active_candidate_index = current_active_candidate_index
-         
 
 
 @ray.remote
 class ParallelModGrad(ModGrad):
     def communicate(self, task_id, communication_round, final=False):
         for neighbor in self.neighbors:
-            ray.get(neighbor.receive.remote(self.node_id, deepcopy(self.model), "model"))
+            ray.get(neighbor.receive.remote(
+                self.node_id, deepcopy(self.model), "model"))

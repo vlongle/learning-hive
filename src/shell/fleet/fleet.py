@@ -176,23 +176,31 @@ class Agent:
         if task_id >= self.net.num_tasks:
             return
 
-        dataset = deepcopy(self.dataset.trainset[task_id])
+        # dataset = deepcopy(self.dataset.trainset[task_id])
 
-        self.agent.make_shared_memory_loaders(
-            batch_size=self.batch_size)
+        # self.agent.make_shared_memory_loaders(
+        #     batch_size=self.batch_size)
 
-        if task_id in self.agent.shared_memory_loaders:
-            loader = self.agent.shared_memory_loaders[task_id]
-            shared_tensors = loader.dataset.get_tensors()  # X, y, t
-            # throw away the task id
-            shared_tensors = shared_tensors[:2]
-            dataset = CustomConcatDataset(
-                dataset.tensors, shared_tensors)
-            dataset = get_custom_tensordataset(dataset.tensors, name=self.dataset.name,
-                                               use_contrastive=self.agent.use_contrastive)
+        # if task_id in self.agent.shared_memory_loaders:
+        #     loader = self.agent.shared_memory_loaders[task_id]
+        #     shared_tensors = loader.dataset.get_tensors()  # X, y, t
+        #     # throw away the task id
+        #     shared_tensors = shared_tensors[:2]
+        #     dataset = CustomConcatDataset(
+        #         dataset.tensors, shared_tensors)
+        #     dataset = get_custom_tensordataset(dataset.tensors, name=self.dataset.name,
+        #                                        use_contrastive=self.agent.use_contrastive)
+
+        # trainloader = (
+        #     torch.utils.data.DataLoader(dataset,
+        #                                 batch_size=self.batch_size,
+        #                                 shuffle=True,
+        #                                 num_workers=4,
+        #                                 pin_memory=True,
+        #                                 ))
 
         trainloader = (
-            torch.utils.data.DataLoader(dataset,
+            torch.utils.data.DataLoader(self.dataset.trainset[task_id],
                                         batch_size=self.batch_size,
                                         shuffle=True,
                                         num_workers=4,

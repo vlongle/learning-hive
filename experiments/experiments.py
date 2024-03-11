@@ -39,7 +39,7 @@ parser.add_argument('--seed', type=int, default=0,
                     help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
-parser.add_argument('--no_sparse_basis', type=str2bool, default=False)
+parser.add_argument('--no_sparse_basis', type=str2bool, default=True)
 args = parser.parse_args()
 
 
@@ -77,13 +77,14 @@ if __name__ == "__main__":
         "train.init_num_epochs": num_epochs,
         "train.init_component_update_freq": num_epochs,
         "train.save_freq": 10,
-        # "agent.use_contrastive": [True, False],
-        "agent.use_contrastive": True,
+        "agent.use_contrastive": [True, False],
+        # "agent.use_contrastive": True,
         # "agent.use_contrastive": False,
         "agent.memory_size": 32,
         "dataset": args.dataset,  # use the dataset from arguments
         # "dataset": ["mnist", "kmnist", "fashionmnist"],
-        "root_save_dir": f"experiment_results/debug",
+        # "root_save_dir": f"experiment_results/debug",
+        "root_save_dir": f"experiment_results/vanilla_jorge_setting_no_sparse",
     }
 
     # # # === CNN experiments: CIFAR100 ===

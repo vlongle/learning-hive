@@ -1,9 +1,8 @@
 #!/bin/bash
 #SBATCH --output=slurm_outs/fl/slurm-%j.out
-#SBATCH --error=slurm_errs/fl/slurm_%j.err   # File to which standard error will be written
-#SBATCH --gpus=2
+#SBATCH --gpus=1
 #SBATCH --nodes=1
-#SBATCH --cpus-per-gpu=8
+#SBATCH --cpus-per-gpu=24
 #SBATCH --mem-per-cpu=4G
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med

@@ -1,4 +1,0 @@
-usage: grad_experiments.py [-h] [--seed SEED]
-                           [--dataset {mnist,kmnist,fashionmnist,cifar100}]
-grad_experiments.py: error: argument --seed: expected one argument
-srun: error: enough-oryx.grasp.maas: task 0: Exited with exit code 2

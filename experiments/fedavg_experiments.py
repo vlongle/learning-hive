@@ -56,7 +56,7 @@ if __name__ == "__main__":
         "parallel": True,
         # "parallel": False,
         # "num_agents": 8,
-        "num_agents": 4,
+        "num_agents": 8,
         "dataset": args.dataset,
         "dataset.num_trains_per_class": 64,
         "dataset.num_vals_per_class": 50,

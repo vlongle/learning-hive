@@ -12,11 +12,9 @@ from shell.utils.metric import DivergenceMetric
 from shell.utils.record import Record
 import os
 import pandas as pd
-# result_dir = "grad_new_results"
-result_dir = "experiment_results/fl"
+result_dir = "experiment_results/jorge_setting_fedavg"
 
 pattern = r".*"
-num_init_tasks = 0  # grad_results bc of joint training
 
 concat_df = pd.DataFrame()
 for job_name in os.listdir(result_dir):
@@ -36,7 +34,8 @@ for job_name in os.listdir(result_dir):
                     df = DivergenceMetric(save_dir).df
                     # only keep task_id, communication_round, time, and avg_params
                     # columns
-                    df = df[["task_id", "communication_round", "time", "avg_params"]]
+                    df = df[["task_id", "communication_round",
+                             "epoch", "avg_params"]]
                     # add seed and agent_id columns
                     df["seed"] = seed
                     df["agent_id"] = agent_id
@@ -51,7 +50,7 @@ for job_name in os.listdir(result_dir):
 # avg_params_std (standard deviation)
 
 concat_df = concat_df.groupby(
-    ["task_id", "communication_round", "time", "algo", "dataset", "use_contrastive"]).agg(
+    ["task_id", "communication_round", "epoch", "algo", "dataset", "use_contrastive"]).agg(
         avg_params=("avg_params", "mean"),
         avg_params_stderr=("avg_params", "sem"),
         avg_params_std=("avg_params", "std")

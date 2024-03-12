@@ -5,4 +5,4 @@ conv_kernel: 3
 maxpool_kernel: 2
 padding: 1
 dropout: 0.5
-no_sparse_basis: false
+no_sparse_basis: true

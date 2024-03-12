@@ -38,6 +38,7 @@ if __name__ == "__main__":
     num_tasks = 10
     # num_tasks = 5
     num_epochs = 100
+    # num_epochs = 10
     # comm_freq = 1
     # comm_freq = 50 # how many epochs does a round of communication take place
 
@@ -50,7 +51,7 @@ if __name__ == "__main__":
 
     config = {
         # "algo": ["monolithic", "modular"],
-        "algo": "monolithic",
+        "algo": "modular",
         "seed": args.seed,
         # "seed": [0, 1, 2, 3],
         "parallel": True,

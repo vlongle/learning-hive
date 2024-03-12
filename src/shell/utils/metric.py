@@ -224,10 +224,23 @@ def get_magma_colors(total_elements):
 
 
 class DivergenceMetric:
-    def __init__(self, save_dir) -> None:
+    def __init__(self, save_dir, num_epochs=100) -> None:
         self.save_dir = save_dir
+        self.num_epochs = num_epochs
         self.file_path = os.path.join(self.save_dir, "sharing_record.csv")
         self.df = pd.read_csv(self.file_path)
-        self.max_comm_round = self.df['communication_round'].max() + 1
-        self.df["time"] = self.df["task_id"] * \
-            self.max_comm_round + self.df["communication_round"]
+        self.num_comm_rounds = self.df['communication_round'].max() + 1
+        # self.df["epoch"] = self.df["task_id"] * \
+        #     self.num_comm_rounds + self.df["communication_round"]
+        self.compute_epochs()
+
+    def compute_epochs(self):
+        # Calculate the epoch increment for each communication round
+        epoch_increment = self.num_epochs / self.num_comm_rounds
+
+        # Apply the formula to calculate the epoch for each communication round and task_id
+        self.df["epoch"] = self.df.apply(lambda row: (row['communication_round'] * epoch_increment) +
+                                         (self.num_epochs * row['task_id']), axis=1)
+
+        # Optionally, round the epoch to an integer if necessary
+        self.df["epoch"] = self.df["epoch"].astype(int)

@@ -49,8 +49,7 @@ if __name__ == "__main__":
     start = time.time()
 
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
-    # num_epochs = 100
-    num_epochs = 10
+    num_epochs = 100
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64

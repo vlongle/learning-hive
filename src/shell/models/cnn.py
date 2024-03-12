@@ -26,6 +26,7 @@ class CNN(nn.Module):
                  dropout=0.5,
                  init_ordering_mode=None,
                  use_contrastive=False,
+                 no_sparse_basis=True,  # doesn't matter
                  ):
         super().__init__()
         self.device = device

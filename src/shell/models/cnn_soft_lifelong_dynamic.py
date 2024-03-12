@@ -31,6 +31,7 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                  device='cuda',
                  dropout=0.5,
                  use_contrastive=False,
+                 no_sparse_basis=False,
                  ):
         super().__init__(i_size,
                          depth,
@@ -53,6 +54,8 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         self.active_candidate_index = None  # Initialize as no active candidate modules
         self.candidate_indices = []  # To hold indices of candidate modules in self.components
         self.last_active_candidate_index = None
+
+        self.no_sparse_basis = no_sparse_basis
 
         out_h = self.i_size[0]
         for i in range(self.depth):
@@ -103,6 +106,10 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                     self.active_candidate_index = self.num_components
 
                 self.num_components += 1
+
+        # verify that structure[t] is of shape (num_components, depth)
+        for t in range(self.num_tasks):
+            assert self.structure[t].shape[0] == self.num_components
 
     def receive_modules(self, task_id, module_list):
         # Number of temporary modules added in the last step
@@ -185,8 +192,10 @@ class CNNSoftLLDynamic(SoftOrderingNet):
             for j in range(self.num_components):
                 if j not in self.candidate_indices or j == self.active_candidate_index:  # Allow only active candidate
                     conv = self.components[j]
-                    X_tmp += s[j, k] * \
-                        self.dropout(self.relu(self.maxpool(conv(X))))
+                    out = self.relu(self.maxpool(conv(X)))
+                    if j >= self.num_init_tasks or not self.no_sparse_basis:
+                        out = self.dropout(out)
+                    X_tmp += s[j, k] * out
             X = X_tmp
         X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])
         return X

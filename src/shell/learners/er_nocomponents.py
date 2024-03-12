@@ -62,7 +62,7 @@ class NoComponentsER(Learner):
             # [get_custom_tensordataset(loader.dataset.tensors, name=self.dataset_name,
             #                           use_contrastive=self.use_contrastive) for loader in self.memory_loaders.values()] + [tmp_dataset])
 
-            self.make_shared_memory_loaders(batch_size=trainloader.batch_size)
+            # self.make_shared_memory_loaders(batch_size=trainloader.batch_size)
 
             mega_dataset = ConcatDataset(
                 [get_custom_tensordataset(loader.dataset.get_tensors(), name=self.dataset_name,

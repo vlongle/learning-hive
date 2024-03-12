@@ -155,16 +155,16 @@ class Learner():
         if detach:
             X_encode = X_encode.detach()
         Y_hat = self.net.decoder[task_id](X_encode)
-        # check if Y is flaoat if yes, raise error
+        # check if Y is float if yes, raise error
         if Y.dtype == torch.float32:
             print('Y:', Y)
             raise ValueError(
                 "?????????????/// Y is float32, make sure to convert to long before passing to compute_cross_entropy_loss")
         # check that Y is either 0 or 1
-        if Y.max() > 1 or Y.min() < 0:
-            print('Y:', Y)
-            raise ValueError(
-                "?????????????/// Y is not binary, make sure to convert to binary before passing to compute_cross_entropy_loss")
+        # if Y.max() > 1 or Y.min() < 0:
+        #     print('Y:', Y)
+        #     raise ValueError(
+        #         "?????????????/// Y is not binary, make sure to convert to binary before passing to compute_cross_entropy_loss")
 
         ce = self.ce_loss(Y_hat, Y)
         return ce

@@ -178,8 +178,8 @@ class Agent:
 
         # dataset = deepcopy(self.dataset.trainset[task_id])
 
-        # self.agent.make_shared_memory_loaders(
-        #     batch_size=self.batch_size)
+        self.agent.make_shared_memory_loaders(
+            batch_size=self.batch_size)
 
         # if task_id in self.agent.shared_memory_loaders:
         #     loader = self.agent.shared_memory_loaders[task_id]

@@ -62,34 +62,27 @@ class ModelSyncAgent(Agent):
 
     def log_model_diff(self, task_id, communication_round, info={}):
         my_model = self.net.state_dict()
-        diffs = {}  # diff['name'] is a dictionary of "param_key"
-        # and float indicating the difference
-        for neigh, inc_model in self.incoming_models.items():
-            diffs[neigh] = diff_models(my_model, inc_model)
-        # compute diff['avg'] which is a dictionary of "param_key"
-        # and float where the value is averaged over all the neighbors
-        # in diffs
-        diffs['avg_neigh'] = {}
-        for name, diff in diffs.items():
-            for param_key, value in diff.items():
-                if param_key not in diffs['avg_neigh']:
-                    diffs['avg_neigh'][param_key] = 0
-                diffs['avg_neigh'][param_key] += value
+        diffs = {neigh: diff_models(my_model, inc_model)
+                 for neigh, inc_model in self.incoming_models.items()}
 
-        for param_key, value in diffs['avg_neigh'].items():
-            diffs['avg_neigh'][param_key] = value / len(self.incoming_models)
+        # Calculate average difference per parameter across all models
+        avg_diffs = self.calculate_average_diffs(diffs)
 
-        # diffs['avg_neigh']['avg_params'] is averaged over all param_key
-        diffs['avg_neigh']['avg_params'] = sum(
-            diffs['avg_neigh'].values()) / len(diffs['avg_neigh'])
+        # Calculate overall average of these differences
+        avg_diffs['avg_params'] = sum(avg_diffs.values()) / len(avg_diffs)
 
-        self.sharing_model_diff_record.write(
-            {
-                "task_id": task_id,
-                "communication_round": communication_round,
-            } | diffs['avg_neigh'] | info
-        )
+        # Record the diffs with task info
+        record = {"task_id": task_id,
+                  "communication_round": communication_round, **avg_diffs, **info}
+
+        self.sharing_model_diff_record.write(record)
         self.sharing_model_diff_record.save()
+
+    def calculate_average_diffs(self, diffs):
+        param_keys = set(key for diff in diffs.values() for key in diff)
+        avg_diffs = {key: sum(diff.get(
+            key, 0) for diff in diffs.values()) / len(diffs) for key in param_keys}
+        return avg_diffs
 
     def aggregate_models(self):
         # get model from neighbors

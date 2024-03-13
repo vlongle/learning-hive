@@ -109,7 +109,8 @@ class CNNSoftLLDynamic(SoftOrderingNet):
 
         # verify that structure[t] is of shape (num_components, depth)
         for t in range(self.num_tasks):
-            assert self.structure[t].shape[0] == self.num_components
+            assert self.structure[t].shape[
+                0] == self.num_components, f"structure[t].shape = {self.structure[t].shape} != {self.num_components}"
 
     def receive_modules(self, task_id, module_list):
         # Number of temporary modules added in the last step

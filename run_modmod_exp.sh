@@ -7,7 +7,7 @@
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
-#SBATCH --array=0-7 # Only 8 jobs in total
+#SBATCH --array=0-0 # Only 8 jobs in total
 
 # Fixed settings for this run
 TRANSFER_DECODER="1"

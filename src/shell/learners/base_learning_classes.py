@@ -24,8 +24,7 @@ from shell.learners.fl_utils import *
 
 class Learner():
     def __init__(self, net, save_dir='./tmp/results/',
-                 #  improvement_threshold=0.05,
-                 improvement_threshold=0.0,
+                  improvement_threshold=0.05,
                  use_contrastive=False, dataset_name=None, fl_strategy=None,
                  mu=None, use_ood_separation_loss=False, lambda_ood=2.0,
                  delta_ood=1.0):

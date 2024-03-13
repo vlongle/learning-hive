@@ -431,6 +431,7 @@ class Fleet:
             "init_num_epochs", self.num_epochs)
         self.comm_freq = sharing_strategy.get("comm_freq", None)
         self.num_init_tasks = net_kwargs["num_init_tasks"]
+        self.num_tasks = net_kwargs["num_tasks"]
 
         logging.info("Fleet initialized")
 

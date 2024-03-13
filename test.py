@@ -98,7 +98,15 @@
 #     if pre_or_post == "post":
 #         communicate()
 
-start = 3
-end = 9
-for t in range(start, end):
-    print(t)
+# start = 3
+# end = 9
+# for t in range(start, end):
+#     print(t)
+
+
+num_init_tasks = 4
+no_sparse_basis = True
+
+for j in range(10):
+    if j >= num_init_tasks or not no_sparse_basis:
+        print('dropout at', j)

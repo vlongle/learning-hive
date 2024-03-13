@@ -109,7 +109,7 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         mega_loader = torch.utils.data.DataLoader(mega_dataset,
                                                   batch_size=batch_size,
                                                   shuffle=True,
-                                                  num_workers=0,
+                                                  num_workers=2,
                                                   pin_memory=True
                                                   )
 
@@ -206,6 +206,6 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
             torch.utils.data.DataLoader(self.replay_buffers[task_id],
                                         batch_size=trainloader.batch_size,
                                         shuffle=True,
-                                        num_workers=10,
+                                        num_workers=2,
                                         pin_memory=True
                                         ))

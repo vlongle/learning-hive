@@ -75,7 +75,7 @@ if __name__ == "__main__":
         "train.save_freq": 10,
         "agent.use_contrastive": False,
         "agent.memory_size": 32,
-        "root_save_dir": "experiment_results/jorge_setting_fedavg",
+        "root_save_dir": f"/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_fedavg",
         # ================================================
         # GRAD SHARING SETUP
         "sharing_strategy": "grad_sharing",

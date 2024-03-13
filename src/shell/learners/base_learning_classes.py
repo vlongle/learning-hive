@@ -113,7 +113,7 @@ class Learner():
                 torch.utils.data.DataLoader(self.shared_replay_buffers[task_id],
                                             batch_size=batch_size,
                                             shuffle=True,
-                                            num_workers=10,
+                                            num_workers=1,
                                             pin_memory=True
                                             ))
 

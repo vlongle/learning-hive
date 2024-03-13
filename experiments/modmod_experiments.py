@@ -95,6 +95,7 @@ if __name__ == "__main__":
     config = {
         "algo": "modular",
         "seed": args.seed,
+        "num_agents": 8,
         "parallel": True,
         "dataset": "cifar100",
         "dataset.num_trains_per_class": 256,
@@ -124,7 +125,7 @@ if __name__ == "__main__":
         "sharing_strategy.freeze_candidate_module": args.freeze_candidate_module,
         "sharing_strategy.transfer_decoder": args.transfer_decoder,
         "sharing_strategy.transfer_structure": args.transfer_structure,
-        "root_save_dir": f"experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}_transfer_decoder_{args.transfer_decoder}_transfer_structure_{args.transfer_structure}_no_sparse_basis_{args.no_sparse_basis}",
+        "root_save_dir": f"/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}_transfer_decoder_{args.transfer_decoder}_transfer_structure_{args.transfer_structure}_no_sparse_basis_{args.no_sparse_basis}",
     }
 
     # print('args', args, type(args.sync_base), type(args.opt_with_random))

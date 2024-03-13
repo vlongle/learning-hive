@@ -73,7 +73,7 @@ class NoComponentsER(Learner):
             mega_loader = torch.utils.data.DataLoader(mega_dataset,
                                                       batch_size=trainloader.batch_size,
                                                       shuffle=True,
-                                                      num_workers=0,
+                                                      num_workers=2,
                                                       pin_memory=True
                                                       )
             self._train(mega_loader, start_epoch, num_epochs, task_id,
@@ -147,6 +147,6 @@ class NoComponentsER(Learner):
             torch.utils.data.DataLoader(self.replay_buffers[task_id],
                                         batch_size=trainloader.batch_size,
                                         shuffle=True,
-                                        num_workers=10,
+                                        num_workers=2,
                                         pin_memory=True
                                         ))

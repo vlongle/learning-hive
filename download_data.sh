@@ -1,27 +1,27 @@
 #!/bin/bash
 
 
-# Base path for the experiments
-BASE_PATH="experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False"
+# # Base path for the experiments
+# BASE_PATH="experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False"
 
-# Possible states for the variables
-states=("True" "False")
+# # Possible states for the variables
+# states=("True" "False")
 
-# Generate folder names based on combinations of no_sparse_basis, transfer_decoder, and transfer_structure
-LOCAL_FOLDERS=()
-for no_sparse_basis in "${states[@]}"; do
-    for transfer_decoder in "${states[@]}"; do
-        for transfer_structure in "${states[@]}"; do
-            folder="${BASE_PATH}_transfer_decoder_${transfer_decoder}_transfer_structure_${transfer_structure}_no_sparse_basis_${no_sparse_basis}"
-            LOCAL_FOLDERS+=("$folder")
-        done
-    done
-done
+# # Generate folder names based on combinations of no_sparse_basis, transfer_decoder, and transfer_structure
+# LOCAL_FOLDERS=()
+# for no_sparse_basis in "${states[@]}"; do
+#     for transfer_decoder in "${states[@]}"; do
+#         for transfer_structure in "${states[@]}"; do
+#             folder="${BASE_PATH}_transfer_decoder_${transfer_decoder}_transfer_structure_${transfer_structure}_no_sparse_basis_${no_sparse_basis}"
+#             LOCAL_FOLDERS+=("$folder")
+#         done
+#     done
+# done
 
 
 
 # # Array of local folders to download
-# LOCAL_FOLDERS=("cifar_no_updates_contrastive_results" "experiment_results/vanilla_ood_separation_loss")
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/vanilla_jorge_setting_basis_no_sparse" "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True" "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_fedavg")
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
 REMOTE_PATH="/home/vlongle/code/learning-hive/experiment_results/"

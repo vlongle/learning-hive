@@ -209,13 +209,13 @@ class Agent:
         testloaders = {task: torch.utils.data.DataLoader(testset,
                                                          batch_size=256,
                                                          shuffle=False,
-                                                         num_workers=4,
+                                                         num_workers=2,
                                                          pin_memory=True,
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
         valloader = torch.utils.data.DataLoader(self.dataset.valset[task_id],
                                                 batch_size=256,
                                                 shuffle=False,
-                                                num_workers=4,
+                                                num_workers=2,
                                                 pin_memory=True,
                                                 )
         train_kwargs = self.train_kwargs.copy()
@@ -397,7 +397,7 @@ class Agent:
             trainloader = torch.utils.data.DataLoader(self.dataset.trainset[task],
                                                       batch_size=128,
                                                       shuffle=True,
-                                                      num_workers=0,
+                                                      num_workers=4,
                                                       pin_memory=True,
                                                       )
             self.agent.update_multitask_cost(trainloader, task)
@@ -596,14 +596,16 @@ class ParallelFleet:
         return ray.get([agent.eval_test.remote(task_id) for agent in self.agents])
 
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
+        print('CREATING AGENTS...')
         self.agents = [
-            AgentCls.options(num_gpus=self.num_gpus_per_agent).remote(node_id, seed, datasets[node_id], NetCls,
+            AgentCls.options(num_gpus=self.num_gpus_per_agent, num_cpus=6).remote(node_id, seed, datasets[node_id], NetCls,
                                                                       LearnerCls,
                                                                       deepcopy(net_kwargs), deepcopy(
                                                                           agent_kwargs),
                                                                       deepcopy(train_kwargs), deepcopy(self.sharing_strategy))
             for node_id in self.graph.nodes
         ]
+        print('DONE AGENTS...')
 
         # make sure that all agents share the same (random) preprocessing parameters in MNIST variants
         # check that self.agents[0].net has "random_linear_projection" layer, if yes, then share it

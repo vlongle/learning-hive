@@ -39,9 +39,12 @@ parser.add_argument('--seed', type=int, default=0,
                     help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
-parser.add_argument('--no_sparse_basis', type=str2bool, default=True)
+parser.add_argument('--no_sparse_basis', type=str2bool, default=False)
 parser.add_argument('--algo', type=str, default="modular", choices=[
                     "monolithic", "modular"], help='Algorithm for the experiment.')
+parser.add_argument('--dropout', type=float, default=0.5)
+parser.add_argument('--memory_size', type=int, default=32)
+parser.add_argument('--num_trains_per_class', type=int, default=256)
 args = parser.parse_args()
 
 
@@ -50,8 +53,9 @@ if __name__ == "__main__":
 
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
     num_epochs = 100
+    # num_epochs = 5
     num_init_tasks = 4
-    num_tasks = 10
+    # num_tasks = 10
     batch_size = 64
 
     # config = {
@@ -91,14 +95,15 @@ if __name__ == "__main__":
     # }
 
     # # # === CNN experiments: CIFAR100 ===
-
+    # more stuff to try to recover the prev performance
+    # decrease dropout to 0.0, no_sparse_basis=False, memory_size
     config = {
         "algo": args.algo,
         "seed": args.seed,
         "num_agents": 8,
         "parallel": True,
         "dataset": "cifar100",
-        "dataset.num_trains_per_class": 256,
+        "dataset.num_trains_per_class": args.num_trains_per_class,
         "dataset.num_vals_per_class": -1,
         "dataset.remap_labels": True,
         "dataset.with_replacement": False,
@@ -107,18 +112,18 @@ if __name__ == "__main__":
         "num_init_tasks": 4,
         "dataset.num_tasks": 20,
         # "net.dropout": 0.0,
-        "net.dropout": 0.5,
+        "net.dropout": args.dropout,
         "train.init_num_epochs": num_epochs,
         "train.init_component_update_freq": num_epochs,
         "train.num_epochs": num_epochs,
         "train.component_update_freq": num_epochs,
-        "agent.memory_size": 32,
+        "agent.memory_size": args.memory_size,
         # "agent.batch_size": 1024,
         "agent.batch_size": 64,
         "train.save_freq": 10,
         "agent.use_contrastive": False,
         "net.no_sparse_basis": args.no_sparse_basis,
-        "root_save_dir": f"experiment_results/vanilla_jorge_setting_basis_no_sparse",
+        "root_save_dir": f"/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}",
     }
 
     run_experiment(config, strict=False)

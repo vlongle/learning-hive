@@ -16,8 +16,8 @@ import os
 import logging
 
 import torchvision.transforms as transforms
-SRC_DIR = os.path.join('src', 'shell')
-
+# SRC_DIR = os.path.join('src', 'shell')
+SRC_DIR = "/mnt/kostas-graid/datasets/vlongle/learning_hive/datasets"
 
 class CustomTensorDataset(TensorDataset):
     # tensordataset but also apply transforms

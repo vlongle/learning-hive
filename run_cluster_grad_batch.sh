@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --output=slurm_outs/fl/slurm-%j.out
-#SBATCH --gpus=1
+#SBATCH --output=slurm_outs/fl/%A_%a.out
+#SBATCH --gpus=2
 #SBATCH --nodes=1
-#SBATCH --cpus-per-gpu=24
-#SBATCH --mem-per-cpu=4G
+#SBATCH --cpus-per-gpu=48
+#SBATCH --mem-per-cpu=2G
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute

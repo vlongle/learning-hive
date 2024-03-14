@@ -91,12 +91,13 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         self.active_candidate_index = None  # Initialize as no active candidate modules
         self.candidate_indices = []  # To hold indices of candidate modules in self.components
 
-        print('BEFORE ADDING TMP_MODULES', self.structure[task_id].shape, 'no_comp', self.num_components, 'len(comp)', len(self.components))
+        # print('BEFORE ADDING TMP_MODULES', self.structure[task_id].shape, 'no_comp', self.num_components, 'len(comp)', len(self.components))
         for _ in range(num_modules):
             if self.num_components < self.max_components:
                 for t in range(self.num_tasks):
-                    self.structure[t].data = torch.cat((self.structure[t].data, torch.full(
-                        (1, self.depth), -np.inf if t < task_id else 1, device=self.device)), dim=0)
+                    if self.structure[t].shape[0] < self.num_components + 1:
+                        self.structure[t].data = torch.cat((self.structure[t].data, torch.full(
+                            (1, self.depth), -np.inf if t < task_id else 1, device=self.device)), dim=0)
                 conv = nn.Conv2d(self.channels, self.channels,
                                  self.conv_kernel, padding=self.padding).to(self.device)
                 self.components.append(conv)

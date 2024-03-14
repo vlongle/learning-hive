@@ -105,18 +105,18 @@ class Learner():
 
         self.sharing_data_record.save()
 
-    def make_shared_memory_loaders(self, batch_size=32):
-        self.shared_memory_loaders = {}
-        for task_id in self.shared_replay_buffers.keys():
-            if len(self.shared_replay_buffers[task_id]) == 0:
-                continue
-            self.shared_memory_loaders[task_id] = (
-                torch.utils.data.DataLoader(self.shared_replay_buffers[task_id],
-                                            batch_size=batch_size,
-                                            shuffle=True,
-                                            num_workers=1,
-                                            pin_memory=True
-                                            ))
+    # def make_shared_memory_loaders(self, batch_size=32):
+    #     self.shared_memory_loaders = {}
+    #     for task_id in self.shared_replay_buffers.keys():
+    #         if len(self.shared_replay_buffers[task_id]) == 0:
+    #             continue
+    #         self.shared_memory_loaders[task_id] = (
+    #             torch.utils.data.DataLoader(self.shared_replay_buffers[task_id],
+    #                                         batch_size=batch_size,
+    #                                         shuffle=True,
+    #                                         num_workers=1,
+    #                                         pin_memory=True
+    #                                         ))
 
     def get_loss_reduction(self):
         if self.use_contrastive:

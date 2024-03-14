@@ -87,7 +87,7 @@ class ModModAgent(Agent):
 
         train_candidate_module = not self.sharing_strategy.freeze_candidate_module
 
-        print(f"BEFORE TRAINING module_list {module_list} decoder_list _{decoder_list} structure_list {structure_list}")
+        # print(f"BEFORE TRAINING {self.node_id} module_list {len(module_list)} decoder_list _{len(decoder_list)} structure_list {len(structure_list)}")
         if self.sharing_strategy.transfer_decoder  and len(decoder_list) > 0:
             self.transfer_decoder(
                 task_id, decoder_list[0])
@@ -112,7 +112,7 @@ class ModModAgent(Agent):
         self.net.decoder[task_id].load_state_dict(new_decoder.state_dict())
 
     def transfer_structure(self, task_id, structure, value=None):
-        print("before structure transfer", self.net.structure[task_id].shape, 'no_comp', self.net.num_components, 'len(comp)', len(self.net.components))
+        # print("before structure transfer", self.node_id, self.net.structure[task_id].shape, 'no_comp', self.net.num_components, 'len(comp)', len(self.net.components))
         if value is None:
             # value = -np.inf
             value = 0.0
@@ -123,7 +123,7 @@ class ModModAgent(Agent):
         shared_module_weight = structure['structure'][structure['module_id']].data
         new_s = torch.cat((new_s, shared_module_weight.view(1, -1)), dim=0)
         self.net.structure[task_id].data = new_s
-        print("after structure transfer", self.net.structure[task_id].shape)
+        print("after structure transfer", self.node_id, self.net.structure[task_id].shape)
 
     def select_module(self, neighbor_id, task_id):
         outgoing_modules = {}

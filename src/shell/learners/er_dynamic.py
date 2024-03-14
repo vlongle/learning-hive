@@ -76,7 +76,7 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         self.replay_buffers = {}
         self.shared_replay_buffers = {}  # received from neighbors
         self.aug_replay_buffers = {}
-        self.memory_loaders = {}
+        # self.memory_loaders = {}
         self.memory_size = memory_size
 
     def update_modules(self, trainloader, task_id, train_mode=None, global_step=None,
@@ -97,10 +97,10 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
             (torch.full((len(tmp_dataset),), task_id, dtype=int),)
 
         mega_dataset = ConcatDataset(
-            [get_custom_tensordataset(loader.dataset.get_tensors(), name=self.dataset_name,
-                                      use_contrastive=self.use_contrastive) for t, loader in self.memory_loaders.items() if t != task_id] + [tmp_dataset]
-            + [get_custom_tensordataset(loader.dataset.get_tensors(), name=self.dataset_name,
-                                        use_contrastive=self.use_contrastive) for t, loader in self.shared_memory_loaders.items()
+            [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
+                                      use_contrastive=self.use_contrastive) for t, replay in self.replay_buffers.items() if t != task_id] + [tmp_dataset]
+            + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
+                                        use_contrastive=self.use_contrastive) for t, replay in self.shared_replay_buffers.items()
                if t != task_id]
         )
 
@@ -203,10 +203,10 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
 
             self.replay_buffers[task_id].push(X, Y)
 
-        self.memory_loaders[task_id] = (
-            torch.utils.data.DataLoader(self.replay_buffers[task_id],
-                                        batch_size=trainloader.batch_size,
-                                        shuffle=True,
-                                        num_workers=2,
-                                        pin_memory=True
-                                        ))
+        # self.memory_loaders[task_id] = (
+        #     torch.utils.data.DataLoader(self.replay_buffers[task_id],
+        #                                 batch_size=trainloader.batch_size,
+        #                                 shuffle=True,
+        #                                 num_workers=2,
+        #                                 pin_memory=True
+        #                                 ))

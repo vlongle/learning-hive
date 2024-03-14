@@ -34,7 +34,7 @@ class NoComponentsER(Learner):
                          )
         self.replay_buffers = {}
         self.shared_replay_buffers = {}  # received from neighbors
-        self.memory_loaders = {}
+        # self.memory_loaders = {}
         self.memory_size = memory_size
 
     def train(self, trainloader, task_id, component_update_freq=100,
@@ -65,10 +65,10 @@ class NoComponentsER(Learner):
             # self.make_shared_memory_loaders(batch_size=trainloader.batch_size)
 
             mega_dataset = ConcatDataset(
-                [get_custom_tensordataset(loader.dataset.get_tensors(), name=self.dataset_name,
-                                          use_contrastive=self.use_contrastive) for loader in self.memory_loaders.values()] + [tmp_dataset]
-                + [get_custom_tensordataset(loader.dataset.get_tensors(), name=self.dataset_name,
-                                            use_contrastive=self.use_contrastive) for loader in self.shared_memory_loaders.values()]
+                [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
+                                          use_contrastive=self.use_contrastive) for replay in self.replay_buffers.values()] + [tmp_dataset]
+                + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
+                                            use_contrastive=self.use_contrastive) for replay in self.shared_replay_buffers.values()]
             )
             mega_loader = torch.utils.data.DataLoader(mega_dataset,
                                                       batch_size=trainloader.batch_size,
@@ -143,10 +143,10 @@ class NoComponentsER(Learner):
                 # contrastive two views
                 X = X[0]  # only store the first view (original image)
             self.replay_buffers[task_id].push(X, Y)
-        self.memory_loaders[task_id] = (
-            torch.utils.data.DataLoader(self.replay_buffers[task_id],
-                                        batch_size=trainloader.batch_size,
-                                        shuffle=True,
-                                        num_workers=2,
-                                        pin_memory=True
-                                        ))
+        # self.memory_loaders[task_id] = (
+        #     torch.utils.data.DataLoader(self.replay_buffers[task_id],
+        #                                 batch_size=trainloader.batch_size,
+        #                                 shuffle=True,
+        #                                 num_workers=2,
+        #                                 pin_memory=True
+        #                                 ))

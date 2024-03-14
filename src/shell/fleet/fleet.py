@@ -178,8 +178,8 @@ class Agent:
 
         # dataset = deepcopy(self.dataset.trainset[task_id])
 
-        self.agent.make_shared_memory_loaders(
-            batch_size=self.batch_size)
+        # self.agent.make_shared_memory_loaders(
+        #     batch_size=self.batch_size)
 
         # if task_id in self.agent.shared_memory_loaders:
         #     loader = self.agent.shared_memory_loaders[task_id]
@@ -203,7 +203,7 @@ class Agent:
             torch.utils.data.DataLoader(self.dataset.trainset[task_id],
                                         batch_size=self.batch_size,
                                         shuffle=True,
-                                        num_workers=4,
+                                        num_workers=2,
                                         pin_memory=True,
                                         ))
         testloaders = {task: torch.utils.data.DataLoader(testset,
@@ -397,7 +397,7 @@ class Agent:
             trainloader = torch.utils.data.DataLoader(self.dataset.trainset[task],
                                                       batch_size=128,
                                                       shuffle=True,
-                                                      num_workers=4,
+                                                      num_workers=2,
                                                       pin_memory=True,
                                                       )
             self.agent.update_multitask_cost(trainloader, task)

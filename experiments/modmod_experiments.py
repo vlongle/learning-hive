@@ -46,7 +46,7 @@ if __name__ == "__main__":
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64
-    num_epochs = 10
+    num_epochs = 100
     # num_epochs = 5
 
     # config = {

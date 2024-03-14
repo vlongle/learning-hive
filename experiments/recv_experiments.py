@@ -20,6 +20,7 @@ import time
 import datetime
 from shell.utils.experiment_utils import run_experiment
 import argparse
+from shell.utils.utils import on_desktop
 parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
 parser.add_argument('--seed', type=int, default=0,
@@ -44,6 +45,10 @@ parser.add_argument('--num_comms_per_task', type=int, default=5,
                     help='Number of communications per task for the experiment.')
 args = parser.parse_args()
 
+if on_desktop():
+    prefix = ""
+else:
+    prefix = "/mnt/kostas-graid/datasets/vlongle/"
 
 if __name__ == "__main__":
     start = time.time()
@@ -84,7 +89,7 @@ if __name__ == "__main__":
         "agent.memory_size": memory_size,
         "dataset": args.dataset,
         # "agent.use_ood_separation_loss": False,
-        "root_save_dir": f"experiment_results/jorge_setting_recv_query_task_mode_{query_task_mode}",
+        "root_save_dir": prefix + f"experiment_results/jorge_setting_recv_query_task_mode_{query_task_mode}",
         "sharing_strategy": "recv_data",
         "sharing_strategy.shared_memory_size": memory_size,
         "sharing_strategy.query_task_mode": query_task_mode,

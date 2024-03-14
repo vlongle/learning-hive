@@ -25,50 +25,6 @@ from shell.datasets.datasets import get_custom_tensordataset
 SEED_SCALE = 1000
 
 
-class CustomConcatDataset(TensorDataset):
-    def __init__(self, *tensors_groups):
-        """
-        Initializes the dataset with groups of tensors. Each group is a tuple of tensors.
-        Tensors within a group are concatenated along the first dimension.
-
-        :param tensors_groups: A sequence of tuples, where each tuple contains tensors to be concatenated.
-        """
-        # Verify that all groups have the same number of tensors and compatible dimensions
-        assert all(len(tensors) == len(tensors_groups[0]) for tensors in tensors_groups), \
-            "All tensor groups must contain the same number of tensors."
-
-        self._tensors = tuple(
-            torch.cat(tensors, dim=0) for tensors in zip(*tensors_groups)
-        )
-
-        # Since all tensors in a group are concatenated along the first dimension,
-        # the length of the dataset is the length of the first tensor in the concatenated group
-        self._length = self._tensors[0].size(0)
-
-    def __len__(self):
-        return self._length
-
-    def __getitem__(self, idx):
-        # Return a tuple with the corresponding slice from each tensor in the dataset
-        return tuple(tensor[idx] for tensor in self._tensors)
-
-    @property
-    def tensors(self):
-        return self._tensors
-
-    @tensors.setter
-    def tensors(self, new_tensors):
-        if not isinstance(new_tensors, tuple):
-            raise TypeError(
-                "New tensors must be provided as a tuple of tensors.")
-        if not all(isinstance(t, torch.Tensor) for t in new_tensors):
-            raise TypeError(
-                "All elements of the new tensors tuple must be torch.Tensor.")
-        # Update the dataset's tensors, assuming they're correctly formatted and compatible
-        self._tensors = new_tensors
-        self._length = self._tensors[0].size(0)
-
-
 class Agent:
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
 
@@ -392,7 +348,6 @@ class Agent:
 
     def update_replay_buffer(self, task_id):
         self.agent.replay_buffers = {}
-        self.agent.aug_replay_buffers = {}
         for task in range(task_id+1):
             trainloader = torch.utils.data.DataLoader(self.dataset.trainset[task],
                                                       batch_size=128,
@@ -644,7 +599,7 @@ class ParallelFleet:
             end_epoch = min(start_epoch + comm_freq, num_epochs)
 
             if self.sharing_strategy.pre_or_post_comm == "pre" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                # print('comm at epoch', end_epoch)
+                logging.info('comm at epoch {}'.format(end_epoch))
                 self.communicate(task_id,
                                  end_epoch,
                                  comm_freq,
@@ -653,14 +608,15 @@ class ParallelFleet:
                                      start_epoch // comm_freq) * self.num_coms_per_round,
                                  final=final)
 
+            logging.info('training from {} to {}'.format(
+                start_epoch, end_epoch))
             ray.get([agent.set_num_coms.remote(
                 task_id, num_coms) for agent in self.agents])
             ray.get([agent.train.remote(task_id, start_epoch, comm_freq,
                                         final=final) for agent in self.agents])
 
-            # print('training from', start_epoch, 'to', end_epoch)
             if self.sharing_strategy.pre_or_post_comm == "post" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                # print('comm at epoch', end_epoch)
+                logging.info('comm at epoch {}'.format(end_epoch))
                 self.communicate(task_id,
                                  end_epoch,
                                  comm_freq,

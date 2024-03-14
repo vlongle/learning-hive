@@ -17,18 +17,21 @@ import logging
 from shell.utils.supcontrast import SupConLoss
 from shell.utils.oodloss import OODSeparationLoss
 from shell.learners.fl_utils import *
-
+from torch.utils.data.dataset import ConcatDataset
+from shell.datasets.datasets import CustomConcatTensorDataset
+import copy
 # write custom RandomGrayScale that operate on a per image
 # basis
 
 
 class Learner():
     def __init__(self, net, save_dir='./tmp/results/',
-                  improvement_threshold=0.05,
+                 improvement_threshold=0.05,
                  use_contrastive=False, dataset_name=None, fl_strategy=None,
                  mu=None, use_ood_separation_loss=False, lambda_ood=2.0,
                  delta_ood=1.0):
         self.net = net
+        self.shared_replay_buffers = {}  # received from neighbors
         self.ce_loss = nn.CrossEntropyLoss()
         self.use_contrastive = use_contrastive
         self.dataset_name = dataset_name
@@ -430,7 +433,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                     num_candidate_modules = len(module_list) + 1
 
                 print("no. current components", len(self.net.components),
-                "NUM_CANDIDATE_MODULES", num_candidate_modules,
+                      "NUM_CANDIDATE_MODULES", num_candidate_modules,
                       'len(module_list)', len(module_list))
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
                 self.net.receive_modules(task_id, module_list)
@@ -440,6 +443,18 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 #     self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
 
             self.net.unfreeze_structure(task_id=task_id)
+
+            if task_id in self.shared_replay_buffers:
+                tmp_dataset = copy.deepcopy(trainloader.dataset)
+                X, y, _ = self.shared_replay_buffers[task_id].get_tensors()
+                mega_dataset = CustomConcatTensorDataset(
+                    (X, y), tmp_dataset.tensors)
+                trainloader = torch.utils.data.DataLoader(mega_dataset,
+                                                          batch_size=trainloader.batch_size,
+                                                          shuffle=True,
+                                                          num_workers=2,
+                                                          pin_memory=True
+                                                          )
 
             for i in range(start_epoch, num_epochs + start_epoch):
                 # print('num_epochs', num_epochs, 'start_epoch', start_epoch, 'i', i)

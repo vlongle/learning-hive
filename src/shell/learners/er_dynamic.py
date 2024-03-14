@@ -113,6 +113,7 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                                                   pin_memory=True
                                                   )
 
+        # NOTE: this might be buggy?
         for module_idx in self.net.candidate_indices:
             # Select the module to be used in this round
             self.net.select_active_module(module_idx)

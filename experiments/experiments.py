@@ -45,6 +45,7 @@ parser.add_argument('--algo', type=str, default="modular", choices=[
 parser.add_argument('--dropout', type=float, default=0.5)
 parser.add_argument('--memory_size', type=int, default=32)
 parser.add_argument('--num_trains_per_class', type=int, default=256)
+parser.add_argument('--batch_size', type=int, default=32)
 args = parser.parse_args()
 
 
@@ -119,11 +120,11 @@ if __name__ == "__main__":
         "train.component_update_freq": num_epochs,
         "agent.memory_size": args.memory_size,
         # "agent.batch_size": 1024,
-        "agent.batch_size": 64,
+        "agent.batch_size": args.batch_size,
         "train.save_freq": 10,
         "agent.use_contrastive": False,
         "net.no_sparse_basis": args.no_sparse_basis,
-        "root_save_dir": f"/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}",
+        "root_save_dir": f"/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}_batchsize_{args.batch_size}",
     }
 
     run_experiment(config, strict=False)

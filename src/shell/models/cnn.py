@@ -21,7 +21,7 @@ class CNN(nn.Module):
                  num_init_tasks,
                  conv_kernel=3,
                  maxpool_kernel=2,
-                 padding=1,
+                 padding=0,
                  device='cuda',
                  dropout=0.5,
                  init_ordering_mode=None,

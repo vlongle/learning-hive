@@ -69,10 +69,10 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                 out_h * out_h * channels, self.num_classes[t])
             self.decoder.append(decoder_t)
 
-        mean = (0.5079, 0.4872, 0.4415)
-        std = (0.2676, 0.2567, 0.2765)
+        # mean = (0.5079, 0.4872, 0.4415)
+        # std = (0.2676, 0.2567, 0.2765)
         # normalize
-        self.transform = transforms.Normalize(mean, std)
+        # self.transform = transforms.Normalize(mean, std)
 
         self.use_contrastive = use_contrastive
         if self.use_contrastive:
@@ -91,7 +91,7 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         self.active_candidate_index = None  # Initialize as no active candidate modules
         self.candidate_indices = []  # To hold indices of candidate modules in self.components
 
-        # print('BEFORE ADDING TMP_MODULES', self.structure)
+        print('BEFORE ADDING TMP_MODULES', self.structure[task_id].shape, 'no_comp', self.num_components, 'len(comp)', len(self.components))
         for _ in range(num_modules):
             if self.num_components < self.max_components:
                 for t in range(self.num_tasks):
@@ -109,6 +109,8 @@ class CNNSoftLLDynamic(SoftOrderingNet):
 
         # verify that structure[t] is of shape (num_components, depth)
         for t in range(self.num_tasks):
+            if self.structure[t].shape[0] != self.num_components:
+               print(f"!!ERR: structure[t].shape = {self.structure[t].shape} != {self.num_components}")
             assert self.structure[t].shape[
                 0] == self.num_components, f"structure[t].shape = {self.structure[t].shape} != {self.num_components}"
 
@@ -184,7 +186,7 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         return self.size
 
     def encode(self, X, task_id):
-        X = self.transform(X)
+        # X = self.transform(X)
         c = X.shape[1]
         s = self.softmax(self.structure[task_id][:self.num_components, :])
         X = F.pad(X, (0, 0, 0, 0, 0, self.channels-c, 0, 0))

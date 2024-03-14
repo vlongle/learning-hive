@@ -429,8 +429,9 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 if num_candidate_modules is None:
                     num_candidate_modules = len(module_list) + 1
 
-                # print("NUM_CANDIDATE_MODULES", num_candidate_modules,
-                #       'len(module_list)', len(module_list))
+                print("no. current components", len(self.net.components),
+                "NUM_CANDIDATE_MODULES", num_candidate_modules,
+                      'len(module_list)', len(module_list))
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
                 self.net.receive_modules(task_id, module_list)
 

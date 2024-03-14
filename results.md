@@ -246,3 +246,9 @@ or
 
 - Should just empirically test the received modules.
 - Will also compare against testing a bunch of random modules.
+
+
+TODO:
+- get rid of the incredibly stupid memory_loader that causes many threads for no good reasons
+- fix the modmod cifar bug
+- try to recover the performance of cifar100 modular. Right now ~70% but it really should be around 77%

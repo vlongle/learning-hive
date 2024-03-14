@@ -97,7 +97,6 @@ if __name__ == "__main__":
         "seed": args.seed,
         "num_agents": 8,
         "parallel": True,
-        "num_agents": 4,
         "dataset": "cifar100",
         "dataset.num_trains_per_class": 256,
         "dataset.num_vals_per_class": -1,

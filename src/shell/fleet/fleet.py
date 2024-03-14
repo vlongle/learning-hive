@@ -597,16 +597,16 @@ class ParallelFleet:
         return ray.get([agent.eval_test.remote(task_id) for agent in self.agents])
 
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
-        print('CREATING AGENTS...')
+        # print('CREATING AGENTS...')
         self.agents = [
-            AgentCls.options(num_gpus=self.num_gpus_per_agent, num_cpus=6).remote(node_id, seed, datasets[node_id], NetCls,
+            AgentCls.options(num_gpus=self.num_gpus_per_agent).remote(node_id, seed, datasets[node_id], NetCls,
                                                                       LearnerCls,
                                                                       deepcopy(net_kwargs), deepcopy(
                                                                           agent_kwargs),
                                                                       deepcopy(train_kwargs), deepcopy(self.sharing_strategy))
             for node_id in self.graph.nodes
         ]
-        print('DONE AGENTS...')
+        # print('DONE AGENTS...')
 
         # make sure that all agents share the same (random) preprocessing parameters in MNIST variants
         # check that self.agents[0].net has "random_linear_projection" layer, if yes, then share it

@@ -22,8 +22,8 @@ from shell.utils.experiment_utils import run_experiment
 import argparse
 parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
-# parser.add_argument('--seed', type=int, default=0,
-#                     help='Seed for the experiment.')
+parser.add_argument('--seed', type=int, default=0,
+                    help='Seed for the experiment.')
 parser.add_argument('--algo', type=str, default="modular", choices=[
                     "modular", "monolithic"], help='Algorithm for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64
-    num_epochs = 10
+    num_epochs = 100
     memory_size = 32
 
     query_task_mode = 'current' if args.algo == 'modular' else 'all'
@@ -61,8 +61,8 @@ if __name__ == "__main__":
     config = {
         "algo": args.algo,
         "agent.batch_size": batch_size,
-        # "seed": args.seed,
-        "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+        "seed": args.seed,
+        # "seed": [0, 1, 2, 3, 4, 5, 6, 7],
         "parallel": True,
         "num_agents": 8,
         "dataset": "mnist",
@@ -74,17 +74,17 @@ if __name__ == "__main__":
         "net": "mlp",
         "net.depth": num_init_tasks,
         "num_init_tasks": num_init_tasks,
-        "net.dropout": 0.0,
+        "net.dropout": 0.5,
         "train.num_epochs": num_epochs,
         "train.component_update_freq": num_epochs,
         "train.init_num_epochs": num_epochs,
         "train.init_component_update_freq": num_epochs,
         "train.save_freq": 10,
-        "agent.use_contrastive": True,
+        "agent.use_contrastive": False,
         "agent.memory_size": memory_size,
         "dataset": args.dataset,
-        "agent.use_ood_separation_loss": False,
-        "root_save_dir": f"experiment_results/recv_query_task_mode_{query_task_mode}",
+        # "agent.use_ood_separation_loss": False,
+        "root_save_dir": f"experiment_results/jorge_setting_recv_query_task_mode_{query_task_mode}",
         "sharing_strategy": "recv_data",
         "sharing_strategy.shared_memory_size": memory_size,
         "sharing_strategy.query_task_mode": query_task_mode,

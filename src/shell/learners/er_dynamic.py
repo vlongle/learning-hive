@@ -74,8 +74,6 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                          lambda_ood=lambda_ood,
                          delta_ood=delta_ood,)
         self.replay_buffers = {}
-        self.shared_replay_buffers = {}  # received from neighbors
-        self.aug_replay_buffers = {}
         # self.memory_loaders = {}
         self.memory_size = memory_size
 
@@ -98,10 +96,10 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
 
         mega_dataset = ConcatDataset(
             [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
-                                      use_contrastive=self.use_contrastive) for t, replay in self.replay_buffers.items() if t != task_id] + [tmp_dataset]
+                                      use_contrastive=self.use_contrastive) for t, replay in self.replay_buffers.items()] + [tmp_dataset]
             + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
                                         use_contrastive=self.use_contrastive) for t, replay in self.shared_replay_buffers.items()
-               if t != task_id]
+               if t != task_id and len(replay) > 0]
         )
 
         batch_size = trainloader.batch_size
@@ -190,17 +188,9 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
     def update_multitask_cost(self, trainloader, task_id):
         self.replay_buffers[task_id] = ReplayBufferReservoir(
             self.memory_size, task_id)
-        if self.use_contrastive:
-            self.aug_replay_buffers[task_id] = ReplayBufferReservoir(
-                self.memory_size, task_id)
         for X, Y in trainloader:
             if isinstance(X, list):
-                # contrastive two views
-                # X = X[0]  # only store the first view (original image)
-                # X_aug = X[1]
-                X, X_aug = X
-                self.aug_replay_buffers[task_id].push(X_aug, Y)
-
+                X, _ = X
             self.replay_buffers[task_id].push(X, Y)
 
         # self.memory_loaders[task_id] = (

@@ -33,6 +33,7 @@ class ReplayBufferReservoir(ReplayBufferBase):
         self.task_id = task_id
 
     def get_tensors(self):
+        assert self.is_dataset_init, "Replay buffer is not initialized"
         # return tensors but with self.__len__ length
         return (self.tensors[0][:len(self)], self.tensors[1][:len(self)],
                 self.tensors[2][:len(self)])

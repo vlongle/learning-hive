@@ -14,10 +14,58 @@ import torch
 from torch.utils.data import TensorDataset
 import os
 import logging
-
+from shell.utils.utils import on_desktop
 import torchvision.transforms as transforms
-# SRC_DIR = os.path.join('src', 'shell')
-SRC_DIR = "/mnt/kostas-graid/datasets/vlongle/learning_hive/datasets"
+
+if on_desktop():
+    SRC_DIR = os.path.join('src', 'shell')
+else:
+    SRC_DIR = "/mnt/kostas-graid/datasets/vlongle/learning_hive/datasets"
+
+
+class CustomConcatTensorDataset(TensorDataset):
+    def __init__(self, *tensors_groups):
+        """
+        Initializes the dataset with groups of tensors. Each group is a tuple of tensors.
+        Tensors within a group are concatenated along the first dimension.
+
+        :param tensors_groups: A sequence of tuples, where each tuple contains tensors to be concatenated.
+        """
+        # Verify that all groups have the same number of tensors and compatible dimensions
+        assert all(len(tensors) == len(tensors_groups[0]) for tensors in tensors_groups), \
+            f"All tensor groups must contain the same number of tensors. But got: {[len(tensors) for tensors in tensors_groups]}"
+
+        self._tensors = tuple(
+            torch.cat(tensors, dim=0) for tensors in zip(*tensors_groups)
+        )
+
+        # Since all tensors in a group are concatenated along the first dimension,
+        # the length of the dataset is the length of the first tensor in the concatenated group
+        self._length = self._tensors[0].size(0)
+
+    def __len__(self):
+        return self._length
+
+    def __getitem__(self, idx):
+        # Return a tuple with the corresponding slice from each tensor in the dataset
+        return tuple(tensor[idx] for tensor in self._tensors)
+
+    @property
+    def tensors(self):
+        return self._tensors
+
+    @tensors.setter
+    def tensors(self, new_tensors):
+        if not isinstance(new_tensors, tuple):
+            raise TypeError(
+                "New tensors must be provided as a tuple of tensors.")
+        if not all(isinstance(t, torch.Tensor) for t in new_tensors):
+            raise TypeError(
+                "All elements of the new tensors tuple must be torch.Tensor.")
+        # Update the dataset's tensors, assuming they're correctly formatted and compatible
+        self._tensors = new_tensors
+        self._length = self._tensors[0].size(0)
+
 
 class CustomTensorDataset(TensorDataset):
     # tensordataset but also apply transforms

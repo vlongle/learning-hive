@@ -117,8 +117,8 @@ class RecvDataAgent(Agent):
 
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
                  sharing_strategy):
-        self.use_ood_separation_loss = sharing_strategy.use_ood_separation_loss
-        agent_kwargs['use_ood_separation_loss'] = self.use_ood_separation_loss
+        # self.use_ood_separation_loss = sharing_strategy.use_ood_separation_loss
+        # agent_kwargs['use_ood_separation_loss'] = self.use_ood_separation_loss
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
                          net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
 
@@ -653,6 +653,10 @@ class RecvDataAgent(Agent):
 
                 valid_mask = self.add_data_prefilter(neighbor_id, task_id)
                 if len(valid_mask) == 0:
+                    # logging.info("ERR: No valid neighbor data at task {} for node {} query Y {}".format(
+                    #     task_id, self.node_id, self.query_extra_info['query_global_y']))
+                    # logging.info("ERR: from {} neighbor y {}".format(neighbor_id,
+                    #                                                  self.incoming_extra_info[neighbor_id]['Y_neighbors']))
                     continue
 
                 Y = self.assign_labels_to_shared_data(neighbor_id, task_id)

@@ -33,8 +33,6 @@ class NoComponentsER(Learner):
                          delta_ood=delta_ood,
                          )
         self.replay_buffers = {}
-        self.shared_replay_buffers = {}  # received from neighbors
-        # self.memory_loaders = {}
         self.memory_size = memory_size
 
     def train(self, trainloader, task_id, component_update_freq=100,
@@ -51,7 +49,7 @@ class NoComponentsER(Learner):
         # INIT TRAINING
         if self.T <= self.net.num_init_tasks:
             self.init_train(trainloader, task_id, start_epoch, num_epochs,
-                            save_freq, testloaders)
+                            save_freq, testloaders, final=final)
         # CONTINUAL TRAINING
         else:
             # assume that trainloader.dataset is already a customTensorDataset
@@ -64,11 +62,14 @@ class NoComponentsER(Learner):
 
             # self.make_shared_memory_loaders(batch_size=trainloader.batch_size)
 
+            # for t, replay in self.shared_replay_buffers.items():
+            #     if not replay.is_dataset_init:
+            #         print("replay", t, "is not initialized")
             mega_dataset = ConcatDataset(
                 [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
                                           use_contrastive=self.use_contrastive) for replay in self.replay_buffers.values()] + [tmp_dataset]
                 + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
-                                            use_contrastive=self.use_contrastive) for replay in self.shared_replay_buffers.values()]
+                                            use_contrastive=self.use_contrastive) for replay in self.shared_replay_buffers.values() if len(replay) > 0]
             )
             mega_loader = torch.utils.data.DataLoader(mega_dataset,
                                                       batch_size=trainloader.batch_size,
@@ -129,7 +130,7 @@ class NoComponentsER(Learner):
                 self.optimizer.zero_grad()
                 l.backward()
                 self.optimizer.step()
-            if i % save_freq == 0 or i == num_epochs - 1:
+            if i % save_freq == 0:
                 self.save_data(i + 1, task_id, testloaders, mode=train_mode,
                                record=record)
         # self.loss.reduction = prev_reduction
@@ -141,7 +142,7 @@ class NoComponentsER(Learner):
         for X, Y in trainloader:
             if isinstance(X, list):
                 # contrastive two views
-                X = X[0]  # only store the first view (original image)
+                X, _ = X
             self.replay_buffers[task_id].push(X, Y)
         # self.memory_loaders[task_id] = (
         #     torch.utils.data.DataLoader(self.replay_buffers[task_id],

@@ -200,6 +200,8 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                     out = self.relu(self.maxpool(conv(X)))
                     if j >= self.num_init_tasks or not self.no_sparse_basis:
                         out = self.dropout(out)
+                    print('task_id', task_id, 'j', j,
+                          'k', k, 'contr', torch.sum(s[j, k] * out))
                     X_tmp += s[j, k] * out
             X = X_tmp
         X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])

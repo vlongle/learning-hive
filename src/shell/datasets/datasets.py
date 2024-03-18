@@ -354,6 +354,7 @@ class CIFAR100(SplitDataset):
         X_test = data_dict[b'data'].reshape(-1, 3, 32, 32)
 
         idx_shuffle = np.random.permutation(len(y_train))
+        print('idx_shuffle', idx_shuffle)
         num_train = int(len(y_train) * .8)
         X_val = X_train[idx_shuffle[num_train:]]
         y_val = y_train[idx_shuffle[num_train:]]

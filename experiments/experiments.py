@@ -62,7 +62,7 @@ if __name__ == "__main__":
         # "algo": ["monolithic", "modular"],
         "algo": "modular",
         "seed": 0,
-        "num_agents": 4,
+        "num_agents": 1,
         "parallel": True,
         "dataset": "cifar100",
         "dataset.num_trains_per_class": 256,

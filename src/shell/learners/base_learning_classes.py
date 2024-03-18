@@ -159,6 +159,9 @@ class Learner():
         if detach:
             X_encode = X_encode.detach()
         Y_hat = self.net.decoder[task_id](X_encode)
+        print("structure", self.net.structure[task_id])
+        print('decoder', self.net.decoder[task_id].bias)
+        print('Y_hat', Y_hat)
         # check if Y is float if yes, raise error
         if Y.dtype == torch.float32:
             print('Y:', Y)

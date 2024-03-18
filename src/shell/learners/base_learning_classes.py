@@ -319,6 +319,9 @@ class Learner():
         Y = Y.to(self.net.device, non_blocking=True)
         l = self.compute_loss(X, Y, task_id, mode=train_mode,
                               log=True, global_step=global_step)
+        print("X:", X)
+        print("LOSS", l)
+        exit(0)
         self.optimizer.zero_grad()
         l.backward()
         self.optimizer.step()

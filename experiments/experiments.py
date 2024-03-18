@@ -108,7 +108,7 @@ if __name__ == "__main__":
     config = {
         "algo": args.algo,
         "seed": args.seed,
-        "num_agents": 4,
+        "num_agents": 1,
         "parallel": True,
         "dataset": "cifar100",
         "dataset.num_trains_per_class": args.num_trains_per_class,

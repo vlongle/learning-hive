@@ -183,7 +183,6 @@ class SplitDataset():
 
         self.class_sequence = labels
         logging.info(f"Class sequence: {self.class_sequence}")
-        exit(0)
         for task_id in range(self.num_tasks):
 
             Xb_train_t, yb_train_t, Xb_val_t, yb_val_t, Xb_test_t, yb_test_t = \

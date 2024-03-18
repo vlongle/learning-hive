@@ -41,6 +41,7 @@ def on_desktop():
 
 
 def seed_everything(seed: int) -> None:
+    print(f"Setting seed {seed}")
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)

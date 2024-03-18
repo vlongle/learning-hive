@@ -80,7 +80,7 @@ if __name__ == "__main__":
         "agent.batch_size": args.batch_size,
         "train.save_freq": 10,
         "agent.use_contrastive": False,
-        "root_save_dir": f"experiment_results/debug_cifar100_batch_{args.batch_size}_num_epochs_{args.num_epochs}",
+        "root_save_dir": f"experiment_results/monday_debug_cifar100_batch_{args.batch_size}_num_epochs_{args.num_epochs}",
     }
 
     run_experiment(config, strict=False)

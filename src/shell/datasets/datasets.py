@@ -119,19 +119,23 @@ class SplitDataset():
         self.max_batch_size = 0
         if labels is None:
             if not with_replacement:
+                # from shell.utils.utils import seed_everything
+                # seed_everything(0)
                 labels = np.random.permutation(num_classes)
+                print('labels', labels)
             else:
                 labels = np.array([np.random.choice(
                     num_classes, num_classes_per_task, replace=False) for t in range(self.num_tasks)])
                 labels = labels.reshape(-1)
 
-        if num_init_tasks is not None:
-            # make sure that the first num_init_tasks * num_classes_per_task classes are ALL DISTINCT!
-            labels[:num_init_tasks*num_classes_per_task] = np.random.choice(
-                num_classes, num_init_tasks*num_classes_per_task, replace=False)
+        # if num_init_tasks is not None:
+        #     # make sure that the first num_init_tasks * num_classes_per_task classes are ALL DISTINCT!
+        #     labels[:num_init_tasks*num_classes_per_task] = np.random.choice(
+        #         num_classes, num_init_tasks*num_classes_per_task, replace=False)
 
         self.class_sequence = labels
         logging.info(f"Class sequence: {self.class_sequence}")
+        # exit(0)
         for task_id in range(self.num_tasks):
 
             Xb_train_t, yb_train_t, Xb_val_t, yb_val_t, Xb_test_t, yb_test_t = \

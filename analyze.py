@@ -23,7 +23,7 @@ import os
 from shell.utils.record import Record
 from shell.utils.metric import Metric
 import re
-result_dir = "experiment_results/debug_cifar100_batch_64_num_epochs_200"
+result_dir = "experiment_results/remove_datasets_hack_monday_debug_cifar100_batch_64_num_epochs_100"
 record = Record(f"{result_dir}_.csv")
 
 # pattern = r"/fashion.*"

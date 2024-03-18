@@ -103,6 +103,7 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         X = self.transform(X)
         c = X.shape[1]
         s = self.softmax(self.structure[task_id][:self.num_components, :])
+        print('X', X)
         X = F.pad(X, (0, 0, 0, 0, 0, self.channels-c, 0, 0))
         for k in range(self.depth):
             X_tmp = 0.

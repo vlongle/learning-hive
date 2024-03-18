@@ -103,7 +103,7 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         X = self.transform(X)
         c = X.shape[1]
         s = self.softmax(self.structure[task_id][:self.num_components, :])
-        print('X', X)
+        # print('X', X)
         X = F.pad(X, (0, 0, 0, 0, 0, self.channels-c, 0, 0))
         for k in range(self.depth):
             X_tmp = 0.
@@ -111,8 +111,8 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                 conv = self.components[j]
                 out = self.dropout(self.relu(self.maxpool(conv(X))))
                 X_tmp += s[j, k] * out
-                print('task_id', task_id, 'j', j,
-                      'k', k, 'contr', torch.sum(s[j, k] * out))
+                # print('task_id', task_id, 'j', j,
+                #       'k', k, 'contr', torch.sum(s[j, k] * out))
             X = X_tmp
         X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])
         return X

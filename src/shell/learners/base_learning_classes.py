@@ -95,9 +95,9 @@ class Learner():
         if detach:
             X_encode = X_encode.detach()
         Y_hat = self.net.decoder[task_id](X_encode)
-        print('structure:', self.net.structure[task_id])
-        print('decoder:', self.net.decoder[task_id].bias)
-        print('comp[0]', self.net.components[0].bias)
+        # print('structure:', self.net.structure[task_id])
+        # print('decoder:', self.net.decoder[task_id].bias)
+        # print('comp[0]', self.net.components[0].bias)
         # print('Y_hat', Y_hat)
         ce = self.ce_loss(Y_hat, Y)
         return ce

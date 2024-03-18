@@ -198,7 +198,7 @@ class Learner():
 
         return loss
 
-    def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=True):
+    def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=False):
         """
         Compute main loss + (optional aux loss for FL)
         """
@@ -266,6 +266,7 @@ class Learner():
                             if isinstance(X, list):
                                 # contrastive two views
                                 X = torch.cat([X[0], X[1]], dim=0)
+                            print('Y:', Y)
                             X = X.to(self.net.device, non_blocking=True)
                             Y = Y.to(self.net.device, non_blocking=True)
                             self.gradient_step(X, Y, task, global_step=i)
@@ -275,12 +276,12 @@ class Learner():
             if final:
                 self.save_data(num_epochs + start_epoch + 1, task_id,
                                testloaders, final_save=final)
-                # for task, loader in self.init_trainloaders.items():
-                #     self.update_multitask_cost(loader, task)
+                for task, loader in self.init_trainloaders.items():
+                    self.update_multitask_cost(loader, task)
         else:
             self.save_data(start_epoch, task_id,
                            testloaders, final_save=final)
-        self.update_multitask_cost(self.init_trainloaders[task_id], task_id)
+        # self.update_multitask_cost(self.init_trainloaders[task_id], task_id)
 
     def evaluate(self, testloaders, mode=None, eval_no_update=True):
         was_training = self.net.training
@@ -317,9 +318,9 @@ class Learner():
         # Y_hat = self.net(X, task_id=task_id)
         X = X.to(self.net.device, non_blocking=True)
         Y = Y.to(self.net.device, non_blocking=True)
+        print("task_id:", task_id, 'y', Y)
         l = self.compute_loss(X, Y, task_id, mode=train_mode,
                               log=True, global_step=global_step)
-        print("X:", X)
         print("LOSS", l)
         exit(0)
         self.optimizer.zero_grad()

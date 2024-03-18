@@ -158,7 +158,8 @@ class Agent:
         trainloader = (
             torch.utils.data.DataLoader(self.dataset.trainset[task_id],
                                         batch_size=self.batch_size,
-                                        shuffle=True,
+                                        # shuffle=True,
+                                        shuffle=False,
                                         num_workers=4,
                                         pin_memory=True,
                                         ))

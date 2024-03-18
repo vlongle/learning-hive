@@ -169,6 +169,7 @@ class SplitDataset():
         if labels is None:
             if not with_replacement:
                 labels = np.random.permutation(num_classes)
+                print('labels:', labels)
             else:
                 labels = np.array([np.random.choice(
                     num_classes, num_classes_per_task, replace=False) for t in range(self.num_tasks)])
@@ -402,6 +403,7 @@ class CIFAR100(SplitDataset):
         X_test = data_dict[b'data'].reshape(-1, 3, 32, 32)
 
         idx_shuffle = np.random.permutation(len(y_train))
+        print('idx_shuffle:', idx_shuffle)
         num_train = int(len(y_train) * .8)
         X_val = X_train[idx_shuffle[num_train:]]
         y_val = y_train[idx_shuffle[num_train:]]

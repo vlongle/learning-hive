@@ -159,6 +159,10 @@ class Learner():
         if detach:
             X_encode = X_encode.detach()
         Y_hat = self.net.decoder[task_id](X_encode)
+        # print("structure", self.net.structure[task_id])
+        # print('decoder', self.net.decoder[task_id].bias)
+        # print('comp[0]', self.net.components[0].bias)
+        # print('Y_hat', Y_hat)
         # check if Y is float if yes, raise error
         if Y.dtype == torch.float32:
             print('Y:', Y)
@@ -198,7 +202,7 @@ class Learner():
 
         return loss
 
-    def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=True):
+    def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=False):
         """
         Compute main loss + (optional aux loss for FL)
         """
@@ -275,12 +279,12 @@ class Learner():
             if final:
                 self.save_data(num_epochs + start_epoch + 1, task_id,
                                testloaders, final_save=final)
-                # for task, loader in self.init_trainloaders.items():
-                #     self.update_multitask_cost(loader, task)
+                for task, loader in self.init_trainloaders.items():
+                    self.update_multitask_cost(loader, task)
         else:
             self.save_data(start_epoch, task_id,
                            testloaders, final_save=final)
-        self.update_multitask_cost(self.init_trainloaders[task_id], task_id)
+        # self.update_multitask_cost(self.init_trainloaders[task_id], task_id)
 
     def evaluate(self, testloaders, mode=None, eval_no_update=True):
         was_training = self.net.training
@@ -317,8 +321,11 @@ class Learner():
         # Y_hat = self.net(X, task_id=task_id)
         X = X.to(self.net.device, non_blocking=True)
         Y = Y.to(self.net.device, non_blocking=True)
+        # print("task_id:", task_id, 'y', Y)
         l = self.compute_loss(X, Y, task_id, mode=train_mode,
                               log=True, global_step=global_step)
+        # print("LOSS", l)
+        # exit(0)
         self.optimizer.zero_grad()
         l.backward()
         self.optimizer.step()
@@ -438,9 +445,12 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
                 self.net.receive_modules(task_id, module_list)
 
-                self.optimizer = torch.optim.Adam(self.net.parameters(),)
-                # for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
-                #     self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
+                # self.optimizer = torch.optim.Adam(self.net.parameters(),)
+                # the last num_candidate_modules components
+                # for idx in range(-num_candidate_modules, 0, 1):
+                for idx in self.net.candidate_indices:
+                    self.optimizer.add_param_group(
+                        {'params': self.net.components[idx].parameters()})
 
             self.net.unfreeze_structure(task_id=task_id)
 

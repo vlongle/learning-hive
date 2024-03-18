@@ -27,7 +27,7 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                  padding=0,
                  num_init_tasks=None,
                  max_components=-1,
-                 init_ordering_mode='random_onehot',
+                 init_ordering_mode='one_module_per_task',
                  device='cuda',
                  dropout=0.5,
                  use_contrastive=False,
@@ -69,10 +69,10 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                 out_h * out_h * channels, self.num_classes[t])
             self.decoder.append(decoder_t)
 
-        # mean = (0.5079, 0.4872, 0.4415)
-        # std = (0.2676, 0.2567, 0.2765)
+        mean = (0.5079, 0.4872, 0.4415)
+        std = (0.2676, 0.2567, 0.2765)
         # normalize
-        # self.transform = transforms.Normalize(mean, std)
+        self.transform = transforms.Normalize(mean, std)
 
         self.use_contrastive = use_contrastive
         if self.use_contrastive:
@@ -111,7 +111,8 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         # verify that structure[t] is of shape (num_components, depth)
         for t in range(self.num_tasks):
             if self.structure[t].shape[0] != self.num_components:
-               print(f"!!ERR: structure[t].shape = {self.structure[t].shape} != {self.num_components}")
+                print(
+                    f"!!ERR: structure[t].shape = {self.structure[t].shape} != {self.num_components}")
             assert self.structure[t].shape[
                 0] == self.num_components, f"structure[t].shape = {self.structure[t].shape} != {self.num_components}"
 
@@ -187,19 +188,24 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         return self.size
 
     def encode(self, X, task_id):
-        # X = self.transform(X)
+        X = self.transform(X)
         c = X.shape[1]
         s = self.softmax(self.structure[task_id][:self.num_components, :])
+        # print('X', X)
         X = F.pad(X, (0, 0, 0, 0, 0, self.channels-c, 0, 0))
         for k in range(self.depth):
             X_tmp = 0.
             for j in range(self.num_components):
                 if j not in self.candidate_indices or j == self.active_candidate_index:  # Allow only active candidate
                     conv = self.components[j]
-                    out = self.relu(self.maxpool(conv(X)))
-                    if j >= self.num_init_tasks or not self.no_sparse_basis:
-                        out = self.dropout(out)
+                    # out = self.relu(self.maxpool(conv(X)))
+                    # if j >= self.num_init_tasks or not self.no_sparse_basis:
+                    # out = self.dropout(out)
+                    out = self.dropout(self.relu(self.maxpool(conv(X))))
+
                     X_tmp += s[j, k] * out
+                    # print('task_id', task_id, 'j', j,
+                    #       'k', k, 'contr', torch.sum(s[j, k] * out))
             X = X_tmp
         X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])
         return X

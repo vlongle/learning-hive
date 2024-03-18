@@ -51,37 +51,37 @@ class Agent:
 
         self.sharing_strategy = sharing_strategy
 
-    def get_ood_data(self, task_id, mode='replay'):
+    # def get_ood_data(self, task_id, mode='replay'):
 
-        if mode == 'replay':
-            # Gather data from replay buffers of all tasks except the current task
-            replay_buffers = {t: self.agent.replay_buffers[t] for t in range(self.agent.T)
-                              if t != task_id}
-            if len(replay_buffers) == 0:
-                return None, None, None, None
+    #     if mode == 'replay':
+    #         # Gather data from replay buffers of all tasks except the current task
+    #         replay_buffers = {t: self.agent.replay_buffers[t] for t in range(self.agent.T)
+    #                           if t != task_id}
+    #         if len(replay_buffers) == 0:
+    #             return None, None, None, None
 
-            X_past = torch.cat([rb.tensors[0]
-                                for t, rb in replay_buffers.items()], dim=0)
-            y_past = torch.cat([torch.from_numpy(get_global_label(rb.tensors[1],
-                                                                  t, self.dataset.class_sequence,
-                                                                  self.dataset.num_classes_per_task))
-                                for t, rb in replay_buffers.items()], dim=0)
-        elif mode == 'training':
-            # Gather data from training sets of all tasks except the current task
-            X_past = torch.cat([self.dataset.trainset[t].tensors[0]
-                                for t in range(self.agent.T) if t != task_id], dim=0)
-            y_past = torch.cat([torch.from_numpy(get_global_label(self.dataset.trainset[t].tensors[1],
-                                                                  t, self.dataset.class_sequence,
-                                                                  self.dataset.num_classes_per_task))
-                                for t in range(self.agent.T) if t != task_id], dim=0)
-        mask = self.get_ood_data_helper(task_id, y_past)
-        X_ood_filtered = X_past[mask]
-        y_ood_filtered = y_past[mask]
+    #         X_past = torch.cat([rb.tensors[0]
+    #                             for t, rb in replay_buffers.items()], dim=0)
+    #         y_past = torch.cat([torch.from_numpy(get_global_label(rb.tensors[1],
+    #                                                               t, self.dataset.class_sequence,
+    #                                                               self.dataset.num_classes_per_task))
+    #                             for t, rb in replay_buffers.items()], dim=0)
+    #     elif mode == 'training':
+    #         # Gather data from training sets of all tasks except the current task
+    #         X_past = torch.cat([self.dataset.trainset[t].tensors[0]
+    #                             for t in range(self.agent.T) if t != task_id], dim=0)
+    #         y_past = torch.cat([torch.from_numpy(get_global_label(self.dataset.trainset[t].tensors[1],
+    #                                                               t, self.dataset.class_sequence,
+    #                                                               self.dataset.num_classes_per_task))
+    #                             for t in range(self.agent.T) if t != task_id], dim=0)
+    #     mask = self.get_ood_data_helper(task_id, y_past)
+    #     X_ood_filtered = X_past[mask]
+    #     y_ood_filtered = y_past[mask]
 
-        X_iid_filtered = X_past[~mask]
-        y_iid_filtered = y_past[~mask]
+    #     X_iid_filtered = X_past[~mask]
+    #     y_iid_filtered = y_past[~mask]
 
-        return X_ood_filtered, y_ood_filtered, X_iid_filtered, y_iid_filtered
+    #     return X_ood_filtered, y_ood_filtered, X_iid_filtered, y_iid_filtered
 
     def get_shared_replay_buffers(self):
         return self.agent.shared_replay_buffers
@@ -125,9 +125,9 @@ class Agent:
     def train(self, task_id, start_epoch=0, communication_frequency=None,
               final=True, **kwargs):
 
-        if start_epoch == 0:
-            for t in range(task_id+1):
-                self.agent.ood_data[t] = self.get_ood_data(t)
+        # if start_epoch == 0:
+        #     for t in range(task_id+1):
+        #         self.agent.ood_data[t] = self.get_ood_data(t)
 
         if task_id >= self.net.num_tasks:
             return
@@ -159,19 +159,20 @@ class Agent:
             torch.utils.data.DataLoader(self.dataset.trainset[task_id],
                                         batch_size=self.batch_size,
                                         shuffle=True,
-                                        num_workers=2,
+                                        # shuffle=False,
+                                        num_workers=4,
                                         pin_memory=True,
                                         ))
         testloaders = {task: torch.utils.data.DataLoader(testset,
                                                          batch_size=256,
                                                          shuffle=False,
-                                                         num_workers=2,
+                                                         num_workers=4,
                                                          pin_memory=True,
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
         valloader = torch.utils.data.DataLoader(self.dataset.valset[task_id],
                                                 batch_size=256,
                                                 shuffle=False,
-                                                num_workers=2,
+                                                num_workers=4,
                                                 pin_memory=True,
                                                 )
         train_kwargs = self.train_kwargs.copy()
@@ -552,16 +553,16 @@ class ParallelFleet:
         return ray.get([agent.eval_test.remote(task_id) for agent in self.agents])
 
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
-        # print('CREATING AGENTS...')
+        print('CREATING AGENTS...')
         self.agents = [
-            AgentCls.options(num_gpus=self.num_gpus_per_agent).remote(node_id, seed, datasets[node_id], NetCls,
-                                                                      LearnerCls,
-                                                                      deepcopy(net_kwargs), deepcopy(
-                                                                          agent_kwargs),
-                                                                      deepcopy(train_kwargs), deepcopy(self.sharing_strategy))
+            AgentCls.options(num_gpus=self.num_gpus_per_agent, num_cpus=6).remote(node_id, seed, datasets[node_id], NetCls,
+                                                                                  LearnerCls,
+                                                                                  deepcopy(net_kwargs), deepcopy(
+                agent_kwargs),
+                deepcopy(train_kwargs), deepcopy(self.sharing_strategy))
             for node_id in self.graph.nodes
         ]
-        # print('DONE AGENTS...')
+        print('DONE AGENTS...')
 
         # make sure that all agents share the same (random) preprocessing parameters in MNIST variants
         # check that self.agents[0].net has "random_linear_projection" layer, if yes, then share it

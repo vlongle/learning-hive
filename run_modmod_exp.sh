@@ -1,8 +1,8 @@
 #!/bin/bash
 #SBATCH --output=slurm_outs/modmod/%A_%a.out
-#SBATCH --gpus=2
+#SBATCH --gpus=1
 #SBATCH --nodes=1
-#SBATCH --cpus-per-gpu=36
+#SBATCH --cpus-per-gpu=42
 #SBATCH --mem=64G
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
@@ -10,7 +10,7 @@
 #SBATCH --array=0-7 # Only 8 jobs in total
 
 # Fixed settings for this run
-TRANSFER_DECODER="0"
+TRANSFER_DECODER="1"
 TRANSFER_STRUCTURE="1"
 NO_SPARSE_BASIS="1"
 

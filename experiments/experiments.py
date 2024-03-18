@@ -22,6 +22,7 @@ import time
 import datetime
 from shell.utils.experiment_utils import run_experiment
 import argparse
+from shell.utils.utils import on_desktop
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -45,8 +46,14 @@ parser.add_argument('--algo', type=str, default="modular", choices=[
 parser.add_argument('--dropout', type=float, default=0.5)
 parser.add_argument('--memory_size', type=int, default=32)
 parser.add_argument('--num_trains_per_class', type=int, default=256)
-parser.add_argument('--batch_size', type=int, default=32)
+parser.add_argument('--batch_size', type=int, default=64)
 args = parser.parse_args()
+
+
+if on_desktop():
+    prefix = ""
+else:
+    prefix = "/mnt/kostas-graid/datasets/vlongle/"
 
 
 if __name__ == "__main__":
@@ -101,8 +108,9 @@ if __name__ == "__main__":
     config = {
         "algo": args.algo,
         "seed": args.seed,
-        "num_agents": 8,
+        "num_agents": 1,
         "parallel": True,
+        # "parallel": False,
         "dataset": "cifar100",
         "dataset.num_trains_per_class": args.num_trains_per_class,
         "dataset.num_vals_per_class": -1,
@@ -111,7 +119,8 @@ if __name__ == "__main__":
         "net": "cnn",
         "net.depth": 4,
         "num_init_tasks": 4,
-        "dataset.num_tasks": 20,
+        # "dataset.num_tasks": 20,
+        "dataset.num_tasks": 6,
         # "net.dropout": 0.0,
         "net.dropout": args.dropout,
         "train.init_num_epochs": num_epochs,
@@ -124,7 +133,7 @@ if __name__ == "__main__":
         "train.save_freq": 10,
         "agent.use_contrastive": False,
         "net.no_sparse_basis": args.no_sparse_basis,
-        "root_save_dir": f"/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}_batchsize_{args.batch_size}",
+        "root_save_dir": prefix + f"experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}_batchsize_{args.batch_size}",
     }
 
     run_experiment(config, strict=False)

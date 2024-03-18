@@ -108,8 +108,10 @@ class CNNSoftLLDynamic(SoftOrderingNet):
             X_tmp = 0.
             for j in range(self.num_components):
                 conv = self.components[j]
-                X_tmp += s[j, k] * \
-                    self.dropout(self.relu(self.maxpool(conv(X))))
+                out = self.dropout(self.relu(self.maxpool(conv(X))))
+                X_tmp += s[j, k] * out
+                print('task_id', task_id, 'j', j,
+                      'k', k, 'contr', torch.sum(s[j, k] * out))
             X = X_tmp
         X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])
         return X

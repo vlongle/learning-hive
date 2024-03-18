@@ -66,15 +66,25 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         # normalize
         self.transform = transforms.Normalize(mean, std)
 
-        hidden_dim = 128
-        # self.projector = nn.Linear(out_h * out_h * self.channels,
-        #                            hidden_dim)
-        dim_in = out_h * out_h * self.channels
-        self.projector = nn.Sequential(
-            nn.Linear(dim_in, dim_in),
-            nn.ReLU(inplace=True),
-            nn.Linear(dim_in, hidden_dim)
-        )
+        # hidden_dim = 128
+        # # self.projector = nn.Linear(out_h * out_h * self.channels,
+        # #                            hidden_dim)
+        # dim_in = out_h * out_h * self.channels
+        # self.projector = nn.Sequential(
+        #     nn.Linear(dim_in, dim_in),
+        #     nn.ReLU(inplace=True),
+        #     nn.Linear(dim_in, hidden_dim)
+        # )
+
+        # if self.use_contrastive:
+        #     hidden_dim = 64
+        #     dim_in = out_h * out_h * self.channels
+        #     self.projector = nn.ModuleList([nn.Sequential(
+        #         nn.Linear(dim_in, dim_in),
+        #         nn.ReLU(inplace=True),
+        #         nn.Linear(dim_in, hidden_dim),
+        #     ) for t in range(self.num_tasks)])
+
         self.to(self.device)
 
     def add_tmp_module(self, task_id):

@@ -21,7 +21,7 @@
 
 
 # # Array of local folders to download
-LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True")
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_recv_query_task_mode_all" "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_recv_query_task_mode_current" )
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
 REMOTE_PATH="/home/vlongle/code/learning-hive/experiment_results/"

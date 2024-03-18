@@ -27,7 +27,7 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                  padding=0,
                  num_init_tasks=None,
                  max_components=-1,
-                 init_ordering_mode='random_onehot',
+                 init_ordering_mode='one_module_per_task',
                  device='cuda',
                  dropout=0.5,
                  use_contrastive=False,
@@ -111,7 +111,8 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         # verify that structure[t] is of shape (num_components, depth)
         for t in range(self.num_tasks):
             if self.structure[t].shape[0] != self.num_components:
-               print(f"!!ERR: structure[t].shape = {self.structure[t].shape} != {self.num_components}")
+                print(
+                    f"!!ERR: structure[t].shape = {self.structure[t].shape} != {self.num_components}")
             assert self.structure[t].shape[
                 0] == self.num_components, f"structure[t].shape = {self.structure[t].shape} != {self.num_components}"
 

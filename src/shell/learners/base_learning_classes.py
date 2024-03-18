@@ -161,7 +161,8 @@ class Learner():
         Y_hat = self.net.decoder[task_id](X_encode)
         print("structure", self.net.structure[task_id])
         print('decoder', self.net.decoder[task_id].bias)
-        print('Y_hat', Y_hat)
+        print('comp[0]', self.net.components[0].bias)
+        # print('Y_hat', Y_hat)
         # check if Y is float if yes, raise error
         if Y.dtype == torch.float32:
             print('Y:', Y)
@@ -269,7 +270,6 @@ class Learner():
                             if isinstance(X, list):
                                 # contrastive two views
                                 X = torch.cat([X[0], X[1]], dim=0)
-                            print('Y:', Y)
                             X = X.to(self.net.device, non_blocking=True)
                             Y = Y.to(self.net.device, non_blocking=True)
                             self.gradient_step(X, Y, task, global_step=i)

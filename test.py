@@ -123,9 +123,16 @@
 # print(dataset[0])
 
 
-from shell.utils.utils import seed_everything
-import numpy as np
+# from shell.utils.utils import seed_everything
+# import numpy as np
 
-seed_everything(0)
+# seed_everything(0)
 
-print(np.random.permutation(100))
+# print(np.random.permutation(100))
+
+
+components = list(range(10))
+num_candidate_modules = 5
+
+for idx in range(-num_candidate_modules, 0, 1):
+    print('idx', idx, 'comp', components[idx])

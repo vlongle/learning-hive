@@ -321,11 +321,11 @@ class Learner():
         # Y_hat = self.net(X, task_id=task_id)
         X = X.to(self.net.device, non_blocking=True)
         Y = Y.to(self.net.device, non_blocking=True)
-        print("task_id:", task_id, 'y', Y)
+        # print("task_id:", task_id, 'y', Y)
         l = self.compute_loss(X, Y, task_id, mode=train_mode,
                               log=True, global_step=global_step)
-        print("LOSS", l)
-        exit(0)
+        # print("LOSS", l)
+        # exit(0)
         self.optimizer.zero_grad()
         l.backward()
         self.optimizer.step()
@@ -445,9 +445,12 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
                 self.net.receive_modules(task_id, module_list)
 
-                self.optimizer = torch.optim.Adam(self.net.parameters(),)
-                # for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
-                #     self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
+                # self.optimizer = torch.optim.Adam(self.net.parameters(),)
+                # the last num_candidate_modules components
+                # for idx in range(-num_candidate_modules, 0, 1):
+                for idx in self.net.candidate_indices:
+                    self.optimizer.add_param_group(
+                        {'params': self.net.components[idx].parameters()})
 
             self.net.unfreeze_structure(task_id=task_id)
 

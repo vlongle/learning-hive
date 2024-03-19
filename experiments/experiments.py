@@ -23,7 +23,8 @@ import argparse
 parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
 
-parser.add_argument('--num_epochs', type=int, default=100)
+# parser.add_argument('--num_epochs', type=int, default=100)
+parser.add_argument('--num_epochs', type=int, default=10)
 parser.add_argument('--batch_size', type=int, default=64)
 
 args = parser.parse_args()
@@ -71,7 +72,7 @@ if __name__ == "__main__":
         "dataset.remap_labels": True,
         "dataset.with_replacement": False,
         # "dataset.num_tasks": 20,
-        "dataset.num_tasks": 4,
+        "dataset.num_tasks": 5,
         # "dataset.num_tasks": 6,
         "net": "cnn",
         "net.depth": 4,

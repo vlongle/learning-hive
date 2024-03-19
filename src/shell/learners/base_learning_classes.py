@@ -297,6 +297,14 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.optimizer.add_param_group(
                 {'params': self.net.components[-1].parameters()})
 
+            print('new comps:', self.net.components[-1].bias)
+            print('structure', self.net.structure[task_id])
+            # print out the names of what being optimized by the optimizer
+            # for param in self.optimizer.param_groups:
+            #     print(param['params'])
+
+            exit(0)
+
             if hasattr(self, 'preconditioner'):
                 self.preconditioner.add_module(self.net.components[-1])
 

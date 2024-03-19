@@ -94,6 +94,7 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                     (1, self.depth), -np.inf if t < task_id else 1, device=self.device)), dim=0)
             conv = nn.Conv2d(self.channels, self.channels,
                              self.conv_kernel, padding=self.padding).to(self.device)
+            print('adding conv:', conv.bias)
             self.components.append(conv)
             self.num_components += 1
 

@@ -293,6 +293,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.net.freeze_modules()
             self.net.freeze_structure()     # freeze structure for all tasks
             # freeze original modules and structure
+            print('rand torch seed', int(torch.empty(
+                (), dtype=torch.int64).random_().item()))
             self.net.add_tmp_module(task_id)
             self.optimizer.add_param_group(
                 {'params': self.net.components[-1].parameters()})

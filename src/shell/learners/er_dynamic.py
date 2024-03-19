@@ -123,10 +123,10 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                 # contrastive two views
                 X = X[0]  # only store the first view (original image)
             self.replay_buffers[task_id].push(X, Y)
-        self.memory_loaders[task_id] = (
-            torch.utils.data.DataLoader(self.replay_buffers[task_id],
-                                        batch_size=trainloader.batch_size,
-                                        shuffle=True,
-                                        num_workers=10,
-                                        pin_memory=True
-                                        ))
+        # self.memory_loaders[task_id] = (
+        #     torch.utils.data.DataLoader(self.replay_buffers[task_id],
+        #                                 batch_size=trainloader.batch_size,
+        #                                 shuffle=True,
+        #                                 num_workers=10,
+        #                                 pin_memory=True
+        #                                 ))

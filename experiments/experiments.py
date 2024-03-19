@@ -108,7 +108,8 @@ if __name__ == "__main__":
     config = {
         "algo": args.algo,
         "seed": args.seed,
-        "num_agents": 4,
+        # "num_agents": 4,
+        "num_agents": 1,
         "parallel": True,
         # "parallel": False,
         "dataset": "cifar100",
@@ -119,8 +120,8 @@ if __name__ == "__main__":
         "net": "cnn",
         "net.depth": 4,
         "num_init_tasks": 4,
-        "dataset.num_tasks": 20,
-        # "dataset.num_tasks": 6,
+        # "dataset.num_tasks": 20,
+        "dataset.num_tasks": 4,
         # "net.dropout": 0.0,
         "net.dropout": args.dropout,
         "train.init_num_epochs": num_epochs,
@@ -133,7 +134,7 @@ if __name__ == "__main__":
         "train.save_freq": 10,
         "agent.use_contrastive": False,
         "net.no_sparse_basis": args.no_sparse_basis,
-        "root_save_dir": prefix + f"experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}_batchsize_{args.batch_size}",
+        "root_save_dir": prefix + f"experiment_results/init_tasks_debug_cifar100_vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}_batchsize_{args.batch_size}",
     }
 
     run_experiment(config, strict=False)

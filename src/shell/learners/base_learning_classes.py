@@ -160,8 +160,8 @@ class Learner():
 
             self.save_data(num_epochs + 1, task_id,
                            testloaders, final_save=True)
-            for task, loader in self.init_trainloaders.items():
-                self.update_multitask_cost(loader, task)
+            # for task, loader in self.init_trainloaders.items():
+            #     self.update_multitask_cost(loader, task)
         else:
             self.save_data(0, task_id,
                            testloaders, final_save=True)

@@ -148,12 +148,12 @@ class Learner():
                                 X = torch.cat([X[0], X[1]], dim=0)
                             X = X.to(self.net.device, non_blocking=True)
                             Y = Y.to(self.net.device, non_blocking=True)
-                            print('BEFORE: comp[0]',
-                                  self.net.components[0].bias)
+                            # print('BEFORE: comp[0]',
+                            #       self.net.components[0].bias)
                             self.gradient_step(X, Y, task)
-                            print('AFTER: comp[0]',
-                                  self.net.components[0].bias)
-                            exit(0)
+                            # print('AFTER: comp[0]',
+                            #       self.net.components[0].bias)
+                            # exit(0)
                             iter_cnt += 1
                 if i % save_freq == 0 or i == num_epochs - 1:
                     self.save_data(i + 1, task_id, testloaders)
@@ -202,9 +202,9 @@ class Learner():
         # Y_hat = self.net(X, task_id=task_id)
         X = X.to(self.net.device, non_blocking=True)
         Y = Y.to(self.net.device, non_blocking=True)
-        print('task_id', task_id, 'y', Y)
+        # print('task_id', task_id, 'y', Y)
         l = self.compute_loss(X, Y, task_id, mode=train_mode)
-        print('LOSS', l)
+        # print('LOSS', l)
         # exit(0)
         self.optimizer.zero_grad()
         l.backward()

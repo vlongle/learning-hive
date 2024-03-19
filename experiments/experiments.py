@@ -70,7 +70,8 @@ if __name__ == "__main__":
         "dataset.num_vals_per_class": -1,
         "dataset.remap_labels": True,
         "dataset.with_replacement": False,
-        "dataset.num_tasks": 20,
+        # "dataset.num_tasks": 20,
+        "dataset.num_tasks": 4,
         # "dataset.num_tasks": 6,
         "net": "cnn",
         "net.depth": 4,
@@ -82,7 +83,7 @@ if __name__ == "__main__":
         "agent.batch_size": args.batch_size,
         "train.save_freq": 10,
         "agent.use_contrastive": False,
-        "root_save_dir": f"experiment_results/remove_datasets_hack_monday_debug_cifar100_batch_{args.batch_size}_num_epochs_{args.num_epochs}",
+        "root_save_dir": f"experiment_results/init_debug_remove_datasets_hack_monday_debug_cifar100_batch_{args.batch_size}_num_epochs_{args.num_epochs}",
     }
 
     run_experiment(config, strict=False)

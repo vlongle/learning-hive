@@ -454,8 +454,13 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 # the last num_candidate_modules components
                 # for idx in range(-num_candidate_modules, 0, 1):
                 for idx in self.net.candidate_indices:
+                    print('adding param group', idx)
                     self.optimizer.add_param_group(
                         {'params': self.net.components[idx].parameters()})
+
+                print('new comps:', self.net.components[-1].bias)
+                print('structure', self.net.structure[task_id])
+                exit(0)
 
             self.net.unfreeze_structure(task_id=task_id)
 

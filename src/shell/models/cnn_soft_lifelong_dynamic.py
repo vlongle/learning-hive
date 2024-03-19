@@ -75,14 +75,14 @@ class CNNSoftLLDynamic(SoftOrderingNet):
         self.transform = transforms.Normalize(mean, std)
 
         self.use_contrastive = use_contrastive
-        if self.use_contrastive:
-            hidden_dim = 64
-            dim_in = out_h * out_h * self.channels
-            self.projector = nn.ModuleList([nn.Sequential(
-                nn.Linear(dim_in, dim_in),
-                nn.ReLU(inplace=True),
-                nn.Linear(dim_in, hidden_dim),
-            ) for t in range(self.num_tasks)])
+        # if self.use_contrastive:
+        #     hidden_dim = 64
+        #     dim_in = out_h * out_h * self.channels
+        #     self.projector = nn.ModuleList([nn.Sequential(
+        #         nn.Linear(dim_in, dim_in),
+        #         nn.ReLU(inplace=True),
+        #         nn.Linear(dim_in, hidden_dim),
+        #     ) for t in range(self.num_tasks)])
         self.to(self.device)
 
     def add_tmp_modules(self, task_id, num_modules):
@@ -100,7 +100,7 @@ class CNNSoftLLDynamic(SoftOrderingNet):
                             (1, self.depth), -np.inf if t < task_id else 1, device=self.device)), dim=0)
                 conv = nn.Conv2d(self.channels, self.channels,
                                  self.conv_kernel, padding=self.padding).to(self.device)
-                print('adding conv', conv.bias)
+                # print('adding conv', conv.bias)
                 self.components.append(conv)
                 self.candidate_indices.append(self.num_components)
 
@@ -210,6 +210,24 @@ class CNNSoftLLDynamic(SoftOrderingNet):
             X = X_tmp
         X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])
         return X
+
+    # def encode(self, X, task_id):
+    #     X = self.transform(X)
+    #     c = X.shape[1]
+    #     s = self.softmax(self.structure[task_id][:self.num_components, :])
+    #     # print('X', X)
+    #     X = F.pad(X, (0, 0, 0, 0, 0, self.channels-c, 0, 0))
+    #     for k in range(self.depth):
+    #         X_tmp = 0.
+    #         for j in range(self.num_components):
+    #             conv = self.components[j]
+    #             out = self.dropout(self.relu(self.maxpool(conv(X))))
+    #             X_tmp += s[j, k] * out
+    #             # print('task_id', task_id, 'j', j,
+    #             #       'k', k, 'contr', torch.sum(s[j, k] * out))
+    #         X = X_tmp
+    #     X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])
+    #     return X
 
     def forward(self, X, task_id):
         X = self.encode(X, task_id)

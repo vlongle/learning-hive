@@ -43,7 +43,9 @@ class Learner():
             self.sup_loss = SupConLoss(temperature=temperature)
 
         # self.loss = nn.BCEWithLogitsLoss() if net.binary else nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.Adam(self.net.parameters(),)
+        self.optimizer = torch.optim.Adam(self.net.parameters())
+        print('optimizer', self.optimizer)
+        # self.optimizer = torch.optim.SGD(self.net.parameters(), lr=0.001)
         #   lr=0.005)
         self.improvement_threshold = improvement_threshold
         self.T = 0
@@ -164,11 +166,11 @@ class Learner():
         # print('comp[0]', self.net.components[0].bias)
         # print('Y_hat', Y_hat)
         # check if Y is float if yes, raise error
-        if Y.dtype == torch.float32:
-            print('Y:', Y)
-            raise ValueError(
-                "?????????????/// Y is float32, make sure to convert to long before passing to compute_cross_entropy_loss")
-        # check that Y is either 0 or 1
+        # if Y.dtype == torch.float32:
+        #     print('Y:', Y)
+        #     raise ValueError(
+        #         "?????????????/// Y is float32, make sure to convert to long before passing to compute_cross_entropy_loss")
+        # # check that Y is either 0 or 1
         # if Y.max() > 1 or Y.min() < 0:
         #     print('Y:', Y)
         #     raise ValueError(
@@ -177,45 +179,45 @@ class Learner():
         ce = self.ce_loss(Y_hat, Y)
         return ce
 
-    def compute_auxillary_loss(self, X, Y, task_id):
-        loss = 0.
-        if self.fl_strategy is not None:
-            if self.fl_strategy == "fedprox":
-                loss += compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model,
-                                                 mu=self.mu)
-            else:
-                raise NotImplementedError(
-                    "FL strategy %s not implemented" % self.fl_strategy)
+    # def compute_auxillary_loss(self, X, Y, task_id):
+    #     loss = 0.
+    #     if self.fl_strategy is not None:
+    #         if self.fl_strategy == "fedprox":
+    #             loss += compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model,
+    #                                              mu=self.mu)
+    #         else:
+    #             raise NotImplementedError(
+    #                 "FL strategy %s not implemented" % self.fl_strategy)
 
-        if self.use_ood_separation_loss:
-            if X.shape[0] != Y.shape[0]:
-                # using contrastive so we have two views
-                X, _ = torch.split(X, X.shape[0] // 2, dim=0)
-            X_encode = self.net.encode(X, task_id)
-            # task_id might be a one value tensor, convert to int
-            if isinstance(task_id, torch.Tensor):
-                task_id = task_id.item()
-            X_ood, *_ = self.ood_data[task_id]
-            X_ood = X_ood.to(self.net.device, non_blocking=True)
-            ood_encode = self.net.encode(X_ood, task_id)
-            loss += self.ood_loss(X_encode, ood_encode)
+    #     if self.use_ood_separation_loss:
+    #         if X.shape[0] != Y.shape[0]:
+    #             # using contrastive so we have two views
+    #             X, _ = torch.split(X, X.shape[0] // 2, dim=0)
+    #         X_encode = self.net.encode(X, task_id)
+    #         # task_id might be a one value tensor, convert to int
+    #         if isinstance(task_id, torch.Tensor):
+    #             task_id = task_id.item()
+    #         X_ood, *_ = self.ood_data[task_id]
+    #         X_ood = X_ood.to(self.net.device, non_blocking=True)
+    #         ood_encode = self.net.encode(X_ood, task_id)
+    #         loss += self.ood_loss(X_encode, ood_encode)
 
-        return loss
+        # return loss
 
     def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=False):
         """
         Compute main loss + (optional aux loss for FL)
         """
         loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log)
-        self.writer.add_scalar(
-            f'loss/train_{self.T-1}/task_{task_id}/loss', loss, global_step)
+        # self.writer.add_scalar(
+        #     f'loss/train_{self.T-1}/task_{task_id}/loss', loss, global_step)
         # logging.info("before %s", loss)
         # print("task_loss:", loss, "mu", self.mu)
-        if use_aux:
-            aux_loss = self.compute_auxillary_loss(X, Y, task_id)
-            self.writer.add_scalar(
-                f'aux_loss/train_{self.T-1}/task_{task_id}/loss', aux_loss, global_step)
-            loss += aux_loss
+        # if use_aux:
+        #     aux_loss = self.compute_auxillary_loss(X, Y, task_id)
+        #     self.writer.add_scalar(
+        #         f'aux_loss/train_{self.T-1}/task_{task_id}/loss', aux_loss, global_step)
+        #     loss += aux_loss
 
         # print("combined loss:", loss)
 
@@ -262,7 +264,17 @@ class Learner():
             self.init_trainloaders = {}
         self.init_trainloaders[task_id] = trainloader
         if len(self.init_trainloaders) == self.net.num_init_tasks:
+            # print([(len(loader), len(loader.dataset))
+            #       for loader in self.init_trainloaders.values()])
             for i in range(start_epoch, num_epochs + start_epoch):
+                # print('epoch', i)
+                # for j in range(len(self.net.components)):
+                #     print('\t component', j)
+                #     print(
+                #         '\t', self.net.components[j].bias.mean(), self.net.components[j].weight.mean())
+                #     print('\t', self.net.structure[j])
+                #     print('\t', self.net.decoder[j].bias.mean(),
+                #           self.net.decoder[j].weight.mean())
                 for XY_all in zip_longest(*self.init_trainloaders.values()):
                     for task, XY in zip(self.init_trainloaders.keys(), XY_all):
                         if XY is not None:
@@ -277,20 +289,20 @@ class Learner():
                             self.gradient_step(X, Y, task, global_step=i)
                             # print('AFTER: comp[0]',
                             #       self.net.components[0].bias)
-                            # exit(0)
+                # exit(0)
                 if i % save_freq == 0:
                     self.save_data(i + 1, task_id, testloaders)
 
             if final:
                 self.save_data(num_epochs + start_epoch + 1, task_id,
                                testloaders, final_save=final)
-                # for task, loader in self.init_trainloaders.items():
-                #     self.update_multitask_cost(loader, task)
+                for task, loader in self.init_trainloaders.items():
+                    self.update_multitask_cost(loader, task)
         else:
             self.save_data(start_epoch, task_id,
                            testloaders, final_save=final)
-        print('DONE init train task', task_id, 'rand torch seed', int(torch.empty(
-            (), dtype=torch.int64).random_().item()))
+        # print('DONE init train task', task_id, 'rand torch seed', int(torch.empty(
+        #     (), dtype=torch.int64).random_().item()))
         # self.update_multitask_cost(self.init_trainloaders[task_id], task_id)
 
     def evaluate(self, testloaders, mode=None, eval_no_update=True):
@@ -328,14 +340,22 @@ class Learner():
         # Y_hat = self.net(X, task_id=task_id)
         X = X.to(self.net.device, non_blocking=True)
         Y = Y.to(self.net.device, non_blocking=True)
-        # print("task_id:", task_id, 'y', Y)
+        # print("task_id:", task_id, 'y', Y[:5])
         l = self.compute_loss(X, Y, task_id, mode=train_mode,
                               log=True, global_step=global_step)
-        # print("LOSS", l)
         # exit(0)
         self.optimizer.zero_grad()
         l.backward()
         self.optimizer.step()
+        # print(task_id, "LOSS:", l, 'exp_avg', list(
+        #     self.optimizer.state.values())[0]['exp_avg'].mean())
+
+        # for name, param in self.net.named_parameters():
+        #     if param.requires_grad:
+        #         print(
+        #             f"Gradient for {name}: {param.grad.mean() if param.grad is not None else 'No grad'}")
+
+        # exit(0)
 
     def save_data(self, epoch, task_id, testloaders, final_save=False, mode=None,
                   save_dir=None, record=None):
@@ -449,8 +469,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 print("no. current components", len(self.net.components),
                       "NUM_CANDIDATE_MODULES", num_candidate_modules,
                       'len(module_list)', len(module_list))
-                print('rand torch seed', int(torch.empty(
-                    (), dtype=torch.int64).random_().item()))
+                # print('rand torch seed', int(torch.empty(
+                #     (), dtype=torch.int64).random_().item()))
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
                 self.net.receive_modules(task_id, module_list)
 
@@ -459,13 +479,13 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 # for idx in range(-num_candidate_modules, 0, 1):
 
                 for idx in self.net.candidate_indices:
-                    print('adding param group', idx)
+                    # print('adding param group', idx)
                     self.optimizer.add_param_group(
                         {'params': self.net.components[idx].parameters()})
 
-                print('new comps:', self.net.components[-1].bias)
-                print('structure', self.net.structure[task_id])
-                exit(0)
+                # print('new comps:', self.net.components[-1].bias)
+                # print('structure', self.net.structure[task_id])
+                # exit(0)
 
             self.net.unfreeze_structure(task_id=task_id)
 
@@ -486,8 +506,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 if (i + 1) % component_update_freq == 0:
                     # print('UPDATING MODULES')
                     self.update_modules(
-                        trainloader, task_id, train_mode=train_mode, global_step=i,
-                        use_aux=True)
+                        trainloader, task_id, train_mode=train_mode, global_step=i,)
+
                 else:
                     for X, Y in trainloader:
                         if isinstance(X, list):

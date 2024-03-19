@@ -28,6 +28,9 @@ SEED_SCALE = 1000
 class Agent:
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
 
+        self.seed = seed + SEED_SCALE * node_id
+        seed_everything(self.seed)
+
         self.save_dir = os.path.join(
             agent_kwargs["save_dir"], f"agent_{str(node_id)}")
         create_dir_if_not_exist(self.save_dir)
@@ -35,8 +38,6 @@ class Agent:
         logging.basicConfig(level=logging.INFO,
                             handlers=[logging.StreamHandler(),
                                       logging.FileHandler(os.path.join(self.save_dir, "log.txt"))])
-        self.seed = seed + SEED_SCALE * node_id
-        seed_everything(self.seed)
         logging.info(
             f"Agent: node_id: {node_id}, seed: {self.seed}")
         self.num_coms = {}
@@ -203,8 +204,8 @@ class Agent:
 
         train_kwargs.update(kwargs)
 
-        print('train task', task_id, 'rand torch seed', int(torch.empty(
-            (), dtype=torch.int64).random_().item()))
+        # print('train task', task_id, 'rand torch seed', int(torch.empty(
+        #     (), dtype=torch.int64).random_().item()))
 
         self.agent.train(trainloader, task_id, testloaders=testloaders,
                          valloader=valloader, start_epoch=start_epoch, **train_kwargs)

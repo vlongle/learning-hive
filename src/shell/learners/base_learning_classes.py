@@ -447,12 +447,15 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 print("no. current components", len(self.net.components),
                       "NUM_CANDIDATE_MODULES", num_candidate_modules,
                       'len(module_list)', len(module_list))
+                print('rand torch seed', int(torch.empty(
+                    (), dtype=torch.int64).random_().item()))
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
                 self.net.receive_modules(task_id, module_list)
 
                 # self.optimizer = torch.optim.Adam(self.net.parameters(),)
                 # the last num_candidate_modules components
                 # for idx in range(-num_candidate_modules, 0, 1):
+
                 for idx in self.net.candidate_indices:
                     print('adding param group', idx)
                     self.optimizer.add_param_group(

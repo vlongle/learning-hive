@@ -60,7 +60,8 @@ if __name__ == "__main__":
     start = time.time()
 
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
-    num_epochs = 100
+    # num_epochs = 100
+    num_epochs = 10
     # num_epochs = 5
     num_init_tasks = 4
     # num_tasks = 10
@@ -121,7 +122,7 @@ if __name__ == "__main__":
         "net.depth": 4,
         "num_init_tasks": 4,
         # "dataset.num_tasks": 20,
-        "dataset.num_tasks": 4,
+        "dataset.num_tasks": 5,
         # "net.dropout": 0.0,
         "net.dropout": args.dropout,
         "train.init_num_epochs": num_epochs,

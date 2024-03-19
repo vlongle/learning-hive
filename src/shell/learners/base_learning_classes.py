@@ -165,6 +165,8 @@ class Learner():
         else:
             self.save_data(0, task_id,
                            testloaders, final_save=True)
+        print('DONE init train task', task_id, 'rand torch seed', int(torch.empty(
+            (), dtype=torch.int64).random_().item()))
 
     def evaluate(self, testloaders, mode=None):
         was_training = self.net.training

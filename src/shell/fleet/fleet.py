@@ -71,6 +71,9 @@ class Agent:
                                                 num_workers=4,
                                                 pin_memory=True,
                                                 )
+
+        print('train task', task_id, 'rand torch seed', int(torch.empty(
+            (), dtype=torch.int64).random_().item()))
         self.agent.train(trainloader, task_id, testloaders=testloaders,
                          valloader=valloader, **self.train_kwargs)
 

@@ -122,7 +122,7 @@ if __name__ == "__main__":
         "net.depth": 4,
         "num_init_tasks": 4,
         # "dataset.num_tasks": 20,
-        "dataset.num_tasks": 5,
+        "dataset.num_tasks": 4,
         # "net.dropout": 0.0,
         "net.dropout": args.dropout,
         "train.init_num_epochs": num_epochs,

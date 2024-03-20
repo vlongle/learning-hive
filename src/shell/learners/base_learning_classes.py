@@ -347,15 +347,15 @@ class Learner():
         self.optimizer.zero_grad()
         l.backward()
         self.optimizer.step()
-        # print(task_id, "LOSS:", l, 'exp_avg', list(
-        #     self.optimizer.state.values())[0]['exp_avg'].mean())
+        print(task_id, "LOSS:", l, 'exp_avg', list(
+            self.optimizer.state.values())[0]['exp_avg'].mean())
 
-        # for name, param in self.net.named_parameters():
-        #     if param.requires_grad:
-        #         print(
-        #             f"Gradient for {name}: {param.grad.mean() if param.grad is not None else 'No grad'}")
+        for name, param in self.net.named_parameters():
+            if param.requires_grad:
+                print(
+                    f"Gradient for {name}: {param.grad.mean() if param.grad is not None else 'No grad'}")
 
-        # exit(0)
+        exit(0)
 
     def save_data(self, epoch, task_id, testloaders, final_save=False, mode=None,
                   save_dir=None, record=None):

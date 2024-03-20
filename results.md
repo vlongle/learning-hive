@@ -258,3 +258,8 @@ Still can't recover the perf of prev github commit. But anyway.
     memory: 16, train 256, dropout 0.5: 71.0225
     memory: 64, train all, dropout 0.5: 74.53375
     memory: 64, train 256, dropout 0.5: 72.22875
+
+
+
+## TODO:
+- re-run with no transform

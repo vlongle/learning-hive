@@ -188,10 +188,10 @@ class SplitDataset():
             Xb_train_t, yb_train_t, Xb_val_t, yb_val_t, Xb_test_t, yb_test_t = \
                 self.split_data(X_train, y_train, X_val, y_val, X_test, y_test, labels[np.arange(
                     task_id*num_classes_per_task, (task_id+1)*num_classes_per_task)], remap_labels=remap_labels)
-            if num_train_per_task != -1:
+            if num_train_per_task > 0:
                 Xb_train_t = Xb_train_t[:num_train_per_task]
                 yb_train_t = yb_train_t[:num_train_per_task]
-            if num_val_per_task != -1:
+            if num_val_per_task > 0:
                 Xb_val_t = Xb_val_t[:num_val_per_task]
                 yb_val_t = yb_val_t[:num_val_per_task]
             logging.info(f"task {task_id} :{Xb_train_t.shape}")

@@ -430,7 +430,8 @@ def filter_dataset_by_label(dataset, target_label):
 
 
 def compute_tasks_sim(task1, task2):
-    assert len(task1) == len(task2)
+    assert len(task1) == len(
+        task2), f"len(task1)={len(task1)} != len(task2)={len(task2)}"
     union = len(set(task1) | set(task2))
     intersection = len(set(task1) & set(task2))
     return intersection / union if union > 0 else 0

@@ -79,8 +79,10 @@ class Learner():
     def change_save_dir(self, save_dir):
         self.save_dir = create_dir_if_not_exist(save_dir)
         self.record = Record(os.path.join(self.save_dir, "record.csv"))
-        self.dynamic_record = Record(os.path.join(
-            self.save_dir, "add_modules_record.csv"))
+        # self.dynamic_record = Record(os.path.join(
+        #     self.save_dir, "add_modules_record.csv"))
+        self.dynamic_record.path = os.path.join(
+            self.save_dir, "add_modules_record.csv")
         self.sharing_data_record = Record(os.path.join(
             self.save_dir, "sharing_data_record.csv"))
         self.writer = SummaryWriter(

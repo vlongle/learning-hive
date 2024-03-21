@@ -8,3 +8,5 @@ sync_base: False
 freeze_candidate_module: False
 transfer_decoder: False
 transfer_structure: False
+ranker: label
+module_select: tryout

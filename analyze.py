@@ -40,7 +40,7 @@ import os
 import re
 from shell.utils.metric import Metric
 from  shell.utils.record import Record
-result_dir = "/mnt/kostas-graid/datasets/vlongle/full_data_experiment_results/vanilla_jorge_setting_no_sparse"
+result_dir = "full_data_experiment_results/vanilla_jorge_setting_no_sparse"
 # result_dir = "experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
 # result_dir = "experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
 # result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/vanilla_jorge_setting_no_sparse_basis"

@@ -202,3 +202,7 @@ with mode='both' (contrast + cross entropy)
 with mode='ce_finetune' (only train the last layer keeping the random encoder fixed)
 0.5015353121801432
 
+
+
+
+

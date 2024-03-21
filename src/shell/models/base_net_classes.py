@@ -123,8 +123,6 @@ class SoftOrderingNet(CompositionalNet):
                         initialized_modules.add(m)
                 if len(initialized_modules) == self.depth:
                     break
-            print('DONE Random onehot', self.structure[0])
-            exit(0)
         elif self.init_ordering_mode == 'random':
             raise NotImplementedError
         elif self.init_ordering_mode == 'uniform':

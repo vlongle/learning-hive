@@ -35,4 +35,4 @@ NO_SPARSE_BASIS="1"
 
 # Run the command with the determined settings and a unique seed for each job
 srun bash -c "python experiments/modmod_experiments.py --transfer_decoder $TRANSFER_DECODER --transfer_structure $TRANSFER_STRUCTURE --no_sparse_basis $NO_SPARSE_BASIS"
-exit 0
+exit 3

@@ -108,11 +108,12 @@ if __name__ == "__main__":
     # decrease dropout to 0.0, no_sparse_basis=False, memory_size
     config = {
         "algo": args.algo,
-        "seed": args.seed,
+        "seed": [0,1,2,3,4,5,6,7],
         "num_agents": 8,
         "parallel": True,
         "dataset": "cifar100",
-        "dataset.num_trains_per_class": args.num_trains_per_class,
+        # "dataset.num_trains_per_class": args.num_trains_per_class,
+        "dataset.num_trains_per_class": 256,
         "dataset.num_vals_per_class": -1,
         "dataset.remap_labels": True,
         "dataset.with_replacement": False,
@@ -120,18 +121,19 @@ if __name__ == "__main__":
         "net.depth": 4,
         "num_init_tasks": 4,
         "dataset.num_tasks": 20,
-        "net.dropout": args.dropout,
+        # "net.dropout": args.dropout,
+        "net.dropout": 0.5,
         "train.init_num_epochs": num_epochs,
         "train.init_component_update_freq": num_epochs,
         "train.num_epochs": num_epochs,
         "train.component_update_freq": num_epochs,
         # "agent.memory_size": args.memory_size,
-        "agent.memory_size": 64,
+        "agent.memory_size": 32,
         "agent.batch_size": args.batch_size,
         "train.save_freq": 10,
         "agent.use_contrastive": False,
         "net.no_sparse_basis": args.no_sparse_basis,
-        "root_save_dir": prefix + f"experiment_results/no_transform_debug_cifar100_vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}_batchsize_{args.batch_size}",
+        "root_save_dir": prefix + f"experiment_results/vanilla_jorge_setting_no_sparse_basis"
     }
 
     run_experiment(config, strict=False)

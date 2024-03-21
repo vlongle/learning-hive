@@ -261,5 +261,13 @@ Still can't recover the perf of prev github commit. But anyway.
 
 
 
-## TODO:
-- re-run with no transform
+## TODO
+- do demand transfer
+- do the budget experiment
+- do the combined experiment
+- do the task similarity experiment
+
+
+## Other tricks
+- increase the no. of samples for datasets like MNIST variants can actually make the diff between modular and monolithic more drastic due to mono overfitting
+    - drawback: don't add as much modules -> harm the modmod stuff.

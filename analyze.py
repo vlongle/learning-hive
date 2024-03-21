@@ -31,14 +31,15 @@ For cifar100, epochs=500 is stored in
 # result_dir = "experiment_results/vanilla_jorge_setting_basis_no_sparse"
 # result_dir = "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/vanilla_jorge_setting_dropout_0.5_memory_32_no_sparse_False_num_trains_-1_batchsize_32"
 # result_dir = "experiment_results/debug_cifar100_batch_64_num_epochs_100"
+# result_dir = "experiment_results/jorge_setting_fedavg"
 import os
 import re
 from shell.utils.metric import Metric
 from  shell.utils.record import Record
-result_dir = "experiment_results/jorge_setting_fedavg"
+result_dir = "experiment_results/jorge_setting_no_sparse_basis"
 # result_dir = "experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
 # result_dir = "experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
-result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
+# result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
 # result_dir = "experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True"
 # result_dir = "experiment_results/test_lambda_5_num_epochs_150"
 # result_dir = "experiment_results/test_lambda_5.0_num_epochs_300_delta_1.0"

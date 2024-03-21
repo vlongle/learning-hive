@@ -44,9 +44,6 @@ class Learner():
 
         # self.loss = nn.BCEWithLogitsLoss() if net.binary else nn.CrossEntropyLoss()
         self.optimizer = torch.optim.Adam(self.net.parameters())
-        print('optimizer', self.optimizer)
-        # self.optimizer = torch.optim.SGD(self.net.parameters(), lr=0.001)
-        #   lr=0.005)
         self.improvement_threshold = improvement_threshold
         self.T = 0
         self.observed_tasks = set()

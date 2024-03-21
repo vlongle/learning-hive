@@ -101,7 +101,8 @@ if __name__ == "__main__":
 
     config = {
         "algo": "modular",
-        "seed": args.seed,
+        # "seed": args.seed,
+        "seed": [0,1,2,3,4,5,6,7],
         "num_agents": 8,
         "parallel": True,
         # "num_agents": 4,

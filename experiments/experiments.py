@@ -73,7 +73,7 @@ if __name__ == "__main__":
         "parallel": True,
         "num_agents": 8,
         "dataset": args.dataset,
-        "dataset.num_trains_per_class": -1,
+        "dataset.num_trains_per_class": 64,
         "dataset.num_vals_per_class": 50,
         "dataset.remap_labels": True,
         "dataset.with_replacement": True,

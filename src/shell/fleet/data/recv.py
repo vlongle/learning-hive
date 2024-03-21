@@ -18,6 +18,7 @@ from shell.utils.replay_buffers import ReplayBufferReservoir
 from shell.fleet.data.data_utilize import *
 import pickle
 from shell.learners.base_learning_classes import CompositionalDynamicLearner
+from functools import partial
 """
 Receiver-first procedure.
 Scorers return higher scores for more valuable instances (need to train more on).
@@ -108,6 +109,23 @@ SCORER_TYPE_LOOKUP = {
 }
 
 
+@torch.inference_mode()
+def compute_embedding_dist(net, X1, X2=None, task_id=None):
+    assert task_id is not None
+    was_training = net.training
+    net.eval()
+    X1_embed = net.encode(
+        X1.to(net.device), task_id=task_id)  # (B, hidden_dim)
+    if X2 is not None:
+        X2_embed = net.encode(X2.to(net.device), task_id=task_id)
+        sim = pairwise_cosine_similarity(X1_embed, X2_embed)
+    else:
+        sim = pairwise_cosine_similarity(X1_embed)
+    if was_training:
+        net.train()
+    return sim.cpu()
+
+
 class RecvDataAgent(Agent):
     """
     Have two rounds of communications.
@@ -126,15 +144,6 @@ class RecvDataAgent(Agent):
         self.scorer_type = SCORER_TYPE_LOOKUP[self.sharing_strategy.scorer]
 
         self.is_modular = isinstance(self.agent, CompositionalDynamicLearner)
-
-    @torch.inference_mode()
-    def compute_embedding_dist(self, X1, X2, task_id):
-        self.net.eval()
-        X1_embed = self.net.encode(
-            X1.to(self.net.device), task_id=task_id)  # (B, hidden_dim)
-        X2_embed = self.net.encode(X2.to(self.net.device), task_id=task_id)
-        sim = pairwise_cosine_similarity(X1_embed, X2_embed)
-        return sim.cpu()
 
     # @torch.inference_mode()
     # def compute_embedding_dist(self, X1, X2, task_id):
@@ -186,7 +195,7 @@ class RecvDataAgent(Agent):
         buffer.
         """
         if computer is None:
-            computer = self.compute_embedding_dist
+            computer = partial(self.compute_embedding_dist, self.net)
 
         sims = []
         Xs, ys, tasks = [], [], []
@@ -406,6 +415,8 @@ class RecvDataAgent(Agent):
         """
 
         was_training = self.net.training
+        self.net.eval()
+
         if mode == "all":
             tasks = range(task_id + 1)
         elif mode == "current":

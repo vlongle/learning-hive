@@ -182,6 +182,7 @@ class SplitDataset():
         #         num_classes, num_init_tasks*num_classes_per_task, replace=False)
 
         self.class_sequence = labels
+        self.class_sequence.setflags(write=False)
         logging.info(f"Class sequence: {self.class_sequence}")
         for task_id in range(self.num_tasks):
 
@@ -194,7 +195,8 @@ class SplitDataset():
             if num_val_per_task > 0:
                 Xb_val_t = Xb_val_t[:num_val_per_task]
                 yb_val_t = yb_val_t[:num_val_per_task]
-            logging.info(f"task {task_id} :{Xb_train_t.shape}")
+            logging.info(
+                f"task {task_id} :{Xb_train_t.shape} {Xb_val_t.shape} {Xb_test_t.shape}")
 
             yb_train_t = torch.from_numpy(yb_train_t).long().squeeze()
             yb_val_t = torch.from_numpy(yb_val_t).long().squeeze()
@@ -403,7 +405,6 @@ class CIFAR100(SplitDataset):
         X_test = data_dict[b'data'].reshape(-1, 3, 32, 32)
 
         idx_shuffle = np.random.permutation(len(y_train))
-        print('idx_shuffle:', idx_shuffle)
         num_train = int(len(y_train) * .8)
         X_val = X_train[idx_shuffle[num_train:]]
         y_val = y_train[idx_shuffle[num_train:]]

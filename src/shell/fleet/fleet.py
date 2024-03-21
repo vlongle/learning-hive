@@ -272,8 +272,11 @@ class Agent:
         self.dataset.valset[task] = dataset.valset[task]
         if not self.dataset.class_sequence.flags.writeable:
             self.dataset.class_sequence = self.dataset.class_sequence.copy()
-        self.dataset.class_sequence[:task * (self.dataset.num_classes_per_task)
-                                    ] = dataset.class_sequence[:task * (self.dataset.num_classes_per_task)]
+
+        self.dataset.class_sequence[task *
+                                    self.dataset.num_classes_per_task: (task + 1) * self.dataset.num_classes_per_task] = \
+            dataset.class_sequence[task * dataset.num_classes_per_task: (
+                task + 1) * dataset.num_classes_per_task]
 
     def replace_model(self, new_model, strict=True):
         self.net.load_state_dict(new_model, strict=strict)

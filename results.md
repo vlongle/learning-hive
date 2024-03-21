@@ -271,3 +271,11 @@ Still can't recover the perf of prev github commit. But anyway.
 ## Other tricks
 - increase the no. of samples for datasets like MNIST variants can actually make the diff between modular and monolithic more drastic due to mono overfitting
     - drawback: don't add as much modules -> harm the modmod stuff.
+
+
+There is many papers on transferability estimation, and pretrain model selection from the literature.
+
+http://ise.thss.tsinghua.edu.cn/~mlong/doc/LogME-Practical-Assessment-of-Pre-trained-Models-for-Transfer-Learning-icml21.pdf
+
+
+https://github.com/YuheD/awesome-model-transferability-estimation

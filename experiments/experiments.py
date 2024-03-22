@@ -47,6 +47,7 @@ parser.add_argument('--dropout', type=float, default=0.5)
 parser.add_argument('--memory_size', type=int, default=32)
 parser.add_argument('--num_trains_per_class', type=int, default=256)
 parser.add_argument('--batch_size', type=int, default=64)
+parser.add_argument('--sync_base', type=str2bool, default=False)
 args = parser.parse_args()
 
 
@@ -61,6 +62,7 @@ if __name__ == "__main__":
 
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
     num_epochs = 100
+    # num_epochs = 10
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64
@@ -69,10 +71,13 @@ if __name__ == "__main__":
         # "algo": ["monolithic", "modular"],
         "algo": args.algo,
         "agent.batch_size": batch_size,
-        "seed": args.seed,
+        # "seed": args.seed,
+        "seed": [0, 1, 2, 3, 4, 5, 6, 7],
         "parallel": True,
-        "num_agents": 8,
-        "dataset": args.dataset,
+        # "num_agents": 24,
+        "num_agents": 20,
+        # "dataset": args.dataset,
+        "dataset": 'combined',
         "dataset.num_trains_per_class": 64,
         "dataset.num_vals_per_class": 50,
         "dataset.remap_labels": True,
@@ -91,7 +96,8 @@ if __name__ == "__main__":
         "train.save_freq": 10,
         "agent.use_contrastive": False,
         "agent.memory_size": 32,
-        "root_save_dir": prefix + f"combined_data_experiment_results/vanilla_jorge_setting_no_sparse",
+        "sharing_strategy.sync_base": args.sync_base,
+        "root_save_dir": prefix + f"combined_data_experiment_results/vanilla_jorge_setting_no_sparse_sync_{args.sync_base}",
     }
 
     # # # === CNN experiments: CIFAR100 ===

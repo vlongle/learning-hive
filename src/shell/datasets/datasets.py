@@ -143,6 +143,27 @@ def get_custom_tensordataset(tensors, name, use_contrastive=False):
         *tensors, transform=train_transform)
 
 
+class CombinedDataset():
+    def __init__(self, num_tasks, num_classes_per_task, with_replacement=False,
+                 normalize=True, num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
+                 num_init_tasks=None, labels=None, name=None, use_contrastive=False):
+        self.num_tasks = num_tasks
+        self.num_init_tasks = num_init_tasks
+        self.num_classes_per_task = num_classes_per_task
+        self.with_replacement = with_replacement
+        self.normalize = normalize
+        self.num_train_per_task = num_train_per_task
+        self.num_val_per_task = num_val_per_task
+        self.remap_labels = remap_labels
+        self.name = name
+        self.use_contrastive = use_contrastive
+
+        self.trainset = []
+        self.valset = []
+        self.testset = []
+        self.class_sequence = []
+
+
 class SplitDataset():
     def __init__(self, num_tasks, num_classes, num_classes_per_task, with_replacement=False,
                  normalize=True, num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
@@ -424,5 +445,7 @@ def get_dataset(**kwargs):
         return KMNIST(**kwargs)
     elif dataset_name == 'cifar100':
         return CIFAR100(**kwargs)
+    elif dataset_name == 'combined':
+        return CombinedDataset(**kwargs)
     else:
         raise ValueError('Unknown dataset: {}'.format(dataset_name))

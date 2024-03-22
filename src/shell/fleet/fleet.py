@@ -562,9 +562,9 @@ class ParallelFleet:
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
         print('CREATING AGENTS...')
         self.agents = [
-            AgentCls.options(num_gpus=self.num_gpus_per_agent, num_cpus=6).remote(node_id, seed, datasets[node_id], NetCls,
-                                                                                  LearnerCls,
-                                                                                  deepcopy(net_kwargs), deepcopy(
+            AgentCls.options(num_gpus=self.num_gpus_per_agent).remote(node_id, seed, datasets[node_id], NetCls,
+                                                                      LearnerCls,
+                                                                      deepcopy(net_kwargs), deepcopy(
                 agent_kwargs),
                 deepcopy(train_kwargs), deepcopy(self.sharing_strategy))
             for node_id in self.graph.nodes

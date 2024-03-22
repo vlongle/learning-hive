@@ -22,6 +22,7 @@ from shell.models.mlp import MLP
 from shell.models.mlp_soft_lifelong_dynamic import MLPSoftLLDynamic
 from shell.learners.er_dynamic import CompositionalDynamicER
 from shell.learners.er_nocomponents import NoComponentsER
+from shell.datasets.datasets import CombinedDataset
 from copy import deepcopy
 
 
@@ -49,7 +50,7 @@ def setup_experiment(cfg: DictConfig):
     seed_everything(cfg.seed)
     dataset_cfg = process_dataset_cfg(cfg)
 
-    if dataset_cfg.name == "combined":
+    if dataset_cfg['dataset_name'] == "combined":
         datasets = []
         available_dataset_names = ['mnist', 'kmnist', 'fashionmnist']
         # for each agent, randomly choose a dataset
@@ -108,8 +109,17 @@ def setup_experiment(cfg: DictConfig):
 
     # if cfg.sharing_strategy.name in REQUIRED_JOINT_TRAINING_STRAT:
     if getattr(cfg.sharing_strategy, 'sync_base', False):
-        fleet_additional_cfg['fake_dataset'] = get_dataset(
-            **process_dataset_cfg(cfg))
+        fake_dataset = get_dataset(**process_dataset_cfg(cfg))
+        if dataset_cfg['dataset_name'] == "combined":
+            for i in range(fake_dataset.num_tasks):
+                chosen_d = datasets[i % len(datasets)]
+                task_id = chosen_d.class_sequence[i * chosen_d.num_classes_per_task: (
+                    i+1) * chosen_d.num_classes_per_task]
+                fake_dataset.testset.append(chosen_d.testset[i])
+                fake_dataset.trainset.append(chosen_d.trainset[i])
+                fake_dataset.valset.append(chosen_d.valset[i])
+                fake_dataset.class_sequence.extend(task_id)
+        fleet_additional_cfg['fake_dataset'] = fake_dataset
     return graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg
 
 

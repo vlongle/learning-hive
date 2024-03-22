@@ -49,7 +49,18 @@ def setup_experiment(cfg: DictConfig):
     seed_everything(cfg.seed)
     dataset_cfg = process_dataset_cfg(cfg)
 
-    datasets = [get_dataset(**dataset_cfg) for _ in range(cfg.num_agents)]
+    if dataset_cfg.name == "combined":
+        datasets = []
+        available_dataset_names = ['mnist', 'kmnist', 'fashionmnist']
+        # for each agent, randomly choose a dataset
+        for i in range(cfg.num_agents):
+            dataset_name = available_dataset_names[i % len(
+                available_dataset_names)]
+            agent_dataset_cfg = deepcopy(dataset_cfg)
+            agent_dataset_cfg['dataset_name'] = dataset_name
+            datasets.append(get_dataset(**agent_dataset_cfg))
+    else:
+        datasets = [get_dataset(**dataset_cfg) for _ in range(cfg.num_agents)]
     net_cfg = dict(cfg.net)
     agent_cfg = dict(cfg.agent)
     train_cfg = dict(cfg.train)

@@ -56,45 +56,85 @@ class ModuleRanker:
     def compute_task_sims(self, neighbor_id, task_id):
         raise NotImplementedError
 
-    def send_most_similar_module(self, neighbor_id, task_id):
-        task_sims = self.compute_task_sims(neighbor_id, task_id)
-        # print('task_sims', self.agent.node_id,
-        #       neighbor_id, task_id, '>', task_sims)
-        module_record = self.agent.agent.dynamic_record.df
+    # def send_most_similar_module(self, neighbor_id, task_id):
+    #     task_sims = self.compute_task_sims(neighbor_id, task_id)
+    #     # print('task_sims', self.agent.node_id,
+    #     #       neighbor_id, task_id, '>', task_sims)
+    #     module_record = self.agent.agent.dynamic_record.df
 
+    #     for t in range(len(task_sims)):
+    #         if t not in set(module_record['task_id']):
+    #             task_sims[t] = float('-inf')
+    #         if t in set(module_record['task_id']) and not module_record[module_record['task_id'] == t]['add_new_module'].item():
+    #             task_sims[t] = float('-inf')
+
+    #     # print('AFTER PROCESSED: task_sims', self.agent.node_id,
+    #     #       neighbor_id, task_id, '>', task_sims)
+    #     # get the most similar task with the highest similarity. Break ties by the task id
+    #     # (highest wins)
+    #     # most_similar_task = max(
+    #     #     range(len(task_sims)), key=lambda x: (task_sims[x], x))
+    #     # lowest task_id wins
+    #     most_similar_task = max(
+    #         range(len(task_sims)), key=lambda x: (task_sims[x], -x))
+    #     if task_sims[most_similar_task] == float('-inf'):
+    #         return []
+
+    #     task_module = module_record[module_record['task_id']
+    #                                 == most_similar_task]['num_components'].item() - 1
+    #     # print('node', self.node_id, 'for neighbor', neighbor_id, '@ task', task_id, 'sending module', task_module, 'from task', most_similar_task,
+    #     #       'with similarity', task_sims[most_similar_task], 'current no. of modules', len(self.net.components))
+    #     # pathological for replaying ipynb
+    #     if task_module >= len(self.agent.net.components):
+    #         return []
+    #     return [{'source_task_id': most_similar_task,
+    #              'task_sim': task_sims[most_similar_task],
+    #              'module_id': task_module,
+    #              'module': self.agent.net.components[task_module],
+    #              'decoder': self.agent.net.decoder[most_similar_task],
+    #              'structure': self.agent.net.structure[most_similar_task],
+    #              'source_class_labels': self.agent.dataset.class_sequence[most_similar_task * self.agent.dataset.num_classes_per_task:
+    #                                                                       (most_similar_task + 1) * self.agent.dataset.num_classes_per_task]},]
+
+    def send_most_similar_modules(self, neighbor_id, task_id):
+        task_sims = self.compute_task_sims(neighbor_id, task_id)
+        module_record = self.agent.agent.dynamic_record.df
+        k = self.sharing_strategy.num_shared_module
+
+        # Mark tasks that are not eligible for sharing with -inf similarity
         for t in range(len(task_sims)):
             if t not in set(module_record['task_id']):
                 task_sims[t] = float('-inf')
-            if t in set(module_record['task_id']) and not module_record[module_record['task_id'] == t]['add_new_module'].item():
+            elif not module_record[module_record['task_id'] == t]['add_new_module'].item():
                 task_sims[t] = float('-inf')
 
-        # print('AFTER PROCESSED: task_sims', self.agent.node_id,
-        #       neighbor_id, task_id, '>', task_sims)
-        # get the most similar task with the highest similarity. Break ties by the task id
-        # (highest wins)
-        # most_similar_task = max(
-        #     range(len(task_sims)), key=lambda x: (task_sims[x], x))
-        # lowest task_id wins
-        most_similar_task = max(
-            range(len(task_sims)), key=lambda x: (task_sims[x], -x))
-        if task_sims[most_similar_task] == float('-inf'):
-            return []
+        # Sort tasks based on their similarity and task_id (as a tiebreaker, preferring lower task_ids)
+        sorted_tasks = sorted(range(len(task_sims)), key=lambda x: (
+            task_sims[x], -x), reverse=True)
 
-        task_module = module_record[module_record['task_id']
-                                    == most_similar_task]['num_components'].item() - 1
-        # print('node', self.node_id, 'for neighbor', neighbor_id, '@ task', task_id, 'sending module', task_module, 'from task', most_similar_task,
-        #       'with similarity', task_sims[most_similar_task], 'current no. of modules', len(self.net.components))
-        # pathological for replaying ipynb
-        if task_module >= len(self.agent.net.components):
-            return []
-        return [{'source_task_id': most_similar_task,
-                 'task_sim': task_sims[most_similar_task],
-                 'module_id': task_module,
-                 'module': self.agent.net.components[task_module],
-                 'decoder': self.agent.net.decoder[most_similar_task],
-                 'structure': self.agent.net.structure[most_similar_task],
-                 'source_class_labels': self.agent.dataset.class_sequence[most_similar_task * self.agent.dataset.num_classes_per_task:
-                                                                          (most_similar_task + 1) * self.agent.dataset.num_classes_per_task]},]
+        # Filter out tasks with -inf similarity
+        eligible_tasks = [
+            task for task in sorted_tasks if task_sims[task] != float('-inf')][:k]
+
+        modules_to_send = []
+        for task in eligible_tasks:
+            task_module = module_record[module_record['task_id']
+                                        == task]['num_components'].item() - 1
+            # Ensure the task_module is within bounds
+            if task_module >= len(self.agent.net.components):
+                continue
+            modules_to_send.append({
+                'source_task_id': task,
+                'task_sim': task_sims[task],
+                'module_id': task_module,
+                'module': self.agent.net.components[task_module],
+                'decoder': self.agent.net.decoder[task],
+                'structure': self.agent.net.structure[task],
+                'source_class_labels': self.agent.dataset.class_sequence[task * self.agent.dataset.num_classes_per_task:
+                                                                         (task + 1) * self.agent.dataset.num_classes_per_task]
+            })
+
+        return modules_to_send
 
     def select_module(self, neighbor_id, task_id):
         outgoing_modules = {}

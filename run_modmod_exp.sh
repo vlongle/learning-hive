@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --output=slurm_outs/modmod/slurm-%j.out
+#SBATCH --output=slurm_outs/modmod/%A_%a.out
 #SBATCH --gpus=2
 #SBATCH --nodes=1
 #SBATCH --cpus-per-gpu=16

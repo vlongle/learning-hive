@@ -91,7 +91,7 @@ if __name__ == "__main__":
         "train.save_freq": 10,
         "agent.use_contrastive": False,
         "agent.memory_size": 32,
-        "root_save_dir": prefix + f"full_data_experiment_results/vanilla_jorge_setting_no_sparse",
+        "root_save_dir": prefix + f"combined_data_experiment_results/vanilla_jorge_setting_no_sparse",
     }
 
     # # # === CNN experiments: CIFAR100 ===

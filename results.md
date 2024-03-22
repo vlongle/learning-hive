@@ -262,9 +262,9 @@ Still can't recover the perf of prev github commit. But anyway.
 
 
 ## TODO
+- do the combined experiment
 - do demand transfer
 - do the budget experiment
-- do the combined experiment
 - do the task similarity experiment
 
 

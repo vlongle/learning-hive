@@ -2,7 +2,7 @@
 
 
 # # Base path for the experiments
-# BASE_PATH="experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False"
+# BASE_PATH="experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_False_opt_with_random_False_frozen_False"
 
 # # Possible states for the variables
 # states=("True" "False")
@@ -19,9 +19,8 @@
 # done
 
 
-
 # # Array of local folders to download
-LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/experiment_results/vanilla_jorge_setting_no_sparse_basis")
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/experiment_results/leep_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_False_opt_with_random_False_frozen_False_transfer_decoder_False_transfer_structure_False_no_sparse_basis_True" "/mnt/kostas-graid/datasets/vlongle/experiment_results/leep_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_False_opt_with_random_False_frozen_False_transfer_decoder_False_transfer_structure_True_no_sparse_basis_True" "/mnt/kostas-graid/datasets/vlongle/experiment_results/leep_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_False_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_False_no_sparse_basis_True" "/mnt/kostas-graid/datasets/vlongle/experiment_results/leep_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_False_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True")
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
 REMOTE_PATH="/home/vlongle/code/learning-hive/experiment_results/"

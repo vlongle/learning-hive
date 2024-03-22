@@ -4,7 +4,7 @@ module_selection: gt_most_similar
 pre_or_post_comm: pre
 opt_with_random: False
 comm_freq: None
-sync_base: False
+sync_base: True
 freeze_candidate_module: False
 transfer_decoder: False
 transfer_structure: False

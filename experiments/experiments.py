@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
     config = {
         # "algo": ["monolithic", "modular"],
-        "algo": "modular",
+        "algo": args.algo,
         "agent.batch_size": batch_size,
         "seed": args.seed,
         "parallel": True,

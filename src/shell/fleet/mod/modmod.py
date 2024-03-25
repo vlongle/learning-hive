@@ -147,7 +147,7 @@ class ModuleRanker:
                 assert i not in self.agent.net.candidate_indices
                 outgoing_modules.append(self.agent.net.components[i])
         elif self.agent.sharing_strategy.module_selection == "gt_most_similar":
-            outgoing_modules = self.send_most_similar_module(
+            outgoing_modules = self.send_most_similar_modules(
                 neighbor_id, task_id)
         else:
             raise NotImplementedError(

@@ -123,7 +123,7 @@ if __name__ == "__main__":
     #     "train.num_epochs": num_epochs,
     #     "train.component_update_freq": num_epochs,
     #     # "agent.memory_size": args.memory_size,
-    #     "agent.memory_size": 64,
+    #     "agent.memory_size": 32,
     #     "agent.batch_size": args.batch_size,
     #     "train.save_freq": 10,
     #     "agent.use_contrastive": False,

@@ -99,7 +99,7 @@ class ModuleRanker:
     def send_most_similar_modules(self, neighbor_id, task_id):
         task_sims = self.compute_task_sims(neighbor_id, task_id)
         module_record = self.agent.agent.dynamic_record.df
-        k = self.sharing_strategy.num_shared_module
+        k = self.agent.sharing_strategy.num_shared_module
 
         # Mark tasks that are not eligible for sharing with -inf similarity
         for t in range(len(task_sims)):
@@ -147,7 +147,7 @@ class ModuleRanker:
                 assert i not in self.agent.net.candidate_indices
                 outgoing_modules.append(self.agent.net.components[i])
         elif self.agent.sharing_strategy.module_selection == "gt_most_similar":
-            outgoing_modules = self.send_most_similar_module(
+            outgoing_modules = self.send_most_similar_modules(
                 neighbor_id, task_id)
         else:
             raise NotImplementedError(

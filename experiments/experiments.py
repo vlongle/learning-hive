@@ -39,7 +39,7 @@ parser = argparse.ArgumentParser(
 parser.add_argument('--seed', type=int, default=0,
                     help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
-                    "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
+                    "mnist", "kmnist", "fashionmnist", "cifar100", "combined"], help='Dataset for the experiment.')
 parser.add_argument('--no_sparse_basis', type=str2bool, default=True)
 parser.add_argument('--algo', type=str, default="modular", choices=[
                     "monolithic", "modular"], help='Algorithm for the experiment.')

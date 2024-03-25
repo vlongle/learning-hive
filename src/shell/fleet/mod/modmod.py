@@ -99,7 +99,7 @@ class ModuleRanker:
     def send_most_similar_modules(self, neighbor_id, task_id):
         task_sims = self.compute_task_sims(neighbor_id, task_id)
         module_record = self.agent.agent.dynamic_record.df
-        k = self.sharing_strategy.num_shared_module
+        k = self.agent.sharing_strategy.num_shared_module
 
         # Mark tasks that are not eligible for sharing with -inf similarity
         for t in range(len(task_sims)):

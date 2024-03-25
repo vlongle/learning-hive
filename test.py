@@ -171,3 +171,7 @@ for i in range(16):
     seed = i % 8
     algo = algos[i // 8]
     print(i, seed, algo)
+
+# num_tasks = 20
+# for i in range(num_tasks-1, num_tasks):
+#     print(i)

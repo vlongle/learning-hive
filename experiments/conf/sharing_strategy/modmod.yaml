@@ -11,3 +11,4 @@ transfer_structure: False
 ranker: label
 module_select: tryout
 num_shared_module: 1
+num_tryout_epochs: 10

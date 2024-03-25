@@ -662,3 +662,6 @@ class ParallelFleet:
             node_id = ray.get(agent.get_node_id.remote())
             agent_save_dir = os.path.join(save_dir, f"agent_{node_id}")
             ray.get(agent.change_save_dir.remote(agent_save_dir))
+
+    def load_records(self):
+        ray.get([agent.load_records.remote() for agent in self.agents])

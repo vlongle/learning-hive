@@ -17,6 +17,7 @@ import numpy as np
 import torch.nn as nn
 import pandas as pd
 from shell.fleet.data.recv import random_scorer, cross_entropy_scorer, compute_embedding_dist
+import copy
 
 
 def create_general_permutation_matrix(task1_classes, task2_classes):
@@ -356,11 +357,12 @@ class InstanceMapModuleRanker(ModuleRanker):
 
 
 class ModuleSelection:
-    pass
+    def __init__(self, agent) -> None:
+        self.agent = agent
 
 
 class TrustSimModuleSelection(ModuleSelection):
-    def choose_best_module_from_neighbors(self, module_list):
+    def choose_best_module_from_neighbors(self, task_id, module_list):
         # module_list is a list of (t, sim, module)
         # find the most similar task based on the similarity score. Break ties by the task id
         # (highest task id wins)
@@ -369,12 +371,31 @@ class TrustSimModuleSelection(ModuleSelection):
         # lowest task_id wins
         best_match_index = max(enumerate(module_list),
                                key=lambda x: (x[1]['task_sim'], -x[1]['source_task_id']))[0]
-        return best_match_index
+        return best_match_index, {}
 
 
 class TryOutModuleSelection(ModuleSelection):
-    def choose_best_module_from_neighbors(self, module_list):
-        pass
+    def choose_best_module_from_neighbors(self, task_id, module_list):
+        perfs = []
+        for module in module_list:
+            # TODO: might be a bit problematic with CUDA...
+            agent_cp = copy.deepcopy(self.agent)
+            agent_cp.train_kwargs["module_list"] = [module['module']]
+            agent_cp.train_kwargs["decoder_list"] = [{"decoder": module['decoder'],
+                                                      "source_class_labels": module['source_class_labels']}]
+            agent_cp.train_kwargs["structure_list"] = [{'structure': module['structure'],
+                                                        'module_id': module['module_id']}]
+
+            agent_cp.train_kwargs["num_epochs"] = agent_cp.sharing_strategy.num_tryout_epochs
+            agent_cp.change_save_dir(f"tryout_{self.agent.save_dir}")
+            # print('save_dir', agent_cp.save_dir)
+            # exit(0)
+            agent_cp.train(task_id, start_epoch=0,
+                           communication_frequency=None, final=True)
+            perfs.append(agent_cp.eval_test(task_id)['avg'])
+            # TODO: record perf
+        print('perfs', perfs)
+        return np.argmax(perfs), {"tryout_module_perf": np.max(perfs)}
 
 
 class ModModAgent(Agent):
@@ -394,9 +415,9 @@ class ModModAgent(Agent):
                 f"Ranker {self.sharing_strategy.ranker} not implemented.")
 
         if self.sharing_strategy.module_select == "trust_sim":
-            self.module_select = TrustSimModuleSelection()
+            self.module_select = TrustSimModuleSelection(self)
         elif self.sharing_strategy.module_select == "tryout":
-            self.module_select = TryOutModuleSelection()
+            self.module_select = TryOutModuleSelection(self)
         else:
             raise NotImplementedError(
                 f"Module selection {self.sharing_strategy.module_select} not implemented.")
@@ -526,8 +547,9 @@ class ModModAgent(Agent):
                     'neighbor_id': -1,
                 }
             else:
-                best_match = module_list[self.module_select.choose_best_module_from_neighbors(
-                    module_list)]
+                best, info = self.module_select.choose_best_module_from_neighbors(task_id,
+                                                                                  module_list)
+                best_match = module_list[best]
                 self.train_kwargs["module_list"] = [best_match['module']]
                 self.train_kwargs["decoder_list"] = [{"decoder": best_match['decoder'],
                                                       "source_class_labels": best_match['source_class_labels']}]
@@ -537,6 +559,7 @@ class ModModAgent(Agent):
                 row = {"task_id": task_id}
                 # Update the new dictionary with the keys and values from best_match
                 row.update(best_match)
+                row.update(info)
                 del row['module']
                 del row['decoder']
                 del row['structure']

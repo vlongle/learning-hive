@@ -166,12 +166,20 @@
 #     #         print(state['exp_avg'].mean())
 
 
-algos = ["modular", "monolithic"]
-for i in range(16):
-    seed = i % 8
-    algo = algos[i // 8]
-    print(i, seed, algo)
+# algos = ["modular", "monolithic"]
+# for i in range(16):
+#     seed = i % 8
+#     algo = algos[i // 8]
+#     print(i, seed, algo)
 
 # num_tasks = 20
 # for i in range(num_tasks-1, num_tasks):
 #     print(i)
+
+
+a = [5, 1, 3, float('-inf')]
+k = 10
+sorted_tasks = sorted(range(len(a)), key=lambda x: (
+    a[x], -x), reverse=True)
+chosen = [task for task in sorted_tasks if a[task] != float('-inf')][:k]
+print('chosen', chosen, 'a of chosen', [a[task] for task in chosen])

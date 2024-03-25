@@ -55,8 +55,8 @@ class Learner():
         self.sharing_data_record = Record(os.path.join(
             self.save_dir, "sharing_data_record.csv"))
 
-        self.writer = SummaryWriter(
-            log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
+        # self.writer = SummaryWriter(
+        #     log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
         self.init_trainloaders = None
 
         self.mode = "ce"
@@ -85,8 +85,8 @@ class Learner():
             self.save_dir, "add_modules_record.csv")
         self.sharing_data_record = Record(os.path.join(
             self.save_dir, "sharing_data_record.csv"))
-        self.writer = SummaryWriter(
-            log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
+        # self.writer = SummaryWriter(
+        #     log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
 
     # def apply_transform(self, X):
     #     # X: (batch_size, n_channels, height, width)

@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --output=slurm_outs/fl/%A_%a.out
-#SBATCH --gpus=2
+#SBATCH --gpus=1
 #SBATCH --nodes=1
 #SBATCH --cpus-per-gpu=48
 #SBATCH --mem-per-cpu=2G
@@ -18,7 +18,6 @@ SEED=${seeds[$((SLURM_ARRAY_TASK_ID % 8))]}
 ALGO=${algos[$((SLURM_ARRAY_TASK_ID / 8))]}
 
 # Fixed dataset
-DATASET="your_fixed_dataset_here"  # Replace with your actual dataset
 
 srun bash -c "python experiments/fedavg_experiments.py --seed $SEED --algo $ALGO"
 

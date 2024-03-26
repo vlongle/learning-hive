@@ -177,17 +177,6 @@
 # # #     print(i)
 
 
-# # a = [5, 1, 3, float('-inf')]
-# # k = 10
-# # sorted_tasks = sorted(range(len(a)), key=lambda x: (
-# #     a[x], -x), reverse=True)
-# # chosen = [task for task in sorted_tasks if a[task] != float('-inf')][:k]
-# # print('chosen', chosen, 'a of chosen', [a[task] for task in chosen])
-
-# # for i in range(4):
-# #     print(i, trans_de[i // 2], trans_struct[i % 2])
-
-<<<<<<< HEAD
 # a = [5, 1, 3, float('-inf')]
 # k = 10
 # sorted_tasks = sorted(range(len(a)), key=lambda x: (
@@ -202,11 +191,19 @@ for i in range(10):
         print('up module')
     else:
         print('up struct')
-=======
+# # a = [5, 1, 3, float('-inf')]
+# # k = 10
+# # sorted_tasks = sorted(range(len(a)), key=lambda x: (
+# #     a[x], -x), reverse=True)
+# # chosen = [task for task in sorted_tasks if a[task] != float('-inf')][:k]
+# # print('chosen', chosen, 'a of chosen', [a[task] for task in chosen])
+
+# # for i in range(4):
+# #     print(i, trans_de[i // 2], trans_struct[i % 2])
+
 # seeds = [0,1,2,3,4,5,6,7]
 # trans_de = [0, 1]
 # trans_struct = [0, 1]
 # for i in range(32):
 #     print(i, trans_de[i // 16], trans_struct[(i // 8) % 2], seeds[i % 8])
 #     # print(i, i//2, i%2, i%8)
->>>>>>> 2d45b8c961084a81f09212e349c943f0b7735116

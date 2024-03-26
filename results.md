@@ -263,10 +263,14 @@ Still can't recover the perf of prev github commit. But anyway.
 
 ## TODO
 - do the combined experiment [DONE]
+
 - do the budget experiment
-- do the task similarity experiment
-- do demand transfer
+
 - Varying topology connectivity.
+
+- do the task similarity experiment
+
+- do demand transfer
 
 
 ## Other tricks

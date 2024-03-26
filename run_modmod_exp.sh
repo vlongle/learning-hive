@@ -1,27 +1,29 @@
 #!/bin/bash
 #SBATCH --output=slurm_outs/modmod/%A_%a.out
-#SBATCH --gpus=2
+#SBATCH --gpus=1
 #SBATCH --nodes=1
-#SBATCH --cpus-per-gpu=16
-#SBATCH --mem-per-cpu=4G
+#SBATCH --cpus-per-gpu=48
+#SBATCH --mem-per-cpu=2G
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
-#SBATCH --array=0-7 # 8 jobs in total for each combination of settings
+#SBATCH --array=0-31 # 32 jobs in total for each combination of settings
 
-declare -a transfer_decoder=("0" "1")
-declare -a transfer_structure=("0" "1")
-declare -a sync_base=("0" "1")
+declare -a transfer_decoder=("1" "0")
+declare -a transfer_structure=("1" "0")
+declare -a seeds=("0" "1" "2" "3" "4" "5" "6" "7")
 
-# Calculate indices for each setting based on the SLURM_ARRAY_TASK_ID
-transfer_decoder_index=$((SLURM_ARRAY_TASK_ID / 4 % 2))
-transfer_structure_index=$((SLURM_ARRAY_TASK_ID / 2 % 2))
-sync_base_index=$((SLURM_ARRAY_TASK_ID % 2))
+# Simplified calculation based on SLURM_ARRAY_TASK_ID
+transfer_decoder_index=$((SLURM_ARRAY_TASK_ID / 16)) # Every 16 iterations, switch transfer_decoder
+transfer_structure_index=$(((SLURM_ARRAY_TASK_ID / 8) % 2)) # Switch transfer_structure every 8 iterations, alternating every 16
+seed_index=$((SLURM_ARRAY_TASK_ID % 8)) # Cycle through seeds every 8 iterations
 
 TRANSFER_DECODER=${transfer_decoder[$transfer_decoder_index]}
 TRANSFER_STRUCTURE=${transfer_structure[$transfer_structure_index]}
-SYNC_BASE=${sync_base[$sync_base_index]}
+SEED=${seeds[$seed_index]}
+
 NO_SPARSE_BASIS="1" # Statically set to "1"
 
-srun bash -c "python experiments/modmod_experiments.py --transfer_decoder $TRANSFER_DECODER --transfer_structure $TRANSFER_STRUCTURE --no_sparse_basis $NO_SPARSE_BASIS --sync_base $SYNC_BASE"
+srun bash -c "python experiments/modmod_experiments.py --transfer_decoder $TRANSFER_DECODER --transfer_structure $TRANSFER_STRUCTURE --no_sparse_basis $NO_SPARSE_BASIS --sync_base true --seed $SEED"
 exit 3
+

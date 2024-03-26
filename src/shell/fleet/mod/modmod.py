@@ -18,6 +18,7 @@ import torch.nn as nn
 import pandas as pd
 from shell.fleet.data.recv import random_scorer, cross_entropy_scorer, compute_embedding_dist
 import copy
+import logging
 
 
 def create_general_permutation_matrix(task1_classes, task2_classes):
@@ -377,6 +378,7 @@ class TrustSimModuleSelection(ModuleSelection):
 class TryOutModuleSelection(ModuleSelection):
     def choose_best_module_from_neighbors(self, task_id, module_list):
         perfs = []
+        logging.info("Trying out: {} modules".format(len(module_list)))
         for module in module_list:
             # TODO: might be a bit problematic with CUDA...
             agent_cp = copy.deepcopy(self.agent)
@@ -385,16 +387,18 @@ class TryOutModuleSelection(ModuleSelection):
                                                       "source_class_labels": module['source_class_labels']}]
             agent_cp.train_kwargs["structure_list"] = [{'structure': module['structure'],
                                                         'module_id': module['module_id']}]
+            # agent_cp.train_kwargs["save_freq"] = 1000
 
             agent_cp.train_kwargs["num_epochs"] = agent_cp.sharing_strategy.num_tryout_epochs
             agent_cp.change_save_dir(f"tryout_{self.agent.save_dir}")
             print('save_dir', agent_cp.save_dir)
             exit(0)
             agent_cp.train(task_id, start_epoch=0,
-                           communication_frequency=None, final=True)
+                           communication_frequency=None, final=True,
+                           final_save=False)
             perfs.append(agent_cp.eval_test(task_id)['avg'])
             # TODO: record perf
-        print('perfs', perfs)
+        logging.info('Tryout perfs: {}'.format(perfs))
         return np.argmax(perfs), {"tryout_module_perf": np.max(perfs)}
 
 

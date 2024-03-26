@@ -429,7 +429,10 @@ class CompositionalDynamicLearner(CompositionalLearner):
               component_update_freq=100, start_epoch=0, num_epochs=100, save_freq=1, testloaders=None,
               train_mode=None, num_candidate_modules=None, module_list=None,
               final=True,
-              train_candidate_module=True,):
+              train_candidate_module=True,
+              final_save=None):
+        if final_save is None:
+            final_save = final
         # logging.info('task_id %s len(self.net.components) %s', task_id, len(self.net.components))
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
@@ -540,7 +543,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
             if final:
                 self.conditionally_add_module(valloader, task_id)
                 self.save_data(num_epochs + start_epoch + 1, task_id,
-                               testloaders, final_save=final, mode=train_mode)
+                               testloaders, final_save=final_save, mode=train_mode)
                 self.update_multitask_cost(trainloader, task_id)
 
     def conditionally_add_module(self, valloader, task_id):

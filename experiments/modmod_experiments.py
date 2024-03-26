@@ -31,8 +31,8 @@ parser.add_argument('--seed', type=int, default=0,
                     help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100", "combined"], help='Dataset for the experiment.')
-# parser.add_argument('--sync_base', type=str2bool, default=True)
-parser.add_argument('--sync_base', type=str2bool, default=False)
+parser.add_argument('--sync_base', type=str2bool, default=True)
+# parser.add_argument('--sync_base', type=str2bool, default=False)
 parser.add_argument('--opt_with_random', type=str2bool, default=False)
 parser.add_argument('--freeze_candidate_module', type=str2bool, default=False)
 parser.add_argument('--transfer_decoder', type=str2bool, default=False)
@@ -54,8 +54,8 @@ if __name__ == "__main__":
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64
-    # num_epochs = 100
-    num_epochs = 5
+    num_epochs = 100
+    # num_epochs = 5
 
     # config = {
     #     "algo": "modular",

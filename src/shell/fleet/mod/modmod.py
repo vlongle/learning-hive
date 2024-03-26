@@ -388,8 +388,8 @@ class TryOutModuleSelection(ModuleSelection):
 
             agent_cp.train_kwargs["num_epochs"] = agent_cp.sharing_strategy.num_tryout_epochs
             agent_cp.change_save_dir(f"tryout_{self.agent.save_dir}")
-            # print('save_dir', agent_cp.save_dir)
-            # exit(0)
+            print('save_dir', agent_cp.save_dir)
+            exit(0)
             agent_cp.train(task_id, start_epoch=0,
                            communication_frequency=None, final=True)
             perfs.append(agent_cp.eval_test(task_id)['avg'])

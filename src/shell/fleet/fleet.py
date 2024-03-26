@@ -207,8 +207,8 @@ class Agent:
         # print('train task', task_id, 'rand torch seed', int(torch.empty(
         #     (), dtype=torch.int64).random_().item()))
 
-        self.agent.train(trainloader, task_id, testloaders=testloaders,
-                         valloader=valloader, start_epoch=start_epoch, **train_kwargs)
+        return self.agent.train(trainloader, task_id, testloaders=testloaders,
+                                valloader=valloader, start_epoch=start_epoch, **train_kwargs)
 
     def eval_test(self, task_id):
         testloaders = {task: torch.utils.data.DataLoader(testset,

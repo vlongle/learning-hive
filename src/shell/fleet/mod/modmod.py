@@ -118,6 +118,9 @@ class ModuleRanker:
         eligible_tasks = [
             task for task in sorted_tasks if task_sims[task] != float('-inf')][:k]
 
+        # print('For neighbor', neighbor_id, 'task', task_id,
+        #       'there are', len(eligible_tasks), 'eligible tasks')
+
         modules_to_send = []
         for task in eligible_tasks:
             task_module = module_record[module_record['task_id']
@@ -376,30 +379,82 @@ class TrustSimModuleSelection(ModuleSelection):
 
 
 class TryOutModuleSelection(ModuleSelection):
-    def choose_best_module_from_neighbors(self, task_id, module_list):
-        perfs = []
-        logging.info("Trying out: {} modules".format(len(module_list)))
-        for module in module_list:
-            # TODO: might be a bit problematic with CUDA...
-            agent_cp = copy.deepcopy(self.agent)
-            agent_cp.train_kwargs["module_list"] = [module['module']]
-            agent_cp.train_kwargs["decoder_list"] = [{"decoder": module['decoder'],
-                                                      "source_class_labels": module['source_class_labels']}]
-            agent_cp.train_kwargs["structure_list"] = [{'structure': module['structure'],
-                                                        'module_id': module['module_id']}]
-            # agent_cp.train_kwargs["save_freq"] = 1000
+    # def choose_best_module_from_neighbors(self, task_id, module_list):
+    #     perfs = []
+    #     logging.info("Trying out: {} modules".format(len(module_list)))
+    #     for module in module_list:
+    #         # TODO: might be a bit problematic with CUDA...
+    #         agent_cp = copy.deepcopy(self.agent)
+    #         agent_cp.train_kwargs["module_list"] = [module['module']]
+    #         agent_cp.train_kwargs["decoder_list"] = [{"decoder": module['decoder'],
+    #                                                   "source_class_labels": module['source_class_labels']}]
+    #         agent_cp.train_kwargs["structure_list"] = [{'structure': module['structure'],
+    #                                                     'module_id': module['module_id']}]
+    #         # agent_cp.train_kwargs["save_freq"] = 1000
 
+    #         agent_cp.train_kwargs["num_epochs"] = agent_cp.sharing_strategy.num_tryout_epochs
+    #         agent_cp.change_save_dir(f"tryout_{self.agent.save_dir}")
+    #         # print('save_dir', agent_cp.save_dir)
+    #         # exit(0)
+    #         agent_cp.train(task_id, start_epoch=0,
+    #                        communication_frequency=None, final=True,
+    #                        final_save=False)
+    #         perfs.append(agent_cp.eval_test(task_id)['avg'])
+    #         # TODO: record perf
+    #     logging.info('Tryout perfs: {}'.format(perfs))
+    #     return np.argmax(perfs), {"tryout_module_perf": np.max(perfs)}
+
+    # def choose_best_module_from_neighbors(self, task_id, module_list):
+    #     logging.info("Trying out: {} modules".format(len(module_list)))
+    #     agent_cp = copy.deepcopy(self.agent)
+    #     agent_cp.train_kwargs["module_list"] = [
+    #         m['module'] for m in module_list]
+    #     agent_cp.train_kwargs["decoder_list"] = []
+    #     agent_cp.train_kwargs["structure_list"] = []
+    #     agent_cp.train_kwargs["num_epochs"] = agent_cp.sharing_strategy.num_tryout_epochs
+    #     agent_cp.change_save_dir(f"tryout_{self.agent.save_dir}")
+    #     perfs = agent_cp.train(task_id, start_epoch=0,
+    #                            communication_frequency=None, final=True,
+    #                            final_save=False)
+
+    #     perfs = [v for k, v in perfs.items()]
+    #     logging.info('Tryout perfs: {}'.format(perfs))
+    #     print('max perf', np.argmax(perfs), {
+    #           "tryout_module_perf": np.max(perfs)})
+    #     return np.argmax(perfs), {"tryout_module_perf": np.max(perfs)}
+
+    def choose_best_module_from_neighbors(self, task_id, module_list):
+        max_num_modules_tryout = self.agent.sharing_strategy.max_num_modules_tryout
+        logging.info("Trying out: {} modules in batches of up to {}".format(
+            len(module_list), max_num_modules_tryout))
+
+        all_perfs = []
+        for i in range(0, len(module_list), max_num_modules_tryout):
+            batch_modules = module_list[i:i+max_num_modules_tryout]
+            agent_cp = copy.deepcopy(self.agent)
+            agent_cp.train_kwargs["module_list"] = [
+                m['module'] for m in batch_modules]
+            agent_cp.train_kwargs["decoder_list"] = [
+                {"decoder": m['decoder'], "source_class_labels": m['source_class_labels']} for m in batch_modules]
+            agent_cp.train_kwargs["structure_list"] = [
+                {'structure': m['structure'], 'module_id': m['module_id']} for m in batch_modules]
             agent_cp.train_kwargs["num_epochs"] = agent_cp.sharing_strategy.num_tryout_epochs
-            agent_cp.change_save_dir(f"tryout_{self.agent.save_dir}")
-            print('save_dir', agent_cp.save_dir)
-            exit(0)
-            agent_cp.train(task_id, start_epoch=0,
-                           communication_frequency=None, final=True,
-                           final_save=False)
-            perfs.append(agent_cp.eval_test(task_id)['avg'])
-            # TODO: record perf
-        logging.info('Tryout perfs: {}'.format(perfs))
-        return np.argmax(perfs), {"tryout_module_perf": np.max(perfs)}
+            agent_cp.change_save_dir(
+                f"tryout_{self.agent.save_dir}_{i//max_num_modules_tryout}")
+
+            batch_perfs = agent_cp.train(
+                task_id, start_epoch=0, communication_frequency=None, final=True, final_save=False)
+            batch_perfs = [v for k, v in batch_perfs.items()]
+            all_perfs.extend(batch_perfs)
+
+            logging.info('Batch {} perfs: {}'.format(
+                i//max_num_modules_tryout, batch_perfs))
+
+        logging.info('All tryout perfs: {}'.format(all_perfs))
+        best_index = np.argmax(all_perfs)
+        print('max perf index', best_index, {
+              "tryout_module_perf": np.max(all_perfs)})
+        return best_index, {"tryout_module_perf": np.max(all_perfs)}
 
 
 class ModModAgent(Agent):
@@ -506,6 +561,8 @@ class ModModAgent(Agent):
             for neighbor_id, neighbor in self.neighbors.items():
                 self.outgoing_modules[neighbor_id] = self.module_ranker.select_module(
                     neighbor_id, task_id)
+                # print('Outgoing modules for neighbor', neighbor_id,
+                #       'is', len(self.outgoing_modules[neighbor_id]))
         else:
             self.query_tasks = {}
 
@@ -530,6 +587,8 @@ class ModModAgent(Agent):
         for neighbor_id in self.neighbors:
             extra_info_ls = [e | {'neighbor_id': neighbor_id}
                              for e in self.incoming_modules[neighbor_id]]
+            # print('receiving', len(extra_info_ls),
+            #       'from neighbor', neighbor_id)
             module_list += extra_info_ls
         return module_list
 
@@ -538,6 +597,8 @@ class ModModAgent(Agent):
             return
         if communication_round % 2 == 1:
             module_list = self.get_module_list()
+            # print("~~Processing communication",
+            #       len(module_list))
             if len(module_list) == 0:
                 self.train_kwargs["module_list"] = []
                 self.train_kwargs["decoder_list"] = []

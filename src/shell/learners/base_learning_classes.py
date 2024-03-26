@@ -503,6 +503,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
                                                           pin_memory=True
                                                           )
 
+            print('Training from epoch', start_epoch,
+                  'to epoch', num_epochs + start_epoch)
             for i in range(start_epoch, num_epochs + start_epoch):
                 # print('num_epochs', num_epochs, 'start_epoch', start_epoch, 'i', i)
                 if (i + 1) % component_update_freq == 0:
@@ -541,10 +543,12 @@ class CompositionalDynamicLearner(CompositionalLearner):
                     self.save_data(i + 1, task_id, testloaders,
                                    mode=train_mode)
             if final:
-                self.conditionally_add_module(valloader, task_id)
+                performances, losses = self.conditionally_add_module(
+                    valloader, task_id)
                 self.save_data(num_epochs + start_epoch + 1, task_id,
                                testloaders, final_save=final_save, mode=train_mode)
                 self.update_multitask_cost(trainloader, task_id)
+                return performances
 
     def conditionally_add_module(self, valloader, task_id):
         performances = {}  # relative improvement for each candidate

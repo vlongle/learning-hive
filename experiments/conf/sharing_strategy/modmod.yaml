@@ -12,3 +12,4 @@ ranker: label
 module_select: tryout
 num_shared_module: 1
 num_tryout_epochs: 10
+max_num_modules_tryout: 1

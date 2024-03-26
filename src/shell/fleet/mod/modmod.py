@@ -439,6 +439,7 @@ class TryOutModuleSelection(ModuleSelection):
             agent_cp.train_kwargs["structure_list"] = [
                 {'structure': m['structure'], 'module_id': m['module_id']} for m in batch_modules]
             agent_cp.train_kwargs["num_epochs"] = agent_cp.sharing_strategy.num_tryout_epochs
+            agent_cp.train_kwargs['fair_opt'] = True
             agent_cp.change_save_dir(
                 f"tryout_{self.agent.save_dir}_{i//max_num_modules_tryout}")
 

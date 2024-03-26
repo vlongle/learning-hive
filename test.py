@@ -184,13 +184,13 @@
 # chosen = [task for task in sorted_tasks if a[task] != float('-inf')][:k]
 # print('chosen', chosen, 'a of chosen', [a[task] for task in chosen])
 
-update_freq = 100
+# update_freq = 100
 
-for i in range(10):
-    if i + 1 % update_freq == 0:
-        print('up module')
-    else:
-        print('up struct')
+# for i in range(10):
+#     if i + 1 % update_freq == 0:
+#         print('up module')
+#     else:
+#         print('up struct')
 # # a = [5, 1, 3, float('-inf')]
 # # k = 10
 # # sorted_tasks = sorted(range(len(a)), key=lambda x: (
@@ -207,3 +207,20 @@ for i in range(10):
 # for i in range(32):
 #     print(i, trans_de[i // 16], trans_struct[(i // 8) % 2], seeds[i % 8])
 #     # print(i, i//2, i%2, i%8)
+
+
+# num_cands = 3
+# num_epochs = 10
+# updates_per_candidate = num_epochs // num_cands
+# no_module_update_freq = num_epochs // updates_per_candidate
+
+
+# for i in range(num_epochs):
+#     print('epoch', i)
+#     if i % num_cands == 0:
+#         print('UPDATE MOD')
+
+modules = ['m1', 'm2', 'm3', 'm4', 'm5']
+max=2
+for i in range(0, len(modules), max):
+    print(modules[i:i+max], i, i+max)

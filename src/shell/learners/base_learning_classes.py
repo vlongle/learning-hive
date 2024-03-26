@@ -430,7 +430,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
               train_mode=None, num_candidate_modules=None, module_list=None,
               final=True,
               train_candidate_module=True,
-              final_save=None):
+              final_save=None,
+              fair_opt=False):
         if final_save is None:
             final_save = final
         # logging.info('task_id %s len(self.net.components) %s', task_id, len(self.net.components))
@@ -438,6 +439,9 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.observed_tasks.add(task_id)
             self.T += 1
         if start_epoch == 0:
+            self.opt_steps_per_candidate = 0  # Tracks optimization steps per candidate
+            self.no_module_opt_counter = 0  # Tracks optimization steps for the "no module" setting
+
             # zeroshot
             self.save_data(start_epoch, task_id, testloaders, mode=train_mode)
 
@@ -468,9 +472,9 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 if num_candidate_modules is None:
                     num_candidate_modules = len(module_list) + 1
 
-                print("no. current components", len(self.net.components),
-                      "NUM_CANDIDATE_MODULES", num_candidate_modules,
-                      'len(module_list)', len(module_list))
+                logging.info("NO. current components {} NUM_CANDIDATE_MODULES {} len(module_list) {}".format(len(self.net.components),
+                      num_candidate_modules,
+                      len(module_list)))
                 # print('rand torch seed', int(torch.empty(
                 #     (), dtype=torch.int64).random_().item()))
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
@@ -491,6 +495,10 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
             self.net.unfreeze_structure(task_id=task_id)
 
+
+            # updates_per_candidate = num_epochs // len(self.net.candidate_indices)
+
+
             if task_id in self.shared_replay_buffers:
                 tmp_dataset = copy.deepcopy(trainloader.dataset)
                 X, y, _ = self.shared_replay_buffers[task_id].get_tensors()
@@ -503,8 +511,9 @@ class CompositionalDynamicLearner(CompositionalLearner):
                                                           pin_memory=True
                                                           )
 
-            print('Training from epoch', start_epoch,
-                  'to epoch', num_epochs + start_epoch)
+
+            # logging.info('Training from epoch', start_epoch,
+            #       'to epoch', num_epochs + start_epoch)
             for i in range(start_epoch, num_epochs + start_epoch):
                 # print('num_epochs', num_epochs, 'start_epoch', start_epoch, 'i', i)
                 if (i + 1) % component_update_freq == 0:
@@ -532,27 +541,29 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
                         # without new module
                         # self.net.freeze_module(self.net.active_candidate_index)
-                        self.net.hide_tmp_modulev2()
-                        self.update_structure(
-                            X, Y, task_id, train_mode=train_mode,
-                            global_step=i)
-                        # self.net.recover_hidden_module()
-                        self.net.recover_hidden_modulev2()
-                        self.net.select_active_module()  # select the next module in round-robin
+                        if not fair_opt or i % len(self.net.candidate_indices) == 0:
+                            # logging.info(">> TRAINING NOMOD AT EPOCH {}".format(i))
+                            self.net.hide_tmp_modulev2()
+                            self.update_structure(
+                                X, Y, task_id, train_mode=train_mode,
+                                global_step=i)
+                            # self.net.recover_hidden_module()
+                            self.net.recover_hidden_modulev2()
+                            self.net.select_active_module()  # select the next module in round-robin
                 if i % save_freq == 0:
                     self.save_data(i + 1, task_id, testloaders,
                                    mode=train_mode)
             if final:
-                performances, losses = self.conditionally_add_module(
-                    valloader, task_id)
+                perf, raw_perf, loss = self.conditionally_add_module(valloader, task_id)
                 self.save_data(num_epochs + start_epoch + 1, task_id,
                                testloaders, final_save=final_save, mode=train_mode)
                 self.update_multitask_cost(trainloader, task_id)
-                return performances
+                return raw_perf
 
     def conditionally_add_module(self, valloader, task_id):
         performances = {}  # relative improvement for each candidate
         losses = {}
+        raw_performances = {}
 
         # Set the active index to the first candidate module
         # reset active module to the first one
@@ -562,6 +573,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.test_loss, self.test_acc = self.evaluate({task_id: valloader})
             update_acc, no_update_acc = self.test_acc[task_id]
             performances[idx] = (update_acc - no_update_acc) / no_update_acc
+            raw_performances[idx] = update_acc
             logging.info(
                 'candidate {}: W/update: {}, WO/update: {}, improv {}'.format(idx, update_acc, no_update_acc,
                                                                               performances[idx]))
@@ -603,7 +615,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
         self.dynamic_record.save()
 
-        return performances, losses
+        return performances, raw_performances, losses
 
     def evaluate(self, testloaders, eval_no_update=True, mode=None):
         was_training = self.net.training

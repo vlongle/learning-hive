@@ -220,7 +220,15 @@
 #     if i % num_cands == 0:
 #         print('UPDATE MOD')
 
-modules = ['m1', 'm2', 'm3', 'm4', 'm5']
-max=2
-for i in range(0, len(modules), max):
-    print(modules[i:i+max], i, i+max)
+# modules = ['m1', 'm2', 'm3', 'm4', 'm5']
+# max=2
+# for i in range(0, len(modules), max):
+#     print(modules[i:i+max], i, i+max)
+
+
+comm_freqs=["10" "20" "50" "100"]
+algos=["modular" "monolithic"]
+
+for i in range(8):
+    print(i, i // 2, i % 2)
+    print(comm_freqs[i // 2], algos[i % 2])

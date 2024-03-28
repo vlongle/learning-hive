@@ -7,18 +7,18 @@
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
-#SBATCH --array=0-15 # This will run 16 jobs
+#SBATCH --array=0-7 # This will run 8 jobs, iterating over 2 algorithms and 4 communication frequencies
 
 # Declare the seeds and algo choices
-declare -a seeds=("0" "1" "2" "3" "4" "5" "6" "7")
+declare -a comm_freqs=("10" "20" "50" "100")
 declare -a algos=("modular" "monolithic")
 
-# Map the SLURM_ARRAY_TASK_ID to a seed and algo
-SEED=${seeds[$((SLURM_ARRAY_TASK_ID % 8))]}
-ALGO=${algos[$((SLURM_ARRAY_TASK_ID / 8))]}
+# Map the SLURM_ARRAY_TASK_ID to a comm_freq and algo directly
+ALGO=${algos[$((SLURM_ARRAY_TASK_ID % 2))]} # Use modulo by the number of algorithms to cycle through algos
+COMM_FREQ=${comm_freqs[$((SLURM_ARRAY_TASK_ID / 2))]} # Use integer division by the number of algorithms to cycle through comm_freqs
 
 # Fixed dataset
 
-srun bash -c "python experiments/fedavg_experiments.py --seed $SEED --algo $ALGO"
+srun bash -c "python experiments/fedavg_experiments.py --algo $ALGO --comm_freq $COMM_FREQ"
 
 exit 3

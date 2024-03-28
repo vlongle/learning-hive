@@ -55,12 +55,12 @@ if __name__ == "__main__":
 
     seed = args.seed
     dataset = args.dataset
-    comm_freq = args.comm_freq  # how many epochs does a round of communication take place
 
     config = {
         # "algo": ["monolithic", "modular"],
         "algo": args.algo,
         "seed": args.seed,
+        "seed": [0, 1, 2, 3, 4, 5, 6, 7],
         # "seed": [0, 1, 2, 3],
         "parallel": True,
         # "parallel": False,
@@ -83,12 +83,12 @@ if __name__ == "__main__":
         "train.save_freq": 10,
         "agent.use_contrastive": False,
         "agent.memory_size": 32,
-        "root_save_dir": prefix + f"experiment_results/jorge_setting_fedavg",
+        "root_save_dir": prefix + f"budget_experiment_results/jorge_setting_fedavg/comm_freq_{args.comm_freq}",
         # ================================================
         # GRAD SHARING SETUP
         "sharing_strategy": "grad_sharing",
         "sharing_strategy.num_coms_per_round": 1,
-        "sharing_strategy.comm_freq": 5,
+        "sharing_strategy.comm_freq": args.comm_freq,
         # "sharing_strategy.log_freq": 10,
 
         # ================================================

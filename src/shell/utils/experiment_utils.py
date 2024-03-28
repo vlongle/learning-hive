@@ -215,7 +215,6 @@ def get_all_combinations(config, strict=True):
                 new_combs.append(combs[j].copy())
                 new_combs[-1][keys[i]] = values[i][k]
         combs = new_combs
-    print('combs', combs)
     if strict:
         # filter out invalid configs
         combs = [c for c in combs if check_valid_config(c)]

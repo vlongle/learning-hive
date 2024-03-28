@@ -109,21 +109,32 @@ SCORER_TYPE_LOOKUP = {
 }
 
 
+# @torch.inference_mode()
+# def compute_embedding_dist(net, X1, X2=None, task_id=None):
+#     assert task_id is not None
+#     was_training = net.training
+#     net.eval()
+#     X1_embed = net.encode(
+#         X1.to(net.device), task_id=task_id)  # (B, hidden_dim)
+#     if X2 is not None:
+#         X2_embed = net.encode(X2.to(net.device), task_id=task_id)
+#         sim = pairwise_cosine_similarity(X1_embed, X2_embed)
+#     else:
+#         sim = pairwise_cosine_similarity(X1_embed)
+#     if was_training:
+#         net.train()
+#     return sim.cpu()
+
+
 @torch.inference_mode()
-def compute_embedding_dist(net, X1, X2=None, task_id=None):
-    assert task_id is not None
-    was_training = net.training
+def compute_embedding_dist(net, X1, X2, task_id):
     net.eval()
     X1_embed = net.encode(
         X1.to(net.device), task_id=task_id)  # (B, hidden_dim)
-    if X2 is not None:
-        X2_embed = net.encode(X2.to(net.device), task_id=task_id)
-        sim = pairwise_cosine_similarity(X1_embed, X2_embed)
-    else:
-        sim = pairwise_cosine_similarity(X1_embed)
-    if was_training:
-        net.train()
+    X2_embed =net.encode(X2.to(net.device), task_id=task_id)
+    sim = pairwise_cosine_similarity(X1_embed, X2_embed)
     return sim.cpu()
+
 
 
 class RecvDataAgent(Agent):
@@ -195,7 +206,7 @@ class RecvDataAgent(Agent):
         buffer.
         """
         if computer is None:
-            computer = partial(self.compute_embedding_dist, self.net)
+            computer = partial(compute_embedding_dist, self.net)
 
         sims = []
         Xs, ys, tasks = [], [], []
@@ -371,7 +382,7 @@ class RecvDataAgent(Agent):
 
         # 2. Compute similarity using embedding method
         sims, Xs, ys, tasks = self.compute_similarity(
-            qX, computer=self.compute_embedding_dist)
+            qX, computer=partial(compute_embedding_dist, self.net))
 
         # 3. Extract top neighbors considering the pre-filtered tasks
         X_neighbors, Y_neighbors, task_neighbors, sims = self.extract_topk_from_similarity(

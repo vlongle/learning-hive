@@ -169,7 +169,6 @@ class Metric:
         catastrophic['catastrophic'] = (catastrophic['test_acc_pre'] -
                                         catastrophic['test_acc_post'])
 
-        print(catastrophic)
         if reduce == 'mean':
             # percentage
             catastrophic = catastrophic['catastrophic'].mean() * 100

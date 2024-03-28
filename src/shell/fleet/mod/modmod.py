@@ -19,6 +19,8 @@ import pandas as pd
 from shell.fleet.data.recv import random_scorer, cross_entropy_scorer, compute_embedding_dist
 import copy
 import logging
+import gc
+
 
 
 def create_general_permutation_matrix(task1_classes, task2_classes):
@@ -450,6 +452,12 @@ class TryOutModuleSelection(ModuleSelection):
 
             logging.info('Batch {} perfs: {}'.format(
                 i//max_num_modules_tryout, batch_perfs))
+            
+            del agent_cp, batch_modules
+            gc.collect()  # Collect garbage in CPU memory
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            
 
         logging.info('All tryout perfs: {}'.format(all_perfs))
         best_index = np.argmax(all_perfs)
@@ -600,11 +608,7 @@ class ModModAgent(Agent):
             module_list = self.get_module_list()
             # print("~~Processing communication",
             #       len(module_list))
-            if len(module_list) == 0:
-                self.train_kwargs["module_list"] = []
-                self.train_kwargs["decoder_list"] = []
-                self.train_kwargs["structure_list"] = []
-                row = {
+            row = {
                     'task_id': task_id,
                     "source_task_id": -1,
                     'task_sim': 0,
@@ -612,26 +616,35 @@ class ModModAgent(Agent):
                     # 'source_class_labels': None,
                     'neighbor_id': -1,
                 }
+            if len(module_list) == 0:
+                self.train_kwargs["module_list"] = []
+                self.train_kwargs["decoder_list"] = []
+                self.train_kwargs["structure_list"] = []
             else:
                 best, info = self.module_select.choose_best_module_from_neighbors(task_id,
                                                                                   module_list)
-                best_match = module_list[best]
-                self.train_kwargs["module_list"] = [best_match['module']]
-                self.train_kwargs["decoder_list"] = [{"decoder": best_match['decoder'],
-                                                      "source_class_labels": best_match['source_class_labels']}]
-                self.train_kwargs["structure_list"] = [{'structure': best_match['structure'],
-                                                        'module_id': best_match['module_id']}]
-                # Create a new dictionary with task_id as the first key
-                row = {"task_id": task_id}
-                # Update the new dictionary with the keys and values from best_match
-                row.update(best_match)
-                row.update(info)
-                del row['module']
-                del row['decoder']
-                del row['structure']
-                del row['source_class_labels']
+                if best is None:
+                    self.train_kwargs["module_list"] = []
+                    self.train_kwargs["decoder_list"] = []
+                    self.train_kwargs["structure_list"] = []
+                else:
+                    best_match = module_list[best]
+                    self.train_kwargs["module_list"] = [best_match['module']]
+                    self.train_kwargs["decoder_list"] = [{"decoder": best_match['decoder'],
+                                                        "source_class_labels": best_match['source_class_labels']}]
+                    self.train_kwargs["structure_list"] = [{'structure': best_match['structure'],
+                                                            'module_id': best_match['module_id']}]
+                    # Create a new dictionary with task_id as the first key
+                    row = {"task_id": task_id}
+                    # Update the new dictionary with the keys and values from best_match
+                    row.update(best_match)
+                    row.update(info)
+                    del row['module']
+                    del row['decoder']
+                    del row['structure']
+                    del row['source_class_labels']
 
-            # print('row', row)
+                # print('row', row)
 
             # record for the modmod record
             self.modmod_record.write(

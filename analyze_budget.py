@@ -43,8 +43,8 @@ import re
 from shell.utils.metric import Metric
 from  shell.utils.record import Record
 # result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/tryout_tryout_epochs_100_max_modules_14_leep_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True"
-# result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True"
-result_dir = "/mnt/kostas-graid/datasets/vlongle/budget_experiment_results/jorge_setting_recv/num_comms_5_num_queries20"
+# root_result_dir = "/mnt/kostas-graid/datasets/vlongle/budget_experiment_results/jorge_setting_recv"
+root_result_dir = "/mnt/kostas-graid/datasets/vlongle/budget_experiment_results/jorge_setting_fedavg"
 # result_dir = "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/vanilla_jorge_setting_basis_no_sparse"
 # result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/no_transform_debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
 # result_dir = "experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
@@ -92,10 +92,9 @@ result_dir = "/mnt/kostas-graid/datasets/vlongle/budget_experiment_results/jorge
 # result_dir = "vanilla_remove_datasets_hack_results"
 # result_dir = "vanilla_fashion_add_random_crop_results"
 # result_dir = "vanilla_remove_datasets_hack_regular_dropout_results"
-record = Record(f"{result_dir}.csv")
+record = Record(f"{root_result_dir}.csv")
 
 pattern = r".*"
-
 # pattern = r".*seed_0.*"
 # pattern = r".*modular_numtrain_256_contrastive/.*"
 # pattern = r".*modular_numtrain_300_contrastive/.*"
@@ -126,43 +125,43 @@ num_init_epochs_ = 300
 
 start_epoch = 21
 
-for job_name in os.listdir(result_dir):
-    use_contrastive = "contrastive" in job_name
-    for dataset_name in os.listdir(os.path.join(result_dir, job_name)):
-        for algo in os.listdir(os.path.join(result_dir, job_name, dataset_name)):
-            for seed in os.listdir(os.path.join(result_dir, job_name, dataset_name, algo)):
-                for agent_id in os.listdir(os.path.join(result_dir, job_name, dataset_name, algo, seed)):
-                    if agent_id == "hydra_out" or agent_id == "agent_69420":
-                        continue
-                    save_dir = os.path.join(
-                        result_dir, job_name, dataset_name, algo, seed, agent_id)
-                    # if the pattern doesn't match, continue
-                    if not re.search(pattern, save_dir):
-                        print('SKIPPING', save_dir)
-                        continue
-                    print(save_dir)
+for result_dir in os.listdir(root_result_dir):
+    for job_name in os.listdir(os.path.join(root_result_dir, result_dir)):
+        use_contrastive = "contrastive" in job_name
+        for dataset_name in os.listdir(os.path.join(root_result_dir, result_dir, job_name)):
+            for algo in os.listdir(os.path.join(root_result_dir, result_dir, job_name, dataset_name)):
+                for seed in os.listdir(os.path.join(root_result_dir, result_dir, job_name, dataset_name, algo)):
+                    for agent_id in os.listdir(os.path.join(root_result_dir, result_dir, job_name, dataset_name, algo, seed)):
+                        if agent_id == "hydra_out" or agent_id == "agent_69420":
+                            continue
+                        save_dir = os.path.join(root_result_dir,
+                            result_dir, job_name, dataset_name, algo, seed, agent_id)
+                        # if the pattern doesn't match, continue
+                        if not re.search(pattern, save_dir):
+                            continue
 
-                    num_epochs = num_init_epochs = None
-                    if dataset_name == "cifar100":
-                        num_epochs = num_epochs_
-                        num_init_epochs = num_init_epochs_
-                    m = Metric(save_dir, num_init_tasks, num_epochs=num_epochs,
-                               num_init_epochs=num_init_epochs)
-                    record.write(
-                        {
-                            "dataset": dataset_name,
-                            "algo": algo,
-                            "use_contrastive": use_contrastive,
-                            "seed": seed,
-                            "agent_id": agent_id,
-                            "avg_acc": m.compute_avg_accuracy(),
-                            "final_acc": m.compute_final_accuracy(),
-                            "forward": m.compute_forward_transfer(start_epoch=start_epoch),
-                            "backward": m.compute_backward_transfer(),
-                            "catastrophic": m.compute_catastrophic_forgetting(),
-                        }
-                    )
-# print(record.df)
+                        num_epochs = num_init_epochs = None
+                        if dataset_name == "cifar100":
+                            num_epochs = num_epochs_
+                            num_init_epochs = num_init_epochs_
+                        m = Metric(save_dir, num_init_tasks, num_epochs=num_epochs,
+                                num_init_epochs=num_init_epochs)
+                        extra_algo = f"{result_dir}_{algo}"
+                        record.write(
+                            {
+                                "dataset": dataset_name,
+                                "algo": extra_algo,
+                                "use_contrastive": use_contrastive,
+                                "seed": seed,
+                                "agent_id": agent_id,
+                                "avg_acc": m.compute_avg_accuracy(),
+                                "final_acc": m.compute_final_accuracy(),
+                                "forward": m.compute_forward_transfer(start_epoch=start_epoch),
+                                "backward": m.compute_backward_transfer(),
+                                "catastrophic": m.compute_catastrophic_forgetting(),
+                            }
+                        )
+print(record.df)
 # get the final accuracy with respect to different algo and dataset
 # and whether it uses contrastive loss
 print("=====FINAL ACC======")

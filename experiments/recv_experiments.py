@@ -48,7 +48,7 @@ args = parser.parse_args()
 if on_desktop():
     prefix = ""
 else:
-    prefix = "/mnt/kostas-graid/datasets/vlongle/learning_hive/"
+    prefix = "/mnt/kostas-graid/datasets/vlongle/"
 
 if __name__ == "__main__":
     start = time.time()
@@ -66,8 +66,8 @@ if __name__ == "__main__":
     config = {
         "algo": args.algo,
         "agent.batch_size": batch_size,
-        # "seed": args.seed,
-        "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+        "seed": args.seed,
+        # "seed": [0, 1, 2, 3, 4, 5, 6, 7],
         "parallel": True,
         "num_agents": 8,
         "dataset": "mnist",
@@ -89,7 +89,7 @@ if __name__ == "__main__":
         "agent.memory_size": memory_size,
         "dataset": args.dataset,
         # "agent.use_ood_separation_loss": False,
-        "root_save_dir": prefix + f"experiment_results/jorge_setting_recv",
+        "root_save_dir": prefix + f"budget_experiment_results/debug_jorge_setting_recv/num_comms_{args.num_comms_per_task}_num_queries{args.num_queries}",
         "sharing_strategy": "recv_data",
         "sharing_strategy.shared_memory_size": memory_size,
         "sharing_strategy.query_task_mode": query_task_mode,

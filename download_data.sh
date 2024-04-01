@@ -21,10 +21,10 @@
 
 
 # # Array of local folders to download
-LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_recv_query_task_mode_all" "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_recv_query_task_mode_current" )
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/budget_experiment_results/jorge_setting_fedavg" "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_recv_variable_shared_memory_size")
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
-REMOTE_PATH="/home/vlongle/code/learning-hive/experiment_results/"
+REMOTE_PATH="/home/vlongle/code/learning-hive/budget_experiment_results/"
 
 # Check if rsync is installed
 if ! command -v rsync &> /dev/null; then

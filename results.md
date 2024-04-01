@@ -263,8 +263,9 @@ Still can't recover the perf of prev github commit. But anyway.
 
 ## TODO
 - do the combined experiment [DONE]
+    + TODO: compute the graph modularity.
 
-- do the budget experiment
+- do the budget experiment. [ONGOING]
 
 - Varying topology connectivity.
 

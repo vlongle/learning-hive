@@ -42,6 +42,7 @@ parser.add_argument('--no_sparse_basis', type=str2bool, default=True)
 # parser.add_argument('--max_num_modules_tryout', type=int, default=14)
 parser.add_argument('--num_tryout_epochs', type=int, default=20)
 parser.add_argument('--max_num_modules_tryout', type=int, default=3)
+parser.add_argument('--num_shared_module', type=int, default=1)
 args = parser.parse_args()
 
 
@@ -142,12 +143,13 @@ if __name__ == "__main__":
         "sharing_strategy.transfer_decoder": args.transfer_decoder,
         "sharing_strategy.transfer_structure": args.transfer_structure,
 
-        "sharing_strategy.ranker": "instance",
+        # "sharing_strategy.ranker": "instance",
+        "sharing_strategy.ranker": "label",
         "sharing_strategy.module_select": "tryout",
-        "sharing_strategy.num_shared_module": 3,
+        "sharing_strategy.num_shared_module": args.num_shared_module,
         "sharing_strategy.num_tryout_epochs": args.num_tryout_epochs,
         "sharing_strategy.max_num_modules_tryout": args.max_num_modules_tryout,
-        "root_save_dir": prefix + f"experiment_results/tryout_tryout_epochs_{args.num_tryout_epochs}_max_modules_{args.max_num_modules_tryout}_leep_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}_transfer_decoder_{args.transfer_decoder}_transfer_structure_{args.transfer_structure}_no_sparse_basis_{args.no_sparse_basis}",
+        "root_save_dir": prefix + f"budget_experiment_results/tryout_epochs_{args.num_tryout_epochs}_max_modules_{args.max_num_modules_tryout}_num_shared_modules_{args.num_shared_module}_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}_transfer_decoder_{args.transfer_decoder}_transfer_structure_{args.transfer_structure}_no_sparse_basis_{args.no_sparse_basis}",
     }
 
     # print('args', args, type(args.sync_base), type(args.opt_with_random))

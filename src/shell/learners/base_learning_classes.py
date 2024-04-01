@@ -98,12 +98,14 @@ class Learner():
 
     def record_shared_data_stats(self, train_task_id, epoch):
         for task_id, replay in sorted(self.shared_replay_buffers.items()):
+            X, y, _ = replay.get_tensors() 
             self.sharing_data_record.write(
                 {
                     'train_task': train_task_id,
                     'task_id': task_id,
                     'epoch': epoch,
                     'num_samples': len(replay),
+                    'Y_dist': str(torch.unique(y, return_counts=True)),
                 }
             )
 

@@ -3,7 +3,7 @@
 #SBATCH --gpus=1
 #SBATCH --nodes=1
 #SBATCH --cpus-per-gpu=48
-#SBATCH --mem=64G
+#SBATCH --mem-per-cpu=2G
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
@@ -18,10 +18,11 @@ num_shared_module_index=$(((SLURM_ARRAY_TASK_ID - 1) / 8)) # Cycle through num_s
 
 TRANSFER_DECODER="1"
 TRANSFER_STRUCTURE="1"
+NO_SPARSE_BASIS="1"
+
 SEED=${seeds[$seed_index]}
 NUM_SHARED_MODULE=${num_shared_module[$num_shared_module_index]}
 
-NO_SPARSE_BASIS="1" # Statically set to "1"
 
-srun bash -c "python experiments/modmod_experiments.py --transfer_decoder $TRANSFER_DECODER --transfer_structure $TRANSFER_STRUCTURE --num_shared_module $NUM_SHARED_MODULE --no_sparse_basis $NO_SPARSE_BASIS --sync_base true --seed $SEED"
+srun bash -c "RAY_DEDUP_LOGS=0 python experiments/modmod_experiments.py --transfer_decoder $TRANSFER_DECODER --transfer_structure $TRANSFER_STRUCTURE --num_shared_module $NUM_SHARED_MODULE --no_sparse_basis $NO_SPARSE_BASIS --sync_base true --seed $SEED"
 exit 3

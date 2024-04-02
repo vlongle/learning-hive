@@ -44,7 +44,7 @@ from shell.utils.metric import Metric
 from  shell.utils.record import Record
 # result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/tryout_tryout_epochs_100_max_modules_14_leep_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True"
 # root_result_dir = "/mnt/kostas-graid/datasets/vlongle/budget_experiment_results/jorge_setting_recv"
-root_result_dir = "/mnt/kostas-graid/datasets/vlongle/budget_experiment_results/jorge_setting_fedavg"
+root_result_dir = "/mnt/kostas-graid/datasets/vlongle/budget_experiment_results/modmod"
 # result_dir = "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/vanilla_jorge_setting_basis_no_sparse"
 # result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/no_transform_debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
 # result_dir = "experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"

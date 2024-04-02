@@ -262,9 +262,10 @@ Still can't recover the perf of prev github commit. But anyway.
 
 
 ## TODO
-- do the combined experiment [DONE]
-
-- do the budget experiment
+- do the combined experiment [..]
+    - need to do recv data with LEEP or something.
+    - need to do modular with tryout.
+- do the budget experiment [..]
 
 - Varying topology connectivity.
 

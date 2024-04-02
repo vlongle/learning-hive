@@ -114,7 +114,8 @@ if __name__ == "__main__":
         "net": "cnn",
         "net.depth": 4,
         "num_init_tasks": 4,
-        "dataset.num_tasks": 20,
+        # "dataset.num_tasks": 20,
+        "dataset.num_tasks": 4,
         "net.dropout": args.dropout,
         "train.init_num_epochs": num_epochs,
         "train.init_component_update_freq": num_epochs,
@@ -128,9 +129,9 @@ if __name__ == "__main__":
         "net.no_sparse_basis": args.no_sparse_basis,
         
         
-        "sharing_strategy.sync_base": True,
+        "sharing_strategy.sync_base": args.sync_base,
         # "root_save_dir": prefix + f"experiment_results/no_transform_debug_cifar100_vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}_batchsize_{args.batch_size}",
-        "root_save_dir": prefix + f"experiment_results/vanilla_jorge_setting_no_sparse_sync_{args.sync_base}",
+        "root_save_dir": prefix + f"experiment_results/DEBUG_vanilla_jorge_setting_no_sparse_sync_{args.sync_base}",
     }
 
     run_experiment(config, strict=False)

@@ -485,6 +485,7 @@ class ModModAgent(Agent):
         if self.sharing_strategy.module_select == "trust_sim":
             self.module_select = TrustSimModuleSelection(self)
         elif self.sharing_strategy.module_select == "tryout":
+            logging.info("TRYOUT SELECTION")
             self.module_select = TryOutModuleSelection(self)
         else:
             raise NotImplementedError(
@@ -606,8 +607,7 @@ class ModModAgent(Agent):
             return
         if communication_round % 2 == 1:
             module_list = self.get_module_list()
-            # print("~~Processing communication",
-            #       len(module_list))
+  
             row = {
                     'task_id': task_id,
                     "source_task_id": -1,

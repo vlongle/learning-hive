@@ -607,7 +607,7 @@ class ParallelFleet:
             end_epoch = min(start_epoch + comm_freq, num_epochs)
 
             if self.sharing_strategy.pre_or_post_comm == "pre" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                logging.info('comm at epoch {}'.format(end_epoch))
+                logging.info('task {} comm at epoch {}'.format(task_id, start_epoch))
                 self.communicate(task_id,
                                  end_epoch,
                                  comm_freq,
@@ -616,7 +616,7 @@ class ParallelFleet:
                                      start_epoch // comm_freq) * self.num_coms_per_round,
                                  final=final)
 
-            logging.info('training from {} to {}'.format(
+            logging.info('task {} training from {} to {}'.format(task_id,
                 start_epoch, end_epoch))
             ray.get([agent.set_num_coms.remote(
                 task_id, num_coms) for agent in self.agents])
@@ -624,7 +624,7 @@ class ParallelFleet:
                                         final=final) for agent in self.agents])
 
             if self.sharing_strategy.pre_or_post_comm == "post" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                logging.info('comm at epoch {}'.format(end_epoch))
+                logging.info('task {} comm at epoch {}'.format(task_id, end_epoch))
                 self.communicate(task_id,
                                  end_epoch,
                                  comm_freq,

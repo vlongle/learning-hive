@@ -20,10 +20,10 @@
 
 
 # # Array of local folders to download
-LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/experiment_results/vanilla_jorge_setting_no_sparse_sync_True")
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/budget_experiment_results/modmod")
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
-REMOTE_PATH="/home/vlongle/code/learning-hive/experiment_results/"
+REMOTE_PATH="/home/vlongle/code/learning-hive/budget_experiment_results/"
 # REMOTE_PATH="/home/vlongle/code/learning-hive/combined_data_experiment_results/"
 
 # Check if rsync is installed

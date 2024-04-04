@@ -34,6 +34,7 @@ for job_name in os.listdir(result_dir):
                     df = DivergenceMetric(save_dir).df
                     # only keep task_id, communication_round, time, and avg_params
                     # columns
+                    df = df[df['info'] == 'before']
                     df = df[["task_id", "communication_round",
                              "epoch", "avg_params"]]
                     # add seed and agent_id columns

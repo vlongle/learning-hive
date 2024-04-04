@@ -44,60 +44,6 @@ class ModGrad(ModelSyncAgent):
             raise NotImplementedError(
                 f'when_reoptimize_structure: {self.sharing_strategy.when_reoptimize_structure} not implemented')
 
-    # def reoptimize_past_structures(self, task_id, communication_round, num_epochs=1):
-    #     # optimize structures from 0--> task_id - 1 (excluding current task_id)
-    #     # using the replay buffer
-    #     # print("REOPTIMIZE TASK_ID:", task_id, len(self.agent.memory_loaders))
-    #     assert len(self.agent.memory_loaders.values(
-    #     )) == task_id, f"task_id: {task_id}, len(self.agent.memory_loaders.values()): {len(self.agent.memory_loaders.values())}"
-
-    #     # TODO: handle the component dropout carefully.
-    #     # print("BEFORE CURRENT_ACTIVE_CANDIDATE_INDEX", self.net.active_candidate_index)
-    #     current_active_candidate_index = self.net.active_candidate_index
-    #     self.net.active_candidate_index = None
-
-    #     # NOTE: at the final communication round for the task, we need to reset the adam optimizer.
-    #     # Adam uses a moving average of the past gradients, so if the model dynamically changes (e.g.,
-    #     # we remove the conditional component), we will get an error.
-    #     # This wasn't a problem before for some reasons, although re-optimizing past modules (using experience
-    #     # replay) seems like it should cause the same problem.
-    #     # if communication_round == self.num_coms[task_id]-1:
-    #     if task_id not in self.num_coms:
-    #         # HACK: hacky way to identify the final communication round basically
-    #         # for the task. The task_id will be +1 the actual task because
-    #         # we've completed the last training epoch (communication happens AFTER
-    #         # training). So the current task is "just" considered past.
-    #         # print("RESETING OPTIMIZER")
-    #         self.agent.optimizer = torch.optim.Adam(self.net.parameters(),)
-    #     # print("STRUCTURE", self.net.structure)
-    #     for _ in range(num_epochs):
-    #         for task in range(task_id):
-    #             self.net.freeze_modules()
-    #             self.net.freeze_structure()
-    #             self.net.unfreeze_structure(task_id=task)
-
-    #             # update structure for task
-    #             loader = torch.utils.data.DataLoader(get_custom_tensordataset(self.agent.memory_loaders[task].dataset.tensors,
-    #                                                                           name=self.agent.dataset_name,
-    #                                                                           use_contrastive=self.agent.use_contrastive),
-    #                                                  batch_size=self.batch_size,
-    #                                                  shuffle=True,
-    #                                                  num_workers=0,
-    #                                                  pin_memory=True,
-    #                                                  )
-
-    #             for X, Y, _ in loader:
-    #                 if isinstance(X, list):
-    #                     # contrastive two views
-    #                     X = torch.cat([X[0], X[1]], dim=0)
-    #                 X = X.to(self.net.device, non_blocking=True)
-    #                 Y = Y.to(self.net.device, non_blocking=True)
-    #                 # with new module
-    #                 # print(self.net.structure)
-    #                 self.agent.update_structure(
-    #                     X, Y, task)
-    #     self.net.active_candidate_index = current_active_candidate_index
-
 
 @ray.remote
 class ParallelModGrad(ModGrad):

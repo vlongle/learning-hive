@@ -231,6 +231,7 @@ class DivergenceMetric:
         self.num_comm_rounds = self.df['communication_round'].max() + 1
         # self.df["epoch"] = self.df["task_id"] * \
         #     self.num_comm_rounds + self.df["communication_round"]
+        
         self.compute_epochs()
 
     def compute_epochs(self):

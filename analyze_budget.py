@@ -19,110 +19,21 @@ Copyright (c) 2023 Long Le
 For cifar100, epochs=500 is stored in 
 """
 
-# result_dir = "finding_hyper_for_mod_contrastive_large_deeper_projector_results"
-# result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_1.5_results"
-# result_dir = "cifar_lasttry_im_done_results"
-# result_dir = "experiment_results/vanilla"
-# result_dir = "experiment_results/vanilla_small"
-# result_dir = "cifar_longer_results"
-# result_dir = "experiment_results/vanilla_fix_bug_compute_loss_encodev2"
-# result_dir = "experiment_results/modmod_test_sync_base_True_opt_with_random_False"
-# result_dir = "experiment_results/vanilla_modular_save_freq_10"
-# result_dir = "experiment_results/vanilla_jorge_setting_basis_no_sparse"
-# result_dir = "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/vanilla_jorge_setting_dropout_0.5_memory_32_no_sparse_False_num_trains_-1_batchsize_32"
-# result_dir = "experiment_results/debug_cifar100_batch_64_num_epochs_100"
-# result_dir = "experiment_results/jorge_setting_fedavg"
-# result_dir = "experiment_results/vanilla_jorge_setting_basis_no_sparse"
-# result_dir = "experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
-# result_dir = "experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
-# result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
-# result_dir = "experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True"
-# result_dir = "experiment_results/vanilla_jorge_setting_basis_no_sparse"
-import os
-import re
-from shell.utils.metric import Metric
+
+# root_result_dir = "budget_experiment_results/jorge_setting_recv_variable_shared_memory_size"
 from  shell.utils.record import Record
-# result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/tryout_tryout_epochs_100_max_modules_14_leep_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True"
-# root_result_dir = "/mnt/kostas-graid/datasets/vlongle/budget_experiment_results/jorge_setting_recv"
-root_result_dir = "/mnt/kostas-graid/datasets/vlongle/budget_experiment_results/modmod"
-# result_dir = "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/vanilla_jorge_setting_basis_no_sparse"
-# result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/no_transform_debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
-# result_dir = "experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
-# result_dir = "experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
-# result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/vanilla_jorge_setting_no_sparse_basis"
-# # result_dir = "experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True"
-# result_dir = "experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True"
-# result_dir = "experiment_results/test_lambda_5_num_epochs_150"
-# result_dir = "experiment_results/test_lambda_5.0_num_epochs_300_delta_1.0"
-# result_dir = "experiment_results/vanilla_ood_separation_loss"
-# result_dir = "experiment_results/test"
-# result_dir = "experiment_results/vanilla_ood_separation_loss"
-# result_dir = "experiment_results/toy_fedavg"
-# result_dir = "experiment_results/fedavg_transfer_also_projection_100"
-# result_dir = "experiment_results/fedavg_transfer_also_projection_10_only_final_always"
-# result_dir = "experiment_results/toy_fedprox"
-# result_dir = "experiment_results/vanilla_cifar"
-# result_dir = "experiment_results/fedprox_0.0"
-# result_dir = "experiment_results/fedprox_0.0"
-# result_dir = "experiment_results/fedavg_transfer_also_projection"
-# result_dir = "experiment_results/fl"
-# result_dir = "experiment_results/vanilla_more_trials"
-# result_dir = "experiment_results/vanilla_tune_fashionmnist"
-# result_dir = "vanilla_results_wo_replacement_2"
-# result_dir = "vanilla_results_wo_replacement"
-# result_dir = "vanilla_results_wo_replacement_2"
-# result_dir = "finding_hyper_for_mod_contrastive_large_results"
-# result_dir = "finding_hyper_for_mod_contrastive_large_lower_temp_results"
-# result_dir = "vanilla_init_big_mod_nocontrast_results"
-# result_dir = "vanilla_cifar_old_results"
-# agent_4 final: 0.76 (catastrophic: 2.0), vanilla: 0.77 (catastrophic: 0.7)
-# result_dir = "cifar_contrastive_no_dropout_results"
-# result_dir = "cifar_task_specific_proj_results"
-# result_dir = "cifar_contrastive_no_dropout_results"
-# result_dir = "vanilla_results"
-# result_dir = "cifar_task_specific_proj_allow_decoder_change_accommodate_train_500_epochs_temp_0.07_results"
-# result_dir = "cifar_task_specific_proj_results"
-# result_dir = "grad_results"
-# result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_hidden_64_results"
-# result_dir = "cifar_lasttry_im_done_projector_no_freeze_scaling_2.0_temp_0.06_results"
-# result_dir = "grad_new_results"
-# result_dir = "finding_hyper_for_mod_contrastive2"
-# result_dir = "cifar_no_updates_contrastive_results"
-# result_dir = "cifar_epochs_500_mild_dropout_memory_64_data_300_results"
-# result_dir = "vanilla_remove_datasets_hack_results"
-# result_dir = "vanilla_fashion_add_random_crop_results"
-# result_dir = "vanilla_remove_datasets_hack_regular_dropout_results"
+from shell.utils.metric import Metric
+import re
+import os
+root_result_dir = "budget_experiment_results/jorge_setting_fedavg"
 record = Record(f"{root_result_dir}.csv")
 
 pattern = r".*"
-# pattern = r".*seed_0.*"
-# pattern = r".*modular_numtrain_256_contrastive/.*"
-# pattern = r".*modular_numtrain_300_contrastive/.*"
-# pattern = r".*modular_numtrain_300/.*"
-# pattern = r".*modular_numtrain_256/.*"
-# pattern = r".*256.*"
-# pattern = r".*64"
-# pattern = r".*fashion"
 
 num_init_tasks = 4  # vanilla_results
-# num_init_tasks = 0  # grad_results bc of joint training
-
-# num_epochs_ = num_init_epochs_ = None
-# num_epochs_ = 200
-# num_epochs_ = 100
-# num_init_epochs_ = 100
-
-# num_epochs_ = 200
-# num_init_epochs_ = 500
 
 num_epochs_ = 100
 num_init_epochs_ = 300
-
-# num_epochs_ = 500
-# num_init_epochs_ = 500
-# num_init_tasks = 0
-
-
 start_epoch = 21
 
 for result_dir in os.listdir(root_result_dir):
@@ -135,18 +46,20 @@ for result_dir in os.listdir(root_result_dir):
                         if agent_id == "hydra_out" or agent_id == "agent_69420":
                             continue
                         save_dir = os.path.join(root_result_dir,
-                            result_dir, job_name, dataset_name, algo, seed, agent_id)
+                                                result_dir, job_name, dataset_name, algo, seed, agent_id)
                         # if the pattern doesn't match, continue
                         if not re.search(pattern, save_dir):
                             continue
+                        print(save_dir)
 
                         num_epochs = num_init_epochs = None
                         if dataset_name == "cifar100":
                             num_epochs = num_epochs_
                             num_init_epochs = num_init_epochs_
                         m = Metric(save_dir, num_init_tasks, num_epochs=num_epochs,
-                                num_init_epochs=num_init_epochs)
-                        extra_algo = f"{result_dir}_{algo}"
+                                   num_init_epochs=num_init_epochs)
+                        # extra_algo = f"{result_dir}_{algo}"
+                        extra_algo = f"{algo}_{result_dir}"
                         record.write(
                             {
                                 "dataset": dataset_name,

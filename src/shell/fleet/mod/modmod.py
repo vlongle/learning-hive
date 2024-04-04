@@ -16,7 +16,7 @@ import torch
 import numpy as np
 import torch.nn as nn
 import pandas as pd
-from shell.fleet.data.recv import random_scorer, cross_entropy_scorer, compute_embedding_dist
+from shell.fleet.data.recv import random_scorer, cross_entropy_scorer
 import copy
 import logging
 import gc

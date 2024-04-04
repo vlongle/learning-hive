@@ -2,7 +2,7 @@
 #SBATCH --output=slurm_outs/recv/%A_%a.out
 #SBATCH --gpus=1
 #SBATCH --nodes=1
-#SBATCH --cpus-per-gpu=32
+#SBATCH --cpus-per-gpu=48
 #SBATCH --mem-per-cpu=2G
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
@@ -23,6 +23,6 @@ NUM_QUERIES=${num_queries[$NUM_QUERIES_IDX]}
 NUM_COMPS_PER_TASK=${num_comms_per_task[$NUM_COMPS_PER_TASK_IDX]}
 ALGO=${algos[$ALGO_IDX]}
 
-srun bash -c "python experiments/recv_experiments.py --num_queries $NUM_QUERIES --num_comms_per_task $NUM_COMPS_PER_TASK --algo $ALGO"
+srun bash -c "RAY_DEDUP_LOGS=0 python experiments/recv_experiments.py --num_queries $NUM_QUERIES --num_comms_per_task $NUM_COMPS_PER_TASK --algo $ALGO"
 
 exit 3

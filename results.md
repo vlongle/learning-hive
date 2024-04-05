@@ -265,6 +265,7 @@ Still can't recover the perf of prev github commit. But anyway.
 - do the combined experiment [..]
     - need to do recv data with LEEP or something.
     - need to do modular with tryout [x]
+    - add some weaker modmod budget baseline.
 - do the budget experiment [..]
 
 - Varying topology connectivity.

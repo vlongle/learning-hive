@@ -174,6 +174,46 @@ class Metric:
             catastrophic = catastrophic['catastrophic'].mean() * 100
         return catastrophic
 
+    def compute_auc(self, mode='current', tasks=None, metric='test_acc'):
+        """
+        Compute the AUC based on mode and tasks specified.
+
+        Parameters:
+        - mode: Mode of AUC calculation, 'current' for learning curves of the same tasks, 'avg' for the averaged learning curve.
+        - tasks: List of tasks to include in the calculation. If None, all tasks are included.
+        - metric: The metric column name to use for AUC calculation. Default is 'test_acc'.
+
+        Returns:
+        - AUC value as a float.
+        """
+        auc_values = []
+
+        if tasks is None:
+            tasks = self.df['train_task'].unique()
+
+        for task in tasks:
+            if mode == 'current':
+                # Filter rows where train_task and test_task match the current task
+                filtered_df = self.df[(self.df['train_task'] == str(
+                    task)) & (self.df['test_task'] == str(task))]
+            elif mode == 'avg':
+                # Filter rows for the 'avg' test task across the specified tasks
+                filtered_df = self.df[(self.df['train_task'] == str(
+                    task)) & (self.df['test_task'] == 'avg')]
+            else:
+                raise ValueError("Invalid mode. Choose 'current' or 'avg'.")
+
+            # Ensure the dataframe is sorted by epoch.
+            filtered_df = filtered_df.sort_values(by='epoch')
+
+            # Calculate the AUC for the filtered dataframe.
+            auc = np.trapz(filtered_df[metric], filtered_df['epoch'])
+            auc_values.append(auc)
+
+        # For 'avg' mode, the AUC is calculated once above. For 'current' mode, average the AUCs across tasks.
+        final_auc = np.mean(auc_values)
+        return final_auc
+
 
 def task_similarity(classes_sequence_list, num_tasks, num_classes_per_task):
     """
@@ -231,7 +271,7 @@ class DivergenceMetric:
         self.num_comm_rounds = self.df['communication_round'].max() + 1
         # self.df["epoch"] = self.df["task_id"] * \
         #     self.num_comm_rounds + self.df["communication_round"]
-        
+
         self.compute_epochs()
 
     def compute_epochs(self):

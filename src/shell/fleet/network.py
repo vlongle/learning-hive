@@ -21,12 +21,23 @@ class TopologyGenerator:
 
     def generate_fully_connected(self):
         G = nx.complete_graph(self.num_nodes)
-        G = self.__drop_edges(G)
+        # G = self.__drop_edges(G)
         return G
 
     def generate_disconnected(self):
         # graph with no edges (i.e., no communication)
         G = nx.empty_graph(self.num_nodes)
+        return G
+
+    def generate_tree(self):
+        # Generates a random tree topology
+        return nx.random_tree(self.num_nodes)
+
+    def generate_server(self):
+        # Generates a server-based topology
+        G = nx.empty_graph(self.num_nodes)
+        for i in range(1, self.num_nodes):
+            G.add_edge(0, i)  # Assuming node 0 is the server
         return G
 
     def generate_self_loop(self):
@@ -38,21 +49,24 @@ class TopologyGenerator:
 
     def generate_ring(self):
         G = nx.cycle_graph(self.num_nodes)
-        G = self.__drop_edges(G)
+        # G = self.__drop_edges(G)
         return G
 
     def generate_random(self):
         G = nx.erdos_renyi_graph(self.num_nodes, p=1-self.edge_drop_prob)
         return G
 
-    def generate_connected_random(self):
+    def generate_connected_random(self, edge_drop_prob=None):
+        if edge_drop_prob is None:
+            edge_drop_prob = self.edge_drop_prob
+
         # Step 1: Create a random spanning tree to ensure connectivity
         G = nx.random_tree(self.num_nodes)
 
         # Step 2: Add additional edges with probability p=1-edge_drop_prob
         for i in range(self.num_nodes):
             for j in range(i+1, self.num_nodes):  # avoid duplicate edges and self-loops
-                if not G.has_edge(i, j) and random.random() <= (1 - self.edge_drop_prob):
+                if not G.has_edge(i, j) and random.random() <= (1 - edge_drop_prob):
                     G.add_edge(i, j)
 
         return G
@@ -83,8 +97,11 @@ class TopologyGenerator:
                    layout="spring", draw_labels=False,
                    node_color_attr=None,  # Existing parameter for node color attribute
                    save_path=None,
-                   edge_widths=1):
-        plt.clf()
+                   edge_widths=1,
+                   ax=None):  # Optional matplotlib axis
+        if ax is None:
+            fig, ax = plt.subplots()  # Create a new figure and axis if none is provided
+
         if layout == "spring":
             pos = nx.spring_layout(G)
         elif layout == "circular":
@@ -99,20 +116,19 @@ class TopologyGenerator:
         else:
             node_colors = node_color
 
+        # Draw nodes and edges using the specified ax
         nx.draw_networkx_nodes(
-            G, pos, node_color=node_colors, node_size=node_size)
-
-
+            G, pos, node_color=node_colors, node_size=node_size, ax=ax)
 
         nx.draw_networkx_edges(
-            G, pos, edge_color=edge_color, width=edge_widths)
+            G, pos, edge_color=edge_color, width=edge_widths, ax=ax)
 
         if draw_labels:
             nx.draw_networkx_labels(
-                G, pos, font_size=font_size, font_family=font_family)
-        plt.axis("off")
+                G, pos, font_size=font_size, font_family=font_family, ax=ax)
 
+        ax.set_axis_off()  # Use ax method to turn off the axis
+
+        # Handle save_path to save the figure
         if save_path:
             plt.savefig(save_path)
-        else:
-            plt.show()

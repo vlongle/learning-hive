@@ -79,8 +79,21 @@ def setup_experiment(cfg: DictConfig):
                 "use_contrastive": cfg.agent.use_contrastive, }
     agent_cfg |= {'dataset_name': cfg.dataset.dataset_name}
     print("net_cfg", net_cfg)
+
     tg = TopologyGenerator(num_nodes=cfg.num_agents)
-    graph = tg.generate_random()
+    if cfg.topology == "fully_connected":
+        graph = tg.generate_fully_connected()
+    elif cfg.topology == "tree":
+        graph = tg.generate_tree()
+    elif cfg.topology == "ring":
+        graph = tg.generate_ring()
+    elif cfg.topology == "server":
+        graph = tg.generate_server()
+    elif cfg.topology == "random":
+        graph = tg.generate_connected_random(cfg.edge_drop_prob)
+    else:
+        raise NotImplementedError(
+            f"Topology {cfg.topology} not implemented.")
 
     if cfg.algo == "modular":
         if cfg.net.name == "mlp":
@@ -93,7 +106,7 @@ def setup_experiment(cfg: DictConfig):
         elif cfg.net.name == "cnn":
             NetCls = CNN
     else:
-        raise NotImplementedError
+        raise NotImplementedError(f"Algorithm {cfg.algo} not implemented.")
 
     if cfg.algo == "modular":
         net_cfg |= {"num_tasks": cfg.dataset.num_tasks, }

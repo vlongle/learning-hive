@@ -18,7 +18,6 @@ from shell.utils.replay_buffers import ReplayBufferReservoir
 from shell.fleet.data.data_utilize import *
 import pickle
 from shell.learners.base_learning_classes import CompositionalDynamicLearner
-from functools import partial
 """
 Receiver-first procedure.
 Scorers return higher scores for more valuable instances (need to train more on).
@@ -109,34 +108,6 @@ SCORER_TYPE_LOOKUP = {
 }
 
 
-# @torch.inference_mode()
-# def compute_embedding_dist(net, X1, X2=None, task_id=None):
-#     assert task_id is not None
-#     was_training = net.training
-#     net.eval()
-#     X1_embed = net.encode(
-#         X1.to(net.device), task_id=task_id)  # (B, hidden_dim)
-#     if X2 is not None:
-#         X2_embed = net.encode(X2.to(net.device), task_id=task_id)
-#         sim = pairwise_cosine_similarity(X1_embed, X2_embed)
-#     else:
-#         sim = pairwise_cosine_similarity(X1_embed)
-#     if was_training:
-#         net.train()
-#     return sim.cpu()
-
-
-@torch.inference_mode()
-def compute_embedding_dist(net, X1, X2, task_id):
-    net.eval()
-    X1_embed = net.encode(
-        X1.to(net.device), task_id=task_id)  # (B, hidden_dim)
-    X2_embed =net.encode(X2.to(net.device), task_id=task_id)
-    sim = pairwise_cosine_similarity(X1_embed, X2_embed)
-    return sim.cpu()
-
-
-
 class RecvDataAgent(Agent):
     """
     Have two rounds of communications.
@@ -155,6 +126,15 @@ class RecvDataAgent(Agent):
         self.scorer_type = SCORER_TYPE_LOOKUP[self.sharing_strategy.scorer]
 
         self.is_modular = isinstance(self.agent, CompositionalDynamicLearner)
+
+    @torch.inference_mode()
+    def compute_embedding_dist(self, X1, X2, task_id):
+        self.net.eval()
+        X1_embed = self.net.encode(
+            X1.to(self.net.device), task_id=task_id)  # (B, hidden_dim)
+        X2_embed = self.net.encode(X2.to(self.net.device), task_id=task_id)
+        sim = pairwise_cosine_similarity(X1_embed, X2_embed)
+        return sim.cpu()
 
     # @torch.inference_mode()
     # def compute_embedding_dist(self, X1, X2, task_id):
@@ -206,7 +186,7 @@ class RecvDataAgent(Agent):
         buffer.
         """
         if computer is None:
-            computer = partial(compute_embedding_dist, self.net)
+            computer = self.compute_embedding_dist
 
         sims = []
         Xs, ys, tasks = [], [], []
@@ -309,8 +289,13 @@ class RecvDataAgent(Agent):
             list(query_global_y.values()), dim=0)  # shape=(num_queries)
         # print('query_global_y', query_global_y)
 
+        neighbor_dataset = self.incoming_query_extra_info[neighbor_id]['query_dataset']
+        if neighbor_dataset != self.dataset.name:
+            res =  torch.full((query_global_y.size(0), n_filter_neighbors), -1, dtype=torch.long)
+        else:
+            res = self.prefilter_oracle_helper(qX, query_global_y, n_filter_neighbors)
         return {
-            "task_neighbors_prefilter": self.prefilter_oracle_helper(qX, query_global_y, n_filter_neighbors)
+            "task_neighbors_prefilter": res
         }
 
     # NOTE: might not get all possible tasks...
@@ -330,15 +315,18 @@ class RecvDataAgent(Agent):
 
     def prefilter_oracle_helper(self, qX, q_global_Y, n_filter_neighbors):
         assert q_global_Y.shape[0] == qX.shape[0]
+        # task_ids_list is a 2D array. For each query, it list all applicable tasks.
         local_ys, task_ids_list = get_all_local_labels(
             q_global_Y, self.dataset.class_sequence, self.dataset.num_classes_per_task)
         ret = torch.full(
             (q_global_Y.size(0), n_filter_neighbors), -1, dtype=torch.long)
 
+        min_task = getattr(self.sharing_strategy, 'min_task', 0)
         for i, task_ids in enumerate(task_ids_list):
             # Filter out task IDs that exceed the current time horizon
             valid_task_ids = [
-                task_id for task_id in task_ids if task_id < self.agent.T]
+                task_id for task_id in task_ids if task_id < self.agent.T and task_id >= min_task]
+            # NOTE: we purposedfully assume that n_valid_tasks <= n_filter_neighbor
 
             n_valid_tasks = len(valid_task_ids)
             if n_valid_tasks == 0:
@@ -382,7 +370,7 @@ class RecvDataAgent(Agent):
 
         # 2. Compute similarity using embedding method
         sims, Xs, ys, tasks = self.compute_similarity(
-            qX, computer=partial(compute_embedding_dist, self.net))
+            qX, computer=self.compute_embedding_dist)
 
         # 3. Extract top neighbors considering the pre-filtered tasks
         X_neighbors, Y_neighbors, task_neighbors, sims = self.extract_topk_from_similarity(
@@ -427,7 +415,6 @@ class RecvDataAgent(Agent):
 
         was_training = self.net.training
         self.net.eval()
-
         if mode == "all":
             tasks = range(task_id + 1)
         elif mode == "current":
@@ -584,6 +571,8 @@ class RecvDataAgent(Agent):
         return structured_data
 
     def compute_data(self):
+        was_training = self.net.training
+        self.net.eval()
         # Get relevant data for the query
         # and populate self.data
         self.data = {}
@@ -607,6 +596,9 @@ class RecvDataAgent(Agent):
 
             self.data[requester] = structured_data['X_neighbors']
             self.extra_info[requester] = structured_data
+        
+        if was_training:
+            self.net.train()
 
     def add_data_task_neighbors_prefilter(self, neighbor_id, task_id):
         extra_info = self.incoming_extra_info[neighbor_id]
@@ -719,6 +711,7 @@ class RecvDataAgent(Agent):
             self.query_y = y
             self.query_extra_info = {
                 "query_global_y": self.get_query_global_labels(y),
+                "query_dataset": self.dataset.name,
             }
         elif communication_round % 2 == 1:
             self.compute_data()

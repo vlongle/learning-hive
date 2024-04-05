@@ -25,7 +25,7 @@ from  shell.utils.record import Record
 from shell.utils.metric import Metric
 import re
 import os
-root_result_dir = "budget_experiment_results/jorge_setting_fedavg"
+root_result_dir = "/home/vlongle/code/learning-hive/budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size"
 record = Record(f"{root_result_dir}.csv")
 
 pattern = r".*"

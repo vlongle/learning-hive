@@ -6,6 +6,8 @@ root_save_dir: results
 parallel: true
 num_init_tasks: 4
 overwrite: false
+topology: connected
+edge_drop_prob: 0.0
 
 agent:
   save_dir: ${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}
@@ -18,7 +20,7 @@ agent:
   delta_ood: 1.0
 
 defaults:
-  - train: monolithic
+  - train: monolconnectedithic
   - dataset: mnist
   - net: mlp
   - sharing_strategy: no_sharing

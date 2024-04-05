@@ -264,7 +264,7 @@ Still can't recover the perf of prev github commit. But anyway.
 ## TODO
 - do the combined experiment [..]
     - need to do recv data with LEEP or something.
-    - need to do modular with tryout.
+    - need to do modular with tryout [x]
 - do the budget experiment [..]
 
 - Varying topology connectivity.

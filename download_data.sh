@@ -20,7 +20,7 @@
 
 
 # # Array of local folders to download
-LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/budget_experiment_results/modmod/leep_tryout_epochs_20_max_modules_3_num_shared_modules_1_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True")
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size_sync_base_True")
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
 REMOTE_PATH="/home/vlongle/code/learning-hive/budget_experiment_results/"

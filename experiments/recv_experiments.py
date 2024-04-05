@@ -21,6 +21,21 @@ import datetime
 from shell.utils.experiment_utils import run_experiment
 import argparse
 from shell.utils.utils import on_desktop
+
+
+
+def str2bool(v):
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')
+
+
+
 parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
 parser.add_argument('--seed', type=int, default=0,
@@ -45,6 +60,7 @@ parser.add_argument('--num_queries', type=int, default=20,
                     help='Number of queries for the experiment.')
 parser.add_argument('--num_comms_per_task', type=int, default=5,
                     help='Number of communications per task for the experiment.')
+parser.add_argument('--sync_base', type=str2bool, default=False)
 args = parser.parse_args()
 
 if on_desktop():
@@ -61,8 +77,8 @@ if __name__ == "__main__":
     batch_size = 64
     num_epochs = 100
     memory_size = 32
-    # shared_memory_size = memory_size
-    shared_memory_size = max(args.num_queries * args.num_comms_per_task, memory_size)
+    # shared_memory_size = max(args.num_queries * args.num_comms_per_task, memory_size)
+    shared_memory_size = memory_size
 
     query_task_mode = 'current' if args.algo == 'modular' else 'all'
     comm_freq = num_epochs // (args.num_comms_per_task + 1)
@@ -71,9 +87,11 @@ if __name__ == "__main__":
         "algo": args.algo,
         "agent.batch_size": batch_size,
         "seed": args.seed,
-        "parallel": 20,
-        "num_agents": 8,
+        # "seed": [0,1,2,3,4,5,6,7],
+        "parallel": True,
+        "num_agents": 20,
         "dataset": "combined",
+        "sharing_strategy.min_task": 4, ## !!!!NOTE: only for the combined dataset
         "dataset.num_trains_per_class": 64,
         "dataset.num_vals_per_class": 50,
         "dataset.remap_labels": True,
@@ -91,8 +109,9 @@ if __name__ == "__main__":
         "agent.use_contrastive": False,
         "agent.memory_size": memory_size,
         # "agent.use_ood_separation_loss": False,
+           "net.no_sparse_basis": True,
         
-        "root_save_dir": prefix + f"experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
+        "root_save_dir": prefix + f"debug_budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size_sync_base_{args.sync_base}/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
         "sharing_strategy": "recv_data",
         "sharing_strategy.shared_memory_size": shared_memory_size,
         "sharing_strategy.query_task_mode": query_task_mode,
@@ -103,6 +122,7 @@ if __name__ == "__main__":
         "sharing_strategy.add_data_prefilter_strategy": args.add_data_prefilter_strategy,
         "sharing_strategy.assign_labels_strategy": args.assign_labels_strategy,
         "sharing_strategy.scorer": args.scorer,
+        "sharing_strategy.sync_base": args.sync_base,
     }
 
 
@@ -110,7 +130,8 @@ if __name__ == "__main__":
     # config = {
 
     #     "algo": args.algo,
-    #     "seed": [0,1,2,3,4,5,6,7],
+    #     # "seed": [0,1,2,3,4,5,6,7],
+    #     "seed": args.seed,
     #     # "seed": args.seed,
     #     "num_agents": 8,
     #     "parallel": True,
@@ -137,7 +158,7 @@ if __name__ == "__main__":
 
 
     #     # "agent.use_ood_separation_loss": False,
-    #     "root_save_dir": prefix + f"experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
+    #         "root_save_dir": prefix + f"budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size_sync_base_{args.sync_base}/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
     #     "sharing_strategy": "recv_data",
     #     "sharing_strategy.shared_memory_size": shared_memory_size,
     #     "sharing_strategy.query_task_mode": query_task_mode,
@@ -148,6 +169,7 @@ if __name__ == "__main__":
     #     "sharing_strategy.add_data_prefilter_strategy": args.add_data_prefilter_strategy,
     #     "sharing_strategy.assign_labels_strategy": args.assign_labels_strategy,
     #     "sharing_strategy.scorer": args.scorer,
+    # "sharing_strategy.sync_base": args.sync_base,
     # }
 
 

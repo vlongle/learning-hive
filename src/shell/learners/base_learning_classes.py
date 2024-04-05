@@ -504,6 +504,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
 
             if task_id in self.shared_replay_buffers and len(self.shared_replay_buffers) > 0:
+                # logging.info("!!NOTE: will be adding {} data to task {} epoch {}".format(len(self.shared_replay_buffers[task_id]),
+                #         task_id, start_epoch))
                 tmp_dataset = copy.deepcopy(trainloader.dataset)
                 X, y, _ = self.shared_replay_buffers[task_id].get_tensors()
                 mega_dataset = CustomConcatTensorDataset(

@@ -7,6 +7,7 @@
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
+#SBATCH --exclude=ee-3090-1.grasp.maas
 #SBATCH --array=0-17
 
 declare -a topologies=("ring" "tree" "server")
@@ -24,4 +25,6 @@ DATASET=${datasets[$DATASET_IDX]}
 ALGO=${algos[$ALGO_IDX]}
 
 # Adjust the command to include topology and dataset
-srun bash -c "python experiments/fedavg_experiments.py --algo $ALGO --dataset $DATASET --topology $TOPOLOGY --comm_freq 5"
+srun bash -c "RAY_DEDUP_LOGS=0 python experiments/fedavg_experiments.py --algo $ALGO --dataset $DATASET --topology $TOPOLOGY --comm_freq 5"
+
+exit 3

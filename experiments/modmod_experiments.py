@@ -35,8 +35,8 @@ parser.add_argument('--sync_base', type=str2bool, default=True)
 # parser.add_argument('--sync_base', type=str2bool, default=False)
 parser.add_argument('--opt_with_random', type=str2bool, default=False)
 parser.add_argument('--freeze_candidate_module', type=str2bool, default=False)
-parser.add_argument('--transfer_decoder', type=str2bool, default=False)
-parser.add_argument('--transfer_structure', type=str2bool, default=False)
+parser.add_argument('--transfer_decoder', type=str2bool, default=True)
+parser.add_argument('--transfer_structure', type=str2bool, default=True)
 parser.add_argument('--no_sparse_basis', type=str2bool, default=True)
 # parser.add_argument('--num_tryout_epochs', type=int, default=100)
 # parser.add_argument('--max_num_modules_tryout', type=int, default=14)
@@ -66,10 +66,13 @@ if __name__ == "__main__":
 
     config = {
 
-        "algo": args.algo,
+        "algo": "modular",
         "dataset": args.dataset,
         "agent.batch_size": batch_size,
-        "seed": args.seed,
+        # "seed": args.seed,
+        "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+        "topology": args.topology,
+        "edge_drop_prob": args.edge_drop_prob,
         "parallel": True,
         "num_agents": 8,
         "dataset.num_trains_per_class": 64,
@@ -104,7 +107,7 @@ if __name__ == "__main__":
 
         "sharing_strategy.ranker": "label",
         # "sharing_strategy.module_select": "tryout",
-        "sharing_strategy.module_select": "trustsim",
+        "sharing_strategy.module_select": "trust_sim",
 
         "sharing_strategy.num_shared_module": args.num_shared_module,
         "sharing_strategy.num_tryout_epochs": args.num_tryout_epochs,
@@ -119,11 +122,14 @@ if __name__ == "__main__":
 
     # config = {
     #     "algo": "modular",
-    #     "seed": args.seed,
-    #     # "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+    #     # "seed": args.seed,
+    #     "seed": [0, 1, 2, 3, 4, 5, 6, 7],
     #     "num_agents": 8,
     #     "parallel": True,
-    #     # "num_agents": 4,
+        
+    #     "topology": args.topology,
+    #     "edge_drop_prob": args.edge_drop_prob,
+
     #     "dataset": "cifar100",
     #     "dataset.num_trains_per_class": 256,
     #     "dataset.num_vals_per_class": -1,
@@ -158,7 +164,8 @@ if __name__ == "__main__":
     #     "sharing_strategy.num_shared_module": args.num_shared_module,
     #     "sharing_strategy.num_tryout_epochs": args.num_tryout_epochs,
     #     "sharing_strategy.max_num_modules_tryout": args.max_num_modules_tryout,
-    #     "root_save_dir": prefix + f"budget_experiment_results/modmod/tryout_epochs_{args.num_tryout_epochs}_max_modules_{args.max_num_modules_tryout}_num_shared_modules_{args.num_shared_module}_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}_transfer_decoder_{args.transfer_decoder}_transfer_structure_{args.transfer_structure}_no_sparse_basis_{args.no_sparse_basis}",
+    #     # "root_save_dir": prefix + f"budget_experiment_results/modmod/tryout_epochs_{args.num_tryout_epochs}_max_modules_{args.max_num_modules_tryout}_num_shared_modules_{args.num_shared_module}_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}_transfer_decoder_{args.transfer_decoder}_transfer_structure_{args.transfer_structure}_no_sparse_basis_{args.no_sparse_basis}",
+    #     "root_save_dir": prefix + f"topology_experiment_results/modmod/topology_{args.topology}_edge_drop_{args.edge_drop_prob}",
     # }
 
     # print('args', args, type(args.sync_base), type(args.opt_with_random))

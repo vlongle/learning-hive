@@ -54,73 +54,78 @@ if __name__ == "__main__":
     seed = args.seed
     dataset = args.dataset
 
-    config = {
-        "algo": args.algo,
-        "seed": [0, 1, 2, 3, 4, 5, 6, 7],
-        "parallel": True,
-        "num_agents": 8,
-        "dataset": args.dataset,
-        "topology": args.topology,
-        "edge_drop_prob": args.edge_drop_prob,
-
-        "dataset.num_trains_per_class": 64,
-        "dataset.num_vals_per_class": 50,
-        "dataset.remap_labels": True,
-        "dataset.with_replacement": True,
-        "dataset.num_tasks": num_tasks,
-        "net": "mlp",
-        "net.depth": 4,
-        "num_init_tasks": num_init_tasks,
-        "net.dropout": 0.5,
-        "train.num_epochs": num_epochs,
-        "train.component_update_freq": num_epochs,
-        "train.init_num_epochs": num_epochs,
-        "train.init_component_update_freq": num_epochs,
-        'net.no_sparse_basis': True,
-        "train.save_freq": 10,
-        "agent.use_contrastive": False,
-        "agent.memory_size": 32,
-        "root_save_dir": prefix + f"topology_experiment_results/jorge_setting_fedavg/comm_freq_{args.comm_freq}/topology_{args.topology}_edge_drop_{args.edge_drop_prob}",
-        # ================================================
-        # GRAD SHARING SETUP
-        "sharing_strategy": "grad_sharing",
-        "sharing_strategy.num_coms_per_round": 1,
-        "sharing_strategy.comm_freq": args.comm_freq,
-        # "sharing_strategy.log_freq": 10,
-
-        # ================================================
-    }
-
     # config = {
     #     "algo": args.algo,
-    #     "seed": [0,1,2,3,4,5,6,7],
-    #     "num_agents": 8,
+    #     "seed": [0, 1, 2, 3, 4, 5, 6, 7],
     #     "parallel": True,
-    #     "dataset": "cifar100",
-    #     "dataset.num_trains_per_class": 256,
-    #     "dataset.num_vals_per_class": -1,
+    #     "num_agents": 8,
+    #     "dataset": args.dataset,
+    #     "topology": args.topology,
+    #     "edge_drop_prob": args.edge_drop_prob,
+
+    #     "dataset.num_trains_per_class": 64,
+    #     "dataset.num_vals_per_class": 50,
     #     "dataset.remap_labels": True,
-    #     "dataset.with_replacement": False,
-    #     "net": "cnn",
+    #     "dataset.with_replacement": True,
+    #     "dataset.num_tasks": num_tasks,
+    #     "net": "mlp",
     #     "net.depth": 4,
-    #     "num_init_tasks": 4,
-    #     "dataset.num_tasks": 20,
+    #     "num_init_tasks": num_init_tasks,
     #     "net.dropout": 0.5,
-    #     "train.init_num_epochs": num_epochs,
-    #     "train.init_component_update_freq": num_epochs,
     #     "train.num_epochs": num_epochs,
     #     "train.component_update_freq": num_epochs,
-    #     "agent.memory_size": 32,
-    #     "agent.batch_size": 64,
+    #     "train.init_num_epochs": num_epochs,
+    #     "train.init_component_update_freq": num_epochs,
+    #     'net.no_sparse_basis': True,
     #     "train.save_freq": 10,
     #     "agent.use_contrastive": False,
-    #     'net.no_sparse_basis': True,
-
+    #     "agent.memory_size": 32,
+    #     "root_save_dir": prefix + f"topology_experiment_results/jorge_setting_fedavg/comm_freq_{args.comm_freq}/topology_{args.topology}_edge_drop_{args.edge_drop_prob}",
+    #     # ================================================
+    #     # GRAD SHARING SETUP
     #     "sharing_strategy": "grad_sharing",
     #     "sharing_strategy.num_coms_per_round": 1,
     #     "sharing_strategy.comm_freq": args.comm_freq,
-    #     "root_save_dir": prefix + f"budget_experiment_results/jorge_setting_fedavg/comm_freq_{args.comm_freq}",
+    #     # "sharing_strategy.log_freq": 10,
+
+    #     # ================================================
     # }
+
+    config = {
+        "algo": args.algo,
+        "seed": [0,1,2,3,4,5,6,7],
+        "num_agents": 8,
+        "parallel": True,
+
+        "topology": args.topology,
+        "edge_drop_prob": args.edge_drop_prob,
+
+        "dataset": "cifar100",
+        "dataset.num_trains_per_class": 256,
+        "dataset.num_vals_per_class": -1,
+        "dataset.remap_labels": True,
+        "dataset.with_replacement": False,
+        "net": "cnn",
+        "net.depth": 4,
+        "num_init_tasks": 4,
+        "dataset.num_tasks": 20,
+        "net.dropout": 0.5,
+        "train.init_num_epochs": num_epochs,
+        "train.init_component_update_freq": num_epochs,
+        "train.num_epochs": num_epochs,
+        "train.component_update_freq": num_epochs,
+        "agent.memory_size": 32,
+        "agent.batch_size": 64,
+        "train.save_freq": 10,
+        "agent.use_contrastive": False,
+        'net.no_sparse_basis': True,
+
+        "sharing_strategy": "grad_sharing",
+        "sharing_strategy.num_coms_per_round": 1,
+        "sharing_strategy.comm_freq": args.comm_freq,
+        # "root_save_dir": prefix + f"budget_experiment_results/jorge_setting_fedavg/comm_freq_{args.comm_freq}",
+        "root_save_dir": prefix + f"topology_experiment_results/jorge_setting_fedavg/comm_freq_{args.comm_freq}/topology_{args.topology}_edge_drop_{args.edge_drop_prob}",
+    }
 
     run_experiment(config, strict=False)
     end = time.time()

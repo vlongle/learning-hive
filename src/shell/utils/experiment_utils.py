@@ -91,6 +91,8 @@ def setup_experiment(cfg: DictConfig):
         graph = tg.generate_server()
     elif cfg.topology == "random":
         graph = tg.generate_connected_random(cfg.edge_drop_prob)
+    elif cfg.topology == "random_disconnect":
+        graph = tg.generate_random(cfg.edge_drop_prob)
     else:
         raise NotImplementedError(
             f"Topology {cfg.topology} not implemented.")

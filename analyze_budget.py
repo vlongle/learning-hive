@@ -16,16 +16,17 @@ Copyright (c) 2023 Long Le
 '''
 
 """
-For cifar100, epochs=500 is stored in 
+For cifar100, epochs=500 is stored in
 """
 
 
 # root_result_dir = "budget_experiment_results/jorge_setting_recv_variable_shared_memory_size"
-from  shell.utils.record import Record
-from shell.utils.metric import Metric
-import re
 import os
-root_result_dir = "/home/vlongle/code/learning-hive/budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size"
+import re
+from shell.utils.metric import Metric
+from  shell.utils.record import Record
+root_result_dir = "topology_experiment_results/modmod"
+# root_result_dir = "topology_experiment_results/topology_experiment_results/jorge_setting_fedavg/comm_freq_5"
 record = Record(f"{root_result_dir}.csv")
 
 pattern = r".*"
@@ -47,10 +48,10 @@ for result_dir in os.listdir(root_result_dir):
                             continue
                         save_dir = os.path.join(root_result_dir,
                                                 result_dir, job_name, dataset_name, algo, seed, agent_id)
+                        print(save_dir)
                         # if the pattern doesn't match, continue
                         if not re.search(pattern, save_dir):
                             continue
-                        print(save_dir)
 
                         num_epochs = num_init_epochs = None
                         if dataset_name == "cifar100":
@@ -72,6 +73,7 @@ for result_dir in os.listdir(root_result_dir):
                                 "forward": m.compute_forward_transfer(start_epoch=start_epoch),
                                 "backward": m.compute_backward_transfer(),
                                 "catastrophic": m.compute_catastrophic_forgetting(),
+                                "auc": m.compute_auc(),
                             }
                         )
 print(record.df)
@@ -82,10 +84,14 @@ print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
       "final_acc"].mean() * 100)
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
 #       "final_acc"].sem() * 100)
-print("=====AVG ACC======")
-print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-      "avg_acc"].mean() * 100)
 
+print("=====AUC======")
+print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+      "auc"].mean())
+
+# print("=====AVG ACC======")
+# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+#       "avg_acc"].mean() * 100)
 # # print("=====BACKWARD======")
 # # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
 # #       "backward"].mean())

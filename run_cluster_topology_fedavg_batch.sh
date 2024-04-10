@@ -8,23 +8,19 @@
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
 #SBATCH --exclude=ee-3090-1.grasp.maas
-#SBATCH --array=0-17
+#SBATCH --array=0-5  # Adjusted for 3 topologies * 2 algorithms = 6 jobs
 
 declare -a topologies=("ring" "tree" "server")
-declare -a datasets=("mnist" "kmnist" "fashionmnist")
 declare -a algos=("modular" "monolithic")
 
-# Calculate indices for topology, dataset, and algo based on SLURM_ARRAY_TASK_ID
-TOPOLOGY_IDX=$((SLURM_ARRAY_TASK_ID / 6))
-DATASET_IDX=$((SLURM_ARRAY_TASK_ID / 2 % 3))
+# Calculate indices for topology and algo based on SLURM_ARRAY_TASK_ID
+TOPOLOGY_IDX=$((SLURM_ARRAY_TASK_ID / 2))
 ALGO_IDX=$((SLURM_ARRAY_TASK_ID % 2))
 
-# Map the SLURM_ARRAY_TASK_ID to topology, dataset, and algo
+# Map the SLURM_ARRAY_TASK_ID to topology and algo
 TOPOLOGY=${topologies[$TOPOLOGY_IDX]}
-DATASET=${datasets[$DATASET_IDX]}
 ALGO=${algos[$ALGO_IDX]}
 
-# Adjust the command to include topology and dataset
-srun bash -c "RAY_DEDUP_LOGS=0 python experiments/fedavg_experiments.py --algo $ALGO --dataset $DATASET --topology $TOPOLOGY --comm_freq 5"
+srun bash -c "RAY_DEDUP_LOGS=0 python experiments/fedavg_experiments.py --algo $ALGO --topology $TOPOLOGY --comm_freq 5"
 
 exit 3

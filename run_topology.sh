@@ -1,0 +1,4 @@
+sbatch run_cluster_topology_fedavg_batch.sh
+sbatch run_cluster_topology_fedavg_batch_random.sh
+sbatch run_cluster_topology_modmod_batch.sh
+sbatch run_cluster_topology_modmod_batch_random.sh

@@ -67,6 +67,8 @@ class ModelSyncAgent(Agent):
 
         # Calculate average difference per parameter across all models
         avg_diffs = self.calculate_average_diffs(diffs)
+        if len(avg_diffs) == 0:
+            return
 
         # Calculate overall average of these differences
         avg_diffs['avg_params'] = sum(avg_diffs.values()) / len(avg_diffs)
@@ -87,6 +89,8 @@ class ModelSyncAgent(Agent):
     def aggregate_models(self):
         # get model from neighbors
         # average all the models together!
+        if len(self.incoming_models.values()) == 0:
+            return
         logging.info("AGGREGATING MODELS...no_components %s",
                      len(self.net.components))
         stuff_added = defaultdict(int)

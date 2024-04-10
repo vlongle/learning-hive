@@ -6,7 +6,7 @@ root_save_dir: results
 parallel: true
 num_init_tasks: 4
 overwrite: false
-topology: connected
+topology: fully_connected
 edge_drop_prob: 0.0
 
 agent:

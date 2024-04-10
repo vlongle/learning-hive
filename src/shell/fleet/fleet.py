@@ -219,13 +219,22 @@ class Agent:
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
         return eval_net(self.net, testloaders)
 
-    def eval_val(self, task_id):
-        valloaders = {task: torch.utils.data.DataLoader(valset,
+    # def eval_val(self, task_id):
+    #     valloaders = {task: torch.utils.data.DataLoader(valset,
+    #                                                     batch_size=128,
+    #                                                     shuffle=False,
+    #                                                     num_workers=4,
+    #                                                     pin_memory=True,
+    #                                                     ) for task, valset in enumerate(self.dataset.valset[:(task_id+1)])}
+    #     return eval_net(self.net, valloaders)
+
+    def eval_val(self, tasks):
+        valloaders = {task: torch.utils.data.DataLoader(self.dataset.valset[task],
                                                         batch_size=128,
                                                         shuffle=False,
                                                         num_workers=4,
                                                         pin_memory=True,
-                                                        ) for task, valset in enumerate(self.dataset.valset[:(task_id+1)])}
+                                                        ) for task in tasks}
         return eval_net(self.net, valloaders)
 
     def communicate(self, task_id, communication_round, final=False):
@@ -373,6 +382,9 @@ class Agent:
     def get_save_dir(self):
         return self.agent.save_dir
 
+    def get_dataset_name(self):
+        return self.dataset.name
+
 
 @ray.remote
 class ParallelAgent(Agent):
@@ -386,6 +398,8 @@ class Fleet:
         self.sharing_strategy = sharing_strategy
         self.num_coms_per_round = self.sharing_strategy.num_coms_per_round
 
+        self.remove_ood_neighbors = getattr(
+            self.sharing_strategy, 'remove_ood_neighbors', False)
         self.create_agents(seed, datasets, AgentCls, NetCls, LearnerCls,
                            net_kwargs, agent_kwargs, train_kwargs)
         self.add_neighbors()
@@ -445,11 +459,18 @@ class Fleet:
 
     def add_neighbors(self):
         logging.info("Adding neighbors...")
-        # adding neighbors
         for agent in self.agents:
             agent_id = agent.get_node_id()
-            neighbors = {self.agents[neighbor_id].get_node_id(): self.agents[neighbor_id]
-                         for neighbor_id in self.graph.neighbors(agent_id)}
+            neighbors = {}
+            for neighbor_id in self.graph.neighbors(agent_id):
+                if self.remove_ood_neighbors:
+                    # Only add the neighbor if the dataset names match
+                    if agent.get_dataset_name() == self.agents[neighbor_id].get_dataset_name():
+                        neighbors[self.agents[neighbor_id].get_node_id(
+                        )] = self.agents[neighbor_id]
+                else:
+                    neighbors[self.agents[neighbor_id].get_node_id()
+                              ] = self.agents[neighbor_id]
             agent.add_neighbors(neighbors)
 
     def train_and_comm(self, task_id):
@@ -528,6 +549,9 @@ class ParallelFleet:
         self.sharing_strategy = sharing_strategy
         self.num_coms_per_round = self.sharing_strategy.num_coms_per_round
 
+        self.remove_ood_neighbors = getattr(
+            self.sharing_strategy, 'remove_ood_neighbors', False)
+
         self.create_agents(seed, datasets, AgentCls, NetCls, LearnerCls,
                            net_kwargs, agent_kwargs, train_kwargs)
         self.add_neighbors()
@@ -585,11 +609,18 @@ class ParallelFleet:
 
     def add_neighbors(self):
         logging.info("Adding neighbors...")
-        # adding neighbors
         for agent in self.agents:
             agent_id = ray.get(agent.get_node_id.remote())
-            neighbors = {ray.get(self.agents[neighbor_id].get_node_id.remote()): self.agents[neighbor_id]
-                         for neighbor_id in self.graph.neighbors(agent_id)}
+            neighbors = {}
+            for neighbor_id in self.graph.neighbors(agent_id):
+                if self.remove_ood_neighbors:
+                    # Retrieve dataset names asynchronously and compare
+                    if ray.get(agent.get_dataset_name.remote()) == ray.get(self.agents[neighbor_id].get_dataset_name.remote()):
+                        neighbors[ray.get(
+                            self.agents[neighbor_id].get_node_id.remote())] = self.agents[neighbor_id]
+                else:
+                    neighbors[ray.get(
+                        self.agents[neighbor_id].get_node_id.remote())] = self.agents[neighbor_id]
             agent.add_neighbors.remote(neighbors)
 
     def train_and_comm(self, task_id):
@@ -607,7 +638,8 @@ class ParallelFleet:
             end_epoch = min(start_epoch + comm_freq, num_epochs)
 
             if self.sharing_strategy.pre_or_post_comm == "pre" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                logging.info('task {} comm at epoch {}'.format(task_id, start_epoch))
+                logging.info('task {} comm at epoch {}'.format(
+                    task_id, start_epoch))
                 self.communicate(task_id,
                                  end_epoch,
                                  comm_freq,
@@ -617,14 +649,15 @@ class ParallelFleet:
                                  final=final)
 
             logging.info('task {} training from {} to {}'.format(task_id,
-                start_epoch, end_epoch))
+                                                                 start_epoch, end_epoch))
             ray.get([agent.set_num_coms.remote(
                 task_id, num_coms) for agent in self.agents])
             ray.get([agent.train.remote(task_id, start_epoch, comm_freq,
                                         final=final) for agent in self.agents])
 
             if self.sharing_strategy.pre_or_post_comm == "post" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                logging.info('task {} comm at epoch {}'.format(task_id, end_epoch))
+                logging.info('task {} comm at epoch {}'.format(
+                    task_id, end_epoch))
                 self.communicate(task_id,
                                  end_epoch,
                                  comm_freq,

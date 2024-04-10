@@ -100,7 +100,7 @@ class Learner():
         for task_id, replay in sorted(self.shared_replay_buffers.items()):
             if len(replay) == 0:
                 continue
-            X, y, _ = replay.get_tensors() 
+            X, y, _ = replay.get_tensors()
             self.sharing_data_record.write(
                 {
                     'train_task': train_task_id,
@@ -444,7 +444,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.T += 1
         if start_epoch == 0:
             self.opt_steps_per_candidate = 0  # Tracks optimization steps per candidate
-            self.no_module_opt_counter = 0  # Tracks optimization steps for the "no module" setting
+            # Tracks optimization steps for the "no module" setting
+            self.no_module_opt_counter = 0
 
             # zeroshot
             self.save_data(start_epoch, task_id, testloaders, mode=train_mode)
@@ -477,8 +478,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
                     num_candidate_modules = len(module_list) + 1
 
                 logging.info("NO. current components {} NUM_CANDIDATE_MODULES {} len(module_list) {}".format(len(self.net.components),
-                      num_candidate_modules,
-                      len(module_list)))
+                                                                                                             num_candidate_modules,
+                                                                                                             len(module_list)))
                 # print('rand torch seed', int(torch.empty(
                 #     (), dtype=torch.int64).random_().item()))
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
@@ -499,11 +500,9 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
             self.net.unfreeze_structure(task_id=task_id)
 
-
             # updates_per_candidate = num_epochs // len(self.net.candidate_indices)
 
-
-            if task_id in self.shared_replay_buffers and len(self.shared_replay_buffers) > 0:
+            if task_id in self.shared_replay_buffers and len(self.shared_replay_buffers[task_id]) > 0:
                 # logging.info("!!NOTE: will be adding {} data to task {} epoch {}".format(len(self.shared_replay_buffers[task_id]),
                 #         task_id, start_epoch))
                 tmp_dataset = copy.deepcopy(trainloader.dataset)
@@ -516,7 +515,6 @@ class CompositionalDynamicLearner(CompositionalLearner):
                                                           num_workers=2,
                                                           pin_memory=True
                                                           )
-
 
             # logging.info('Training from epoch', start_epoch,
             #       'to epoch', num_epochs + start_epoch)
@@ -560,7 +558,8 @@ class CompositionalDynamicLearner(CompositionalLearner):
                     self.save_data(i + 1, task_id, testloaders,
                                    mode=train_mode)
             if final:
-                perf, raw_perf, loss = self.conditionally_add_module(valloader, task_id)
+                perf, raw_perf, loss = self.conditionally_add_module(
+                    valloader, task_id)
                 self.save_data(num_epochs + start_epoch + 1, task_id,
                                testloaders, final_save=final_save, mode=train_mode)
                 self.update_multitask_cost(trainloader, task_id)

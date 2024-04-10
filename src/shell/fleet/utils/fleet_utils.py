@@ -160,5 +160,6 @@ def setup_fleet(save_dir, task_id=None, parallel=None, modify_cfg=None):
     if task_id is not None:
         fleet.load_model_from_ckpoint(task_ids=task_id)
         fleet.update_replay_buffers(task_id)
-        fleet.load_records()
+
+    fleet.load_records()
     return fleet

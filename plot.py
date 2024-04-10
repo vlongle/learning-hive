@@ -24,6 +24,7 @@ from pythresh.thresholds.zscore import ZSCORE
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from collections import defaultdict
 import seaborn as sns
+from prettytable import PrettyTable
 
 plt.style.use('seaborn-whitegrid')
 logging.basicConfig(level=logging.CRITICAL)
@@ -220,7 +221,9 @@ def get_auc_stats(seed_aucs):
 
 
 def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='avg', error_type='std',
-                      save_fig_path=None, bar_width=0.1, figsize=(15, 5)):
+                      save_fig_path=None, bar_width=0.1, figsize=(15, 5),
+                      custom_algo_order=None,
+                      plot_prefix_name=""):
     fig, ax = plt.subplots(figsize=figsize)
     # Initialize variables for plotting
     algo_stats_global = {}
@@ -241,7 +244,14 @@ def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='a
     algos = [a for a in algos if remap_name is None or a in remap_name]
     datasets = list(dataset_seed_aucs.keys())
 
-    for i, algo in enumerate(algos):
+    if custom_algo_order is None:
+        custom_algo_order = sorted(algos)
+    else:
+        if remap_name is not None:
+            inverse_remap = {v: k for k, v in remap_name.items()}
+            print(inverse_remap)
+            custom_algo_order = [inverse_remap[a] for a in custom_algo_order]
+    for i, algo in enumerate(custom_algo_order):
         if remap_name and algo not in remap_name:
             continue
         positions = np.array(range(len(datasets))) + i * bar_width
@@ -254,11 +264,11 @@ def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='a
     ax.set_xticks(np.arange(len(datasets)) + bar_width *
                   (len(algo_stats_global) - 1) / 2)
     ax.set_xticklabels(datasets, fontsize=14)
-    ax.legend(frameon=True, loc='lower right', bbox_to_anchor=(1.28, 0.0))
+    ax.legend(frameon=True, loc='lower right', bbox_to_anchor=(1.1, 0.0))
     ax.set_ylabel('Average AUC', fontsize=14)
     ax.set_xlabel('Dataset', fontsize=14)
     ax.set_title(
-        r'AUC $\mathsf{'+mode+'}$ Across Datasets', fontsize=16, weight='bold')
+        plot_prefix_name + r'$\mathsf{'+mode+'}$ AUC', fontsize=16, weight='bold')
     ax.grid(True, which='major', linestyle='--', alpha=0.5)
     max_y = 95 if mode == 'current' else 100
     ax.set_ylim([50, max_y])
@@ -314,7 +324,7 @@ def plot_learning_curve_bars(seed_aucs, title_name=None, ax=None, remap_name=Non
 
 
 def plot_learning_curve_dataset(dataset_agg_dfs, remap_name=None, colormap=None,
-                                mode='avg', save_fig_path=None):
+                                mode='avg', save_fig_path=None, error_type='std'):
     fig, ax = plt.subplots(1, len(dataset_agg_dfs.keys()), figsize=(30, 10))
     handles, labels = [], []
 
@@ -324,7 +334,8 @@ def plot_learning_curve_dataset(dataset_agg_dfs, remap_name=None, colormap=None,
 
     for i, (dataset, agg_df) in enumerate(dataset_agg_dfs.items()):
         plot_agg_over_seeds(agg_df, title_name=dataset,
-                            ax=ax[i], metric='test_acc', remap_name=remap_name, colormap=colormap)
+                            ax=ax[i], metric='test_acc', remap_name=remap_name, colormap=colormap,
+                            error_type=error_type)
         # Collect handles and labels for the current axis
         for handle, label in zip(*ax[i].get_legend_handles_labels()):
             if label not in labels:  # Check to avoid duplicates
@@ -346,3 +357,64 @@ def plot_learning_curve_dataset(dataset_agg_dfs, remap_name=None, colormap=None,
     plt.tight_layout(rect=[0.03, 0.03, 1, 0.95])
     if save_fig_path is not None:
         plt.savefig(save_fig_path, bbox_inches='tight')
+
+
+def make_table(pivot_m):
+    table = PrettyTable()
+    columns = ['Base', 'Algorithm'] + \
+        [col for col in pivot_m.columns if col not in ('base', 'algorithm')]
+    table.field_names = columns
+
+    max_values = pivot_m.max()
+
+    for _, row in pivot_m.iterrows():
+        row_data = []
+        for col in pivot_m.columns:
+            if col not in ('base', 'algorithm') and not pd.isna(row[col]):
+                # Bold the highest value for each dataset
+                if row[col] == max_values[col]:
+                    row_data.append(f"**{row[col]:.5f}**")
+                else:
+                    row_data.append(f"{row[col]:.5f}")
+            else:
+                row_data.append(row[col])
+        table.add_row(row_data)
+    return table
+
+from IPython.display import display, HTML
+
+def make_table_v2(df, remap_name=None, error_type='std'):
+    if error_type not in ['std', 'sem']:
+        raise ValueError("error_type must be either 'std' or 'sem'")
+    
+    # Pivot the dataframe for mean values
+    pivot_mean_df = df.pivot(index='algo', columns='dataset', values='mean')
+    
+    # Pivot the dataframe for error values
+    pivot_error_df = df.pivot(index='algo', columns='dataset', values=error_type)
+
+    # Start building the HTML table
+    html = '<table><tr><th>Algorithm</th>'
+    for dataset in pivot_mean_df.columns:
+        html += f'<th>{dataset}</th>'
+    html += '</tr>'
+    
+    # Find the maximum mean values for each dataset
+    max_values = pivot_mean_df.max()
+
+    for index, row in pivot_mean_df.iterrows():
+        html += f'<tr><td>{index if remap_name is None else remap_name[index]}</td>'
+        for dataset in pivot_mean_df.columns:
+            mean_value = row[dataset]
+            error_value = pivot_error_df.loc[index, dataset]
+            # Bold the best value using HTML <b> tag
+            if mean_value == max_values[dataset]:
+                html += f'<td><b>{mean_value:.5f} +/- {error_value:.2f}</b></td>'
+            else:
+                html += f'<td>{mean_value:.5f} +/- {error_value:.2f}</td>'
+        html += '</tr>'
+    html += '</table>'
+
+    # Display the HTML table in Jupyter Notebook
+    display(HTML(html))
+

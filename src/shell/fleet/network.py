@@ -134,3 +134,96 @@ class TopologyGenerator:
         # Handle save_path to save the figure
         if save_path:
             plt.savefig(save_path)
+
+
+def set_color(fleet):
+    # Create a mapping from agent id to dataset name
+    agent_dataset_mapping = {
+        agent.node_id: agent.dataset.name for agent in fleet.agents}
+    dataset_colors = {
+        'mnist': '#E41A1C',  # Cherry Red
+        'kmnist': '#377EB8',  # Sapphire Blue
+        'fashionmnist': '#4DAF4A',  # Apple Green
+        'cifar100': '#984EA3',  # Amethyst Purple
+    }
+
+    # Now, add the dataset name as an attribute to each node in the graph
+    for node in fleet.graph.nodes:
+        # Assuming node corresponds to agent.id
+        if node in agent_dataset_mapping:
+            dataset_name = agent_dataset_mapping[node]
+            fleet.graph.nodes[node]['dataset'] = dataset_colors.get(
+                dataset_name, 'grey')  # Default color
+
+
+def get_communication(fleet, multiplier=1, exponential=False):
+    N = len(fleet.agents)
+
+    # Initialize matrices for summing task_sim values and counting occurrences
+    communication_sum = np.zeros((N, N))
+    communication_count = np.zeros((N, N))
+
+    for i, agent in enumerate(fleet.agents):
+        df = agent.modmod_record.df
+        for _, row in df.iterrows():
+            j = int(row['neighbor_id'])
+            communication_sum[i, j] += row['task_sim']
+            communication_count[i, j] += 1
+
+    # Calculate the average only where there's at least one occurrence
+    with np.errstate(divide='ignore', invalid='ignore'):  # Ignore division by zero
+        communication_avg = np.divide(communication_sum, communication_count, out=np.zeros_like(
+            communication_sum), where=communication_count != 0)
+
+    if exponential:
+        # Apply exponential function to non-zero averages
+        communication_avg[communication_avg != 0] = np.exp(
+            communication_avg[communication_avg != 0] * multiplier)
+
+    return communication_avg
+
+
+def set_weight(fleet, communication):
+    G = fleet.graph
+    for i, (u, v, d) in enumerate(G.edges(data=True)):
+        # Assuming u, v are indices in the communication matrix
+        if u < len(communication) and v < len(communication):
+            d['weight'] = communication[u, v]
+        else:
+            d['weight'] = 1  # Default width
+
+    edge_widths = [d['weight'] for _, _, d in G.edges(data=True)]
+    return edge_widths
+
+
+def compute_cluster_communications(fleet, communication):
+    # Retrieve node colors (cluster identifications)
+    node_colors = {node: data['dataset']
+                   for node, data in fleet.graph.nodes(data=True)}
+
+    # Initialize variables to store total communications and counts
+    in_cluster_total = 0.0
+    out_cluster_total = 0.0
+    in_cluster_count = 0
+    out_cluster_count = 0
+
+    N = len(fleet.agents)
+    for i in range(N):
+        for j in range(N):
+            if i == j:
+                continue  # Skip self-communications
+            # Check if both nodes exist and have a color assigned
+            if i in node_colors and j in node_colors:
+                if node_colors[i] == node_colors[j]:  # In-cluster
+                    in_cluster_total += communication[i, j]
+                    in_cluster_count += 1
+                else:  # Out-cluster
+                    out_cluster_total += communication[i, j]
+                    out_cluster_count += 1
+
+    # Compute average communications, handling division by zero
+    in_cluster_avg = in_cluster_total / in_cluster_count if in_cluster_count else 0
+    out_cluster_avg = out_cluster_total / \
+        out_cluster_count if out_cluster_count else 0
+
+    return in_cluster_avg, out_cluster_avg

@@ -81,6 +81,12 @@ def setup_experiment(cfg: DictConfig):
     print("net_cfg", net_cfg)
 
     tg = TopologyGenerator(num_nodes=cfg.num_agents)
+    # if we don't have cfg.topology default to fully_connected
+    if not hasattr(cfg, "topology"):
+        cfg.topology = "fully_connected"
+    if not hasattr(cfg, "edge_drop_prob"):
+        cfg.edge_drop_prob = 0.0
+
     if cfg.topology == "fully_connected":
         graph = tg.generate_fully_connected()
     elif cfg.topology == "tree":

@@ -20,8 +20,8 @@
 
 
 # # Array of local folders to download
-LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/topology_experiment_results/modmod")
-# LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/topology_experiment_results/jorge_setting_fedavg")
+# LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/topology_experiment_results/modmod")
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/topology_experiment_results/jorge_setting_fedavg")
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
 REMOTE_PATH="/home/vlongle/code/learning-hive/new_topology_experiment_results/"

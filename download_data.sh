@@ -21,10 +21,13 @@
 
 # # Array of local folders to download
 # LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/topology_experiment_results/modmod")
-LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/topology_experiment_results/jorge_setting_fedavg")
+# LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/topology_experiment_results/jorge_setting_fedavg")
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/debug_cifar_data/heuristic_budget_0_enforce_balance_True_mem_32")
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
-REMOTE_PATH="/home/vlongle/code/learning-hive/new_topology_experiment_results/"
+# REMOTE_PATH="/home/vlongle/code/learning-hive/new_topology_experiment_results/"
+# REMOTE_PATH="/home/vlongle/code/learning-hive/rerun_opt_heuristic_experiment_results/"
+REMOTE_PATH="/home/vlongle/code/learning-hive/"
 # REMOTE_PATH="/home/vlongle/code/learning-hive/combined_data_experiment_results/"
 
 # Check if rsync is installed

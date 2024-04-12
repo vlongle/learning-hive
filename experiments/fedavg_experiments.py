@@ -82,7 +82,7 @@ if __name__ == "__main__":
             "train.save_freq": 10,
             "agent.use_contrastive": False,
             "agent.memory_size": 32,
-            "root_save_dir": prefix + f"topology_experiment_results/jorge_setting_fedavg/comm_freq_{args.comm_freq}/topology_{args.topology}_edge_drop_{args.edge_drop_prob}",
+            "root_save_dir": prefix + f"rerun_topology_experiment_results/jorge_setting_fedavg/comm_freq_{args.comm_freq}/topology_{args.topology}_edge_drop_{args.edge_drop_prob}",
             # ================================================
             # GRAD SHARING SETUP
             "sharing_strategy": "grad_sharing",

@@ -66,7 +66,6 @@ if __name__ == "__main__":
     num_epochs = 100
     memory_size = 32
 
-    # shared_memory_size = memory_size
 
     query_task_mode = 'current' if args.algo == 'modular' else 'all'
     comm_freq = num_epochs // (args.num_comms_per_task + 1)
@@ -74,6 +73,8 @@ if __name__ == "__main__":
     sync_base = True if args.dataset == "combined" else False
 
     shared_memory_size = max(args.budget * num_agents, memory_size)
+    shared_memory_size = memory_size
+   # shared_memory_size = 10
 
     min_task = 4 if args.dataset == "combined" else 0
 
@@ -103,7 +104,7 @@ if __name__ == "__main__":
             "agent.memory_size": memory_size,
             "net.no_sparse_basis": True,
 
-            "root_save_dir": prefix + f"heuristic_experiment_results/heuristic_budget_{args.budget}_enforce_balance_{args.enforce_balance}_mem_{shared_memory_size}",
+            "root_save_dir": prefix + f"heuristic_experiment_results/heuristic_budget_{args.budget}_enforce_balance_{args.enforce_balance}_mem_{shared_memory_size}_freq_{comm_freq}",
             "sharing_strategy": "heuristic_data",
             "sharing_strategy.shared_memory_size": shared_memory_size,
             "sharing_strategy.comm_freq": comm_freq,

@@ -51,37 +51,37 @@ class Agent:
 
         self.sharing_strategy = sharing_strategy
 
-    def get_ood_data(self, task_id, mode='replay'):
+    # def get_ood_data(self, task_id, mode='replay'):
 
-        if mode == 'replay':
-            # Gather data from replay buffers of all tasks except the current task
-            replay_buffers = {t: self.agent.replay_buffers[t] for t in range(self.agent.T)
-                              if t != task_id}
-            if len(replay_buffers) == 0:
-                return None, None, None, None
+    #     if mode == 'replay':
+    #         # Gather data from replay buffers of all tasks except the current task
+    #         replay_buffers = {t: self.agent.replay_buffers[t] for t in range(self.agent.T)
+    #                           if t != task_id}
+    #         if len(replay_buffers) == 0:
+    #             return None, None, None, None
 
-            X_past = torch.cat([rb.tensors[0]
-                                for t, rb in replay_buffers.items()], dim=0)
-            y_past = torch.cat([torch.from_numpy(get_global_label(rb.tensors[1],
-                                                                  t, self.dataset.class_sequence,
-                                                                  self.dataset.num_classes_per_task))
-                                for t, rb in replay_buffers.items()], dim=0)
-        elif mode == 'training':
-            # Gather data from training sets of all tasks except the current task
-            X_past = torch.cat([self.dataset.trainset[t].tensors[0]
-                                for t in range(self.agent.T) if t != task_id], dim=0)
-            y_past = torch.cat([torch.from_numpy(get_global_label(self.dataset.trainset[t].tensors[1],
-                                                                  t, self.dataset.class_sequence,
-                                                                  self.dataset.num_classes_per_task))
-                                for t in range(self.agent.T) if t != task_id], dim=0)
-        mask = self.get_ood_data_helper(task_id, y_past)
-        X_ood_filtered = X_past[mask]
-        y_ood_filtered = y_past[mask]
+    #         X_past = torch.cat([rb.tensors[0]
+    #                             for t, rb in replay_buffers.items()], dim=0)
+    #         y_past = torch.cat([torch.from_numpy(get_global_label(rb.tensors[1],
+    #                                                               t, self.dataset.class_sequence,
+    #                                                               self.dataset.num_classes_per_task))
+    #                             for t, rb in replay_buffers.items()], dim=0)
+    #     elif mode == 'training':
+    #         # Gather data from training sets of all tasks except the current task
+    #         X_past = torch.cat([self.dataset.trainset[t].tensors[0]
+    #                             for t in range(self.agent.T) if t != task_id], dim=0)
+    #         y_past = torch.cat([torch.from_numpy(get_global_label(self.dataset.trainset[t].tensors[1],
+    #                                                               t, self.dataset.class_sequence,
+    #                                                               self.dataset.num_classes_per_task))
+    #                             for t in range(self.agent.T) if t != task_id], dim=0)
+    #     mask = self.get_ood_data_helper(task_id, y_past)
+    #     X_ood_filtered = X_past[mask]
+    #     y_ood_filtered = y_past[mask]
 
-        X_iid_filtered = X_past[~mask]
-        y_iid_filtered = y_past[~mask]
+    #     X_iid_filtered = X_past[~mask]
+    #     y_iid_filtered = y_past[~mask]
 
-        return X_ood_filtered, y_ood_filtered, X_iid_filtered, y_iid_filtered
+    #     return X_ood_filtered, y_ood_filtered, X_iid_filtered, y_iid_filtered
 
     def get_shared_replay_buffers(self):
         return self.agent.shared_replay_buffers
@@ -125,9 +125,9 @@ class Agent:
     def train(self, task_id, start_epoch=0, communication_frequency=None,
               final=True, **kwargs):
 
-        if start_epoch == 0:
-            for t in range(task_id+1):
-                self.agent.ood_data[t] = self.get_ood_data(t)
+        # if start_epoch == 0:
+        #     for t in range(task_id+1):
+        #         self.agent.ood_data[t] = self.get_ood_data(t)
 
         if task_id >= self.net.num_tasks:
             return
@@ -214,13 +214,22 @@ class Agent:
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
         return eval_net(self.net, testloaders)
 
-    def eval_val(self, task_id):
-        valloaders = {task: torch.utils.data.DataLoader(valset,
+    # def eval_val(self, task_id):
+    #     valloaders = {task: torch.utils.data.DataLoader(valset,
+    #                                                     batch_size=128,
+    #                                                     shuffle=False,
+    #                                                     num_workers=4,
+    #                                                     pin_memory=True,
+    #                                                     ) for task, valset in enumerate(self.dataset.valset[:(task_id+1)])}
+    #     return eval_net(self.net, valloaders)
+
+    def eval_val(self, tasks):
+        valloaders = {task: torch.utils.data.DataLoader(self.dataset.valset[task],
                                                         batch_size=128,
                                                         shuffle=False,
                                                         num_workers=4,
                                                         pin_memory=True,
-                                                        ) for task, valset in enumerate(self.dataset.valset[:(task_id+1)])}
+                                                        ) for task in tasks}
         return eval_net(self.net, valloaders)
 
     def communicate(self, task_id, communication_round, final=False):

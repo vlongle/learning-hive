@@ -20,9 +20,49 @@ from shell.learners.fl_utils import *
 from torch.utils.data.dataset import ConcatDataset
 from shell.datasets.datasets import CustomConcatTensorDataset
 import copy
+import pandas as pd
 # write custom RandomGrayScale that operate on a per image
 # basis
 
+class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
+    """Samples elements randomly from a given list of indices for imbalanced dataset
+
+    Arguments:
+        indices: a list of indices
+        num_samples: number of samples to draw
+        callback_get_label: a callback-like function which takes two arguments - dataset and index
+    """
+
+    def __init__(
+        self,
+        dataset,
+        # labels,
+        indices: list = None,
+        num_samples: int = None,
+    ):
+        # if indices is not provided, all elements in the dataset will be considered
+        self.indices = list(range(len(dataset))
+                            ) if indices is None else indices
+        # if num_samples is not provided, draw `len(indices)` samples in each iteration
+        self.num_samples = len(
+            self.indices) if num_samples is None else num_samples
+        df = pd.DataFrame()
+        # df["label"] = self._get_labels(dataset) if labels is None else labels
+        df["label"] = dataset.tensors[1]
+        df.index = self.indices
+        df = df.sort_index()
+
+        label_to_count = df["label"].value_counts()
+
+        weights = 1.0 / label_to_count[df["label"]]
+
+        self.weights = torch.DoubleTensor(weights.to_list())
+
+    def __iter__(self):
+        return (self.indices[i] for i in torch.multinomial(self.weights, self.num_samples, replacement=True))
+
+    def __len__(self):
+        return self.num_samples
 
 class Learner():
     def __init__(self, net, save_dir='./tmp/results/',
@@ -97,12 +137,17 @@ class Learner():
 
     def record_shared_data_stats(self, train_task_id, epoch):
         for task_id, replay in sorted(self.shared_replay_buffers.items()):
+            if len(replay) == 0:
+                continue
+            X, y, _ = replay.get_tensors() 
+
             self.sharing_data_record.write(
                 {
                     'train_task': train_task_id,
                     'task_id': task_id,
                     'epoch': epoch,
                     'num_samples': len(replay),
+                    'Y_dist': str(torch.unique(y, return_counts=True)),
                 }
             )
 
@@ -280,7 +325,8 @@ class Learner():
         else:
             self.save_data(start_epoch, task_id,
                            testloaders, final_save=final)
-        self.update_multitask_cost(self.init_trainloaders[task_id], task_id)
+        if final:
+            self.update_multitask_cost(self.init_trainloaders[task_id], task_id)
 
     def evaluate(self, testloaders, mode=None, eval_no_update=True):
         was_training = self.net.training
@@ -438,23 +484,33 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
                 self.net.receive_modules(task_id, module_list)
 
-                self.optimizer = torch.optim.Adam(self.net.parameters(),)
-                # for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
-                #     self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
+                # self.optimizer = torch.optim.Adam(self.net.parameters(),)
+                for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
+                    self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
 
             self.net.unfreeze_structure(task_id=task_id)
 
-            if task_id in self.shared_replay_buffers:
+            if task_id in self.shared_replay_buffers and len(self.shared_replay_buffers[task_id]) > 0:
                 tmp_dataset = copy.deepcopy(trainloader.dataset)
                 X, y, _ = self.shared_replay_buffers[task_id].get_tensors()
+
                 mega_dataset = CustomConcatTensorDataset(
                     (X, y), tmp_dataset.tensors)
+
+                # trainloader = torch.utils.data.DataLoader(mega_dataset,
+                #                                           batch_size=trainloader.batch_size,
+                #                                           num_workers=2,
+                #                                           pin_memory=True,
+                #                                           sampler=ImbalancedDatasetSampler(mega_dataset),
+                #                                           )
+
                 trainloader = torch.utils.data.DataLoader(mega_dataset,
                                                           batch_size=trainloader.batch_size,
                                                           shuffle=True,
                                                           num_workers=2,
                                                           pin_memory=True
                                                           )
+
 
             for i in range(start_epoch, num_epochs + start_epoch):
                 # print('num_epochs', num_epochs, 'start_epoch', start_epoch, 'i', i)

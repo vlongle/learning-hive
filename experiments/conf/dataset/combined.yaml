@@ -1,0 +1,7 @@
+dataset_name: combined
+num_tasks: 10
+num_classes_per_task: 2
+with_replacement: true
+num_trains_per_class: 64
+num_vals_per_class: 50
+remap_labels: true

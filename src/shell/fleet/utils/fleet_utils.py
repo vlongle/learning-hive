@@ -14,6 +14,7 @@ from shell.fleet.grad.modgrad import ModGrad, ParallelModGrad
 from shell.fleet.data.data_fleet import DataFleet, ParallelDataFleet
 from shell.fleet.data.recv import RecvDataAgent, ParallelRecvDataAgent
 from shell.fleet.mod.modmod import ModModAgent, ParallelModModAgent
+from shell.fleet.data.heuristic import HeuristicDataAgent, ParallelHeuristicDataAgent
 from shell.utils.experiment_utils import get_cfg
 
 
@@ -122,6 +123,16 @@ AGENT_CLS = {
         'modular': {
             True: ParallelModModAgent,
             False: ModModAgent,
+        }
+    },
+        "heuristic_data": {
+        'monolithic': {
+            True: ParallelHeuristicDataAgent,
+            False: HeuristicDataAgent,
+        },
+        'modular': {
+            True: ParallelHeuristicDataAgent,
+            False: HeuristicDataAgent,
         }
     },
 }

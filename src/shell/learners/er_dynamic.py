@@ -18,44 +18,7 @@ from shell.datasets.datasets import get_custom_tensordataset
 import pandas as pd
 
 
-class ImbalancedDatasetSampler(torch.utils.data.sampler.Sampler):
-    """Samples elements randomly from a given list of indices for imbalanced dataset
 
-    Arguments:
-        indices: a list of indices
-        num_samples: number of samples to draw
-        callback_get_label: a callback-like function which takes two arguments - dataset and index
-    """
-
-    def __init__(
-        self,
-        dataset,
-        labels,
-        indices: list = None,
-        num_samples: int = None,
-    ):
-        # if indices is not provided, all elements in the dataset will be considered
-        self.indices = list(range(len(dataset))
-                            ) if indices is None else indices
-        # if num_samples is not provided, draw `len(indices)` samples in each iteration
-        self.num_samples = len(
-            self.indices) if num_samples is None else num_samples
-        df = pd.DataFrame()
-        df["label"] = self._get_labels(dataset) if labels is None else labels
-        df.index = self.indices
-        df = df.sort_index()
-
-        label_to_count = df["label"].value_counts()
-
-        weights = 1.0 / label_to_count[df["label"]]
-
-        self.weights = torch.DoubleTensor(weights.to_list())
-
-    def __iter__(self):
-        return (self.indices[i] for i in torch.multinomial(self.weights, self.num_samples, replacement=True))
-
-    def __len__(self):
-        return self.num_samples
 
 
 class CompositionalDynamicER(CompositionalDynamicLearner):
@@ -94,13 +57,23 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         tmp_dataset.tensors = tmp_dataset.tensors + \
             (torch.full((len(tmp_dataset),), task_id, dtype=int),)
 
+        # mega_dataset = ConcatDataset(
+        #     [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
+        #                               use_contrastive=self.use_contrastive) for t, replay in self.replay_buffers.items()] + [tmp_dataset]
+        #     + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
+        #                                 use_contrastive=self.use_contrastive) for t, replay in self.shared_replay_buffers.items()
+        #        if t != task_id and len(replay) > 0]
+        # )
+
+
         mega_dataset = ConcatDataset(
             [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
                                       use_contrastive=self.use_contrastive) for t, replay in self.replay_buffers.items()] + [tmp_dataset]
-            + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
-                                        use_contrastive=self.use_contrastive) for t, replay in self.shared_replay_buffers.items()
-               if t != task_id and len(replay) > 0]
+            # + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
+            #                             use_contrastive=self.use_contrastive) for t, replay in self.shared_replay_buffers.items()
+            #    if t != task_id and len(replay) > 0]
         )
+
 
         batch_size = trainloader.batch_size
 

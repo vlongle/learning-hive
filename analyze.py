@@ -33,7 +33,7 @@ import os
 import re
 from shell.utils.metric import Metric
 from  shell.utils.record import Record
-result_dir = "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_recv_query_task_mode_current"
+result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/tryout_tryout_epochs_100_max_modules_14_leep_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True
 # result_dir = "experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True"
 # result_dir = "experiment_results/test_lambda_5_num_epochs_150"
 # result_dir = "experiment_results/test_lambda_5.0_num_epochs_300_delta_1.0"

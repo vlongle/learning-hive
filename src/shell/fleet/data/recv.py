@@ -315,10 +315,11 @@ class RecvDataAgent(Agent):
         ret = torch.full(
             (q_global_Y.size(0), n_filter_neighbors), -1, dtype=torch.long)
 
+        min_task = getattr(self.sharing_strategy, 'min_task', 0)
         for i, task_ids in enumerate(task_ids_list):
             # Filter out task IDs that exceed the current time horizon
             valid_task_ids = [
-                task_id for task_id in task_ids if task_id < self.agent.T]
+                task_id for task_id in task_ids if task_id < self.agent.T and task_id >= min_task]
 
             n_valid_tasks = len(valid_task_ids)
             if n_valid_tasks == 0:
@@ -679,7 +680,7 @@ class RecvDataAgent(Agent):
     def prepare_communicate(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False,):
         if communication_round % 2 == 0:
             self.incoming_query, self.incoming_data, self.incoming_extra_info, self.incoming_query_extra_info = {}, {}, {}, {}
-        if task_id < self.agent.net.num_init_tasks - 1:
+        if task_id < self.agent.net.num_init_tasks:
             return
         if communication_round % 2 == 0:
             if 'query_task_mode' not in self.sharing_strategy:
@@ -705,7 +706,7 @@ class RecvDataAgent(Agent):
 
     # potentially parallelizable
     def communicate(self, task_id, communication_round, final=False):
-        if task_id < self.agent.net.num_init_tasks - 1:
+        if task_id < self.agent.net.num_init_tasks:
             # NOTE: don't communicate for the first few tasks to
             # allow agents some initital training to find their weakness
             return
@@ -729,7 +730,7 @@ class RecvDataAgent(Agent):
             raise ValueError(f"Invalid round number {communication_round}")
 
     def process_communicate(self, task_id, communication_round, final=False):
-        if task_id < self.agent.net.num_init_tasks - 1:
+        if task_id < self.agent.net.num_init_tasks:
             return
         if communication_round % 2 == 0:
             pass
@@ -825,7 +826,7 @@ class RecvDataAgent(Agent):
 @ray.remote
 class ParallelRecvDataAgent(RecvDataAgent):
     def communicate(self, task_id, communication_round, final=False):
-        if task_id < self.agent.net.num_init_tasks - 1:
+        if task_id < self.agent.net.num_init_tasks:
             # NOTE: don't communicate for the first few tasks to
             # allow agents some initital training to find their weakness
             return

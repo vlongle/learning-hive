@@ -22,7 +22,7 @@ import os
 import re
 from shell.utils.metric import Metric
 from  shell.utils.record import Record
-root_result_dir = "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_recv_variable_shared_memory_size_assign_labels_groundtruth"
+root_result_dir = "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size"
 record = Record(f"{root_result_dir}.csv")
 
 pattern = r".*"

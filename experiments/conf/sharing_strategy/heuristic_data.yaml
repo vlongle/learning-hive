@@ -9,3 +9,4 @@ pre_or_post_comm: post
 sync_base: False
 remove_ood_neighbors: True
 min_task: 0
+hash_data: True

@@ -1,3 +1,4 @@
+from IPython.display import display, HTML
 import omegaconf
 from shell.utils.experiment_utils import *
 from shell.fleet.utils.fleet_utils import *
@@ -324,7 +325,8 @@ def plot_learning_curve_bars(seed_aucs, title_name=None, ax=None, remap_name=Non
 
 
 def plot_learning_curve_dataset(dataset_agg_dfs, remap_name=None, colormap=None,
-                                mode='avg', save_fig_path=None, error_type='std'):
+                                mode='avg', save_fig_path=None, error_type='std',
+                                metric='test_acc'):
     fig, ax = plt.subplots(1, len(dataset_agg_dfs.keys()), figsize=(30, 10))
     handles, labels = [], []
 
@@ -334,7 +336,7 @@ def plot_learning_curve_dataset(dataset_agg_dfs, remap_name=None, colormap=None,
 
     for i, (dataset, agg_df) in enumerate(dataset_agg_dfs.items()):
         plot_agg_over_seeds(agg_df, title_name=dataset,
-                            ax=ax[i], metric='test_acc', remap_name=remap_name, colormap=colormap,
+                            ax=ax[i], metric=metric, remap_name=remap_name, colormap=colormap,
                             error_type=error_type)
         # Collect handles and labels for the current axis
         for handle, label in zip(*ax[i].get_legend_handles_labels()):
@@ -381,24 +383,24 @@ def make_table(pivot_m):
         table.add_row(row_data)
     return table
 
-from IPython.display import display, HTML
 
 def make_table_v2(df, remap_name=None, error_type='std'):
     if error_type not in ['std', 'sem']:
         raise ValueError("error_type must be either 'std' or 'sem'")
-    
+
     # Pivot the dataframe for mean values
     pivot_mean_df = df.pivot(index='algo', columns='dataset', values='mean')
-    
+
     # Pivot the dataframe for error values
-    pivot_error_df = df.pivot(index='algo', columns='dataset', values=error_type)
+    pivot_error_df = df.pivot(
+        index='algo', columns='dataset', values=error_type)
 
     # Start building the HTML table
     html = '<table><tr><th>Algorithm</th>'
     for dataset in pivot_mean_df.columns:
         html += f'<th>{dataset}</th>'
     html += '</tr>'
-    
+
     # Find the maximum mean values for each dataset
     max_values = pivot_mean_df.max()
 
@@ -417,4 +419,3 @@ def make_table_v2(df, remap_name=None, error_type='std'):
 
     # Display the HTML table in Jupyter Notebook
     display(HTML(html))
-

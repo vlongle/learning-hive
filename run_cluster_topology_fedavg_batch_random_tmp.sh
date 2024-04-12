@@ -16,7 +16,7 @@ DATASET="cifar100"
 
 # Define the algos and adjust the edge_drop_probs array for "0.7" and "0.9" only
 declare -a algos=("modular" "monolithic")
-declare -a edge_drop_probs=("0.7" "0.9")
+declare -a edge_drop_probs=("0.25" "0.5")
 
 # Calculate indices for algo and edge drop probability based on SLURM_ARRAY_TASK_ID
 ALGO_IDX=$((SLURM_ARRAY_TASK_ID / 2 % 2))

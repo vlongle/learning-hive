@@ -11,6 +11,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import TensorDataset
+import hashlib
 
 
 class ReplayBufferBase(TensorDataset):
@@ -28,9 +29,15 @@ class ReplayBufferBase(TensorDataset):
 
 
 class ReplayBufferReservoir(ReplayBufferBase):
-    def __init__(self, memory_size, task_id):
+    def __init__(self, memory_size, task_id, hash=False):
         super().__init__(memory_size)
         self.task_id = task_id
+        self.hash = hash
+        self.hash_set = set()  # Initialize an empty set to store hashes
+
+    def _compute_hash(self, X):
+        # Compute a hash for a tensor. Here, we use a simple approach by hashing the byte representation.
+        return hashlib.sha256(X.numpy().tobytes()).hexdigest()
 
     def get_tensors(self):
         assert self.is_dataset_init, "Replay buffer is not initialized"
@@ -48,13 +55,25 @@ class ReplayBufferReservoir(ReplayBufferBase):
                 print(">>>>> WTF???? Y:", Y)
                 raise ValueError("WTF????")
             self.is_dataset_init = True
+
         for j, (x, y) in enumerate(zip(X, Y)):
-            if self.observed + j < self.memory_size:
-                self.tensors[0].data[self.observed + j] = x
-                self.tensors[1].data[self.observed + j] = y
+            if self.hash:  # Only compute and manage hashes if deduplication is enabled
+                x_hash = self._compute_hash(x)
+                if x_hash in self.hash_set:
+                    continue
+                self.hash_set.add(x_hash)
+
+            # Add or replace logic
+            if self.observed < self.memory_size:
+                self.tensors[0][self.observed] = x
+                self.tensors[1][self.observed] = y
+                # save a picture of x
+                self.observed += 1  # Increment here within the bounds check
             else:
-                idx = np.random.randint(self.observed + j)
-                if idx < self.memory_size:
-                    self.tensors[0].data[idx] = x
-                    self.tensors[1].data[idx] = y
-        self.observed += len(X)
+                # Ensure replacement happens within bounds
+                idx = np.random.randint(0, self.memory_size)
+                if self.hash:
+                    old_hash = self._compute_hash(self.tensors[0][idx])
+                    self.hash_set.remove(old_hash)
+                self.tensors[0][idx] = x
+                self.tensors[1][idx] = y

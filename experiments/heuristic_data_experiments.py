@@ -120,6 +120,7 @@ if __name__ == "__main__":
             "seed": args.seed,
             "num_agents": 8,
             "parallel": True,
+            # "parallel": False,
             "dataset": "cifar100",
             "dataset.num_trains_per_class": 256,
             "dataset.num_vals_per_class": -1,
@@ -128,7 +129,8 @@ if __name__ == "__main__":
             "net": "cnn",
             "net.depth": 4,
             "num_init_tasks": 4,
-            "dataset.num_tasks": 20,
+            # "dataset.num_tasks": 20,
+            "dataset.num_tasks": 5,
             "net.dropout": 0.5,
             "train.init_num_epochs": num_epochs,
             "train.init_component_update_freq": num_epochs,
@@ -142,7 +144,7 @@ if __name__ == "__main__":
 
 
 
-            "root_save_dir": prefix + f"heuristic_experiment_results/heuristic_budget_{args.budget}_enforce_balance_{args.enforce_balance}_mem_{shared_memory_size}",
+            "root_save_dir": prefix + f"debug_cifar/heuristic_budget_{args.budget}_enforce_balance_{args.enforce_balance}_mem_{shared_memory_size}",
             "sharing_strategy": "heuristic_data",
             "sharing_strategy.shared_memory_size": shared_memory_size,
             "sharing_strategy.comm_freq": comm_freq,

@@ -11,7 +11,8 @@ import re
 from shell.utils.metric import DivergenceMetric
 import os
 import pandas as pd
-root_result_dir = "budget_experiment_results/jorge_setting_fedavg"
+# root_result_dir = "budget_experiment_results/jorge_setting_fedavg"
+root_result_dir = "new_topology_experiment_results/jorge_setting_fedavg/comm_freq_5"
 
 pattern = r".*"
 

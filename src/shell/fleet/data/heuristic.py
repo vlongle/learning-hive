@@ -46,7 +46,6 @@ class HeuristicDataAgent(Agent):
 
         self.is_modular = isinstance(self.agent, CompositionalDynamicLearner)
         self.min_task = getattr(self.sharing_strategy, 'min_task', 0)
-        self.available_data = {}
 
     @torch.inference_mode()
     def compute_query(self, task_id, mode="all"):
@@ -86,6 +85,7 @@ class HeuristicDataAgent(Agent):
         }
 
         if was_training:
+            # print('COMPUTE QUERY SETTING TRAINING AGAIN')
             self.net.train()
 
         return data_worth
@@ -111,10 +111,11 @@ class HeuristicDataAgent(Agent):
             self.compute_data(task_id)
 
     def compute_data(self, task_id):
-        self.get_data_pool(task_id)
+        available_data = self.get_data_pool(task_id)
         self.data = {}
         for requester, query in self.incoming_query.items():
-            self.data[requester] = self.get_data(query, task_id)
+            self.data[requester] = self.get_data(
+                available_data, query, task_id)
 
     def get_candidate_data(self, task, map_to_global=True):
         if task == self.agent.T - 1:
@@ -129,19 +130,22 @@ class HeuristicDataAgent(Agent):
         return Xt, yt
 
     def get_data_pool(self, task_id):
+        available_data = {}
         for t in range(self.min_task, task_id + 1):
             Xt, yt = self.get_candidate_data(t)
             for c in yt.unique():
-                if c.item() not in self.available_data:
-                    self.available_data[c.item()] = []
-                self.available_data[c.item()].append(Xt[yt == c])
+                if c.item() not in available_data:
+                    available_data[c.item()] = []
+                available_data[c.item()].append(Xt[yt == c])
+        return available_data
 
-    def get_data(self, query, task_id):
+    def get_data(self, available_data, query, task_id):
         available_cls = set(self.dataset.class_sequence[:(
             task_id + 1) * self.dataset.num_classes_per_task])
         query = {k: v for k, v in query.items() if k in available_cls}
 
         total_weight = sum(query.values())
+
         probabilities = {cls: weight /
                          total_weight for cls, weight in query.items()}
 
@@ -158,9 +162,9 @@ class HeuristicDataAgent(Agent):
 
         # For each class in the budget allocation, select instances to send
         for cls, num_instances in budget_allocation.items():
-            if cls in self.available_data:
+            if cls in available_data:
                 # Get all available instances for the class
-                instances = torch.cat(self.available_data[cls], dim=0)
+                instances = torch.cat(available_data[cls], dim=0)
                 # If there are more available instances than the allocated number, select randomly
                 if len(instances) > num_instances:
                     selected_instances = instances[np.random.choice(
@@ -206,7 +210,7 @@ class HeuristicDataAgent(Agent):
 
             if t not in self.agent.shared_replay_buffers:
                 self.agent.shared_replay_buffers[t] = ReplayBufferReservoir(
-                    self.sharing_strategy.shared_memory_size, task_id)
+                    self.sharing_strategy.shared_memory_size, task_id, self.sharing_strategy.hash_data)
 
             for c, X in data.items():
                 local_c = get_local_label_for_task(c.item(), t, self.dataset.class_sequence,

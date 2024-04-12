@@ -48,6 +48,9 @@ parser.add_argument('--budget', type=int, default=20,
                     help='Budget for the experiment.')
 parser.add_argument('--enforce_balance', type=str2bool, default=True,
                     help='Enforce balance for the experiment.')
+parser.add_argument('--hash_data', type=str2bool, default=True,
+                    help='Whether to dedup shared data.')
+parser.add_argument('--scale_shared_memory', type=str2bool, default=True)
 
 args = parser.parse_args()
 
@@ -66,15 +69,15 @@ if __name__ == "__main__":
     num_epochs = 100
     memory_size = 32
 
-
     query_task_mode = 'current' if args.algo == 'modular' else 'all'
     comm_freq = num_epochs // (args.num_comms_per_task + 1)
     num_agents = 20 if args.dataset == "combined" else 8
     sync_base = True if args.dataset == "combined" else False
 
-    shared_memory_size = max(args.budget * num_agents, memory_size)
-    shared_memory_size = memory_size
-   # shared_memory_size = 10
+    if args.scale_shared_memory:
+        shared_memory_size = max(args.budget * num_agents, memory_size)
+    else:
+        shared_memory_size = memory_size
 
     min_task = 4 if args.dataset == "combined" else 0
 
@@ -145,7 +148,7 @@ if __name__ == "__main__":
 
 
 
-            "root_save_dir": prefix + f"debug_cifar/heuristic_budget_{args.budget}_enforce_balance_{args.enforce_balance}_mem_{shared_memory_size}_no_comm",
+            "root_save_dir": prefix + f"after_fix_vanilla_cifar_results/heuristic_budget_{args.budget}_enforce_balance_{args.enforce_balance}_mem_{shared_memory_size}_sync_base_{sync_base}_hash_{args.hash_data}",
             "sharing_strategy": "heuristic_data",
             "sharing_strategy.shared_memory_size": shared_memory_size,
             "sharing_strategy.comm_freq": comm_freq,
@@ -154,9 +157,7 @@ if __name__ == "__main__":
             "sharing_strategy.query_task_mode": query_task_mode,
             "sharing_strategy.budget": args.budget,
             "sharing_strategy.enforce_balance": args.enforce_balance,
-            
-
-            "sharing_strategy.num_coms_per_round": 0,
+            "sharing_strategy.hash_data": args.hash_data,
         }
 
     run_experiment(config, strict=False)

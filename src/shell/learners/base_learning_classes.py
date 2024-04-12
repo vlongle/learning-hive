@@ -299,21 +299,21 @@ class Learner():
             # if final:
             #     self.save_data(num_epochs + start_epoch + 1, task_id,
             #                    testloaders, final_save=final)
-            #     for task, loader in self.init_trainloaders.items():
-            #         self.update_multitask_cost(loader, task)
+
+                # for task, loader in self.init_trainloaders.items():
+                #     self.update_multitask_cost(loader, task)
         else:
             self.save_data(start_epoch, task_id,
                            testloaders, final_save=final)
         # print('DONE init train task', task_id, 'rand torch seed', int(torch.empty(
         #     (), dtype=torch.int64).random_().item()))
-        # if final:
-        #     self.update_multitask_cost(
-        #         self.init_trainloaders[task_id], task_id)
         if final:
             self.save_data(num_epochs + start_epoch + 1, task_id,
-                                testloaders, final_save=final)
+                           testloaders, final_save=final)
             self.update_multitask_cost(
                 self.init_trainloaders[task_id], task_id)
+        # self.update_multitask_cost(
+        #     self.init_trainloaders[task_id], task_id)
 
     def evaluate(self, testloaders, mode=None, eval_no_update=True):
         was_training = self.net.training
@@ -542,25 +542,35 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
                         # with new module. Update struct + update the active
                         # candidate
-                        # if train_candidate_module:
-                        #     self.net.unfreeze_module(
-                        #         self.net.active_candidate_index)
+                        if train_candidate_module:
+                            self.net.unfreeze_module(
+                                self.net.active_candidate_index)
+
                         self.update_structure(
                             X, Y, task_id, train_mode=train_mode,
                             global_step=i)
                         # self.net.hide_tmp_module()
 
-                        # without new module
-                        # self.net.freeze_module(self.net.active_candidate_index)
-                        if not fair_opt or i % len(self.net.candidate_indices) == 0:
-                            # logging.info(">> TRAINING NOMOD AT EPOCH {}".format(i))
-                            self.net.hide_tmp_modulev2()
-                            self.update_structure(
-                                X, Y, task_id, train_mode=train_mode,
-                                global_step=i)
-                            # self.net.recover_hidden_module()
-                            self.net.recover_hidden_modulev2()
-                            self.net.select_active_module()  # select the next module in round-robin
+                        self.net.freeze_module(self.net.active_candidate_index)
+                        self.net.hide_tmp_modulev2()
+                        self.update_structure(
+                            X, Y, task_id, train_mode=train_mode,
+                            global_step=i)
+                        # self.net.recover_hidden_module()
+                        self.net.recover_hidden_modulev2()
+                        self.net.select_active_module()  # select the next module in round-robin
+
+                        # # without new module
+                        # # self.net.freeze_module(self.net.active_candidate_index)
+                        # if not fair_opt or i % len(self.net.candidate_indices) == 0:
+                        #     # logging.info(">> TRAINING NOMOD AT EPOCH {}".format(i))
+                        #     self.net.hide_tmp_modulev2()
+                        #     self.update_structure(
+                        #         X, Y, task_id, train_mode=train_mode,
+                        #         global_step=i)
+                        #     # self.net.recover_hidden_module()
+                        #     self.net.recover_hidden_modulev2()
+                        # self.net.select_active_module()  # select the next module in round-robin
                 if i % save_freq == 0:
                     self.save_data(i + 1, task_id, testloaders,
                                    mode=train_mode)

@@ -11,9 +11,9 @@
 #SBATCH --array=0-7 # This will run 16 jobs to cover 8 * 2 combinations
 
 # Fixed values
-BUDGET="20"
+BUDGET="0"
 NUM_COMPS_PER_TASK="5"
-DATASET="mnist"
+DATASET="cifar100"
 ENFORCE_BALANCE="1"
 
 # Declare the seeds and algos
@@ -28,7 +28,7 @@ SEED_IDX=$((SLURM_ARRAY_TASK_ID % 8))
 SEED=${seeds[$SEED_IDX]}
 # ALGO=${algos[$ALGO_IDX]}
 
-# srun bash -c "RAY_DEDUP_LOGS=0 python experiments/heuristic_data_experiments.py --dataset $DATASET --budget $BUDGET --num_comms_per_task $NUM_COMPS_PER_TASK --seed $SEED --algo $ALGO --enforce_balance $ENFORCE_BALANCE"
-srun bash -c "RAY_DEDUP_LOGS=0 python experiments/recv_experiments.py --dataset $DATASET --num_comms_per_task $NUM_COMPS_PER_TASK --seed $SEED --algo $ALGO"
+srun bash -c "RAY_DEDUP_LOGS=0 python experiments/heuristic_data_experiments.py --dataset $DATASET --budget $BUDGET --num_comms_per_task $NUM_COMPS_PER_TASK --seed $SEED --algo $ALGO --enforce_balance $ENFORCE_BALANCE"
+# srun bash -c "RAY_DEDUP_LOGS=0 python experiments/recv_experiments.py --dataset $DATASET --num_comms_per_task $NUM_COMPS_PER_TASK --seed $SEED --algo $ALGO"
 
 exit 3

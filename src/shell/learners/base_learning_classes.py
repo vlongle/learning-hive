@@ -299,6 +299,7 @@ class Learner():
             # if final:
             #     self.save_data(num_epochs + start_epoch + 1, task_id,
             #                    testloaders, final_save=final)
+
                 # for task, loader in self.init_trainloaders.items():
                 #     self.update_multitask_cost(loader, task)
         else:
@@ -306,11 +307,13 @@ class Learner():
                            testloaders, final_save=final)
         # print('DONE init train task', task_id, 'rand torch seed', int(torch.empty(
         #     (), dtype=torch.int64).random_().item()))
-        # if final:
-        #     self.update_multitask_cost(
-        #         self.init_trainloaders[task_id], task_id)
-        self.update_multitask_cost(
-            self.init_trainloaders[task_id], task_id)
+        if final:
+            self.save_data(num_epochs + start_epoch + 1, task_id,
+                           testloaders, final_save=final)
+            self.update_multitask_cost(
+                self.init_trainloaders[task_id], task_id)
+        # self.update_multitask_cost(
+        #     self.init_trainloaders[task_id], task_id)
 
     def evaluate(self, testloaders, mode=None, eval_no_update=True):
         was_training = self.net.training

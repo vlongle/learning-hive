@@ -144,11 +144,12 @@ if __name__ == "__main__":
 
 
 
-            "root_save_dir": prefix + f"debug_cifar/heuristic_budget_{args.budget}_enforce_balance_{args.enforce_balance}_mem_{shared_memory_size}",
+            "root_save_dir": prefix + f"debug_cifar_results/heuristic_budget_{args.budget}_enforce_balance_{args.enforce_balance}_mem_{shared_memory_size}",
             "sharing_strategy": "heuristic_data",
             "sharing_strategy.shared_memory_size": shared_memory_size,
             "sharing_strategy.comm_freq": comm_freq,
-            "sharing_strategy.sync_base": sync_base,
+            # "sharing_strategy.sync_base": sync_base,
+            "sharing_strategy.sync_base": True,
             "sharing_strategy.query_task_mode": query_task_mode,
             "sharing_strategy.budget": args.budget,
             "sharing_strategy.enforce_balance": args.enforce_balance,

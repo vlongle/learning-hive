@@ -63,77 +63,80 @@ if __name__ == "__main__":
     start = time.time()
 
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
-    # num_epochs = 100
-    num_epochs = 10
+    num_epochs = 100
+    # num_epochs = 10
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64
 
-    config = {
-        "algo": args.algo,
-        "agent.batch_size": batch_size,
-        "seed": args.seed,
-        "parallel": True,
-        "num_agents": 8,
-        "dataset": args.dataset,
-
-        "topology": args.topology,
-        "edge_drop_prob": args.edge_drop_prob,
-
-        "dataset.num_trains_per_class": 64,
-        "dataset.num_vals_per_class": 50,
-        "dataset.remap_labels": True,
-        "dataset.with_replacement": True,
-        "dataset.num_tasks": num_tasks,
-        "net": "mlp",
-        "net.depth": num_init_tasks,
-        "num_init_tasks": num_init_tasks,
-        # "net.dropout": 0.0,
-        "net.dropout": 0.5,
-        "train.num_epochs": num_epochs,
-        "train.component_update_freq": num_epochs,
-        "train.init_num_epochs": num_epochs,
-        "train.init_component_update_freq": num_epochs,
-        "net.no_sparse_basis": args.no_sparse_basis,
-        "train.save_freq": 10,
-        "agent.use_contrastive": False,
-        "agent.memory_size": 32,
-        "sharing_strategy.sync_base": args.sync_base,
-        "root_save_dir": prefix + f"topology_experiment_results/topology_{args.topology}_edge_drop_{args.edge_drop_prob}/vanilla_jorge_setting_no_sparse_sync_{args.sync_base}",
-    }
-
-    # # # === CNN experiments: CIFAR100 ===
     # config = {
     #     "algo": args.algo,
+    #     "agent.batch_size": batch_size,
     #     "seed": args.seed,
-    #     "num_agents": 8,
     #     "parallel": True,
-    #     "dataset": "cifar100",
-    #     "dataset.num_trains_per_class": args.num_trains_per_class,
-    #     "dataset.num_vals_per_class": -1,
+    #     "num_agents": 8,
+    #     "dataset": args.dataset,
+
+    #     "topology": args.topology,
+    #     "edge_drop_prob": args.edge_drop_prob,
+
+    #     "dataset.num_trains_per_class": 64,
+    #     "dataset.num_vals_per_class": 50,
     #     "dataset.remap_labels": True,
-    #     "dataset.with_replacement": False,
-    #     "net": "cnn",
-    #     "net.depth": 4,
-    #     "num_init_tasks": 4,
-    #     # "dataset.num_tasks": 20,
-    #     "dataset.num_tasks": 4,
-    #     "net.dropout": args.dropout,
-    #     "train.init_num_epochs": num_epochs,
-    #     "train.init_component_update_freq": num_epochs,
+    #     "dataset.with_replacement": True,
+    #     "dataset.num_tasks": num_tasks,
+    #     "net": "mlp",
+    #     "net.depth": num_init_tasks,
+    #     "num_init_tasks": num_init_tasks,
+    #     # "net.dropout": 0.0,
+    #     "net.dropout": 0.5,
     #     "train.num_epochs": num_epochs,
     #     "train.component_update_freq": num_epochs,
-    #     # "agent.memory_size": args.memory_size,
-    #     "agent.memory_size": 32,
-    #     "agent.batch_size": args.batch_size,
+    #     "train.init_num_epochs": num_epochs,
+    #     "train.init_component_update_freq": num_epochs,
+    #     "net.no_sparse_basis": args.no_sparse_basis,
     #     "train.save_freq": 10,
     #     "agent.use_contrastive": False,
-    #     "net.no_sparse_basis": args.no_sparse_basis,
-
+    #     "agent.memory_size": 32,
     #     "sharing_strategy.sync_base": args.sync_base,
-    #     # "root_save_dir": prefix + f"experiment_results/no_transform_debug_cifar100_vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}_batchsize_{args.batch_size}",
-    #     "root_save_dir": prefix + f"experiment_results/DEBUG_vanilla_jorge_setting_no_sparse_sync_{args.sync_base}",
+    #     "root_save_dir": prefix + f"topology_experiment_results/topology_{args.topology}_edge_drop_{args.edge_drop_prob}/vanilla_jorge_setting_no_sparse_sync_{args.sync_base}",
     # }
+
+    # # # === CNN experiments: CIFAR100 ===
+    config = {
+        "algo": args.algo,
+        "seed": args.seed,
+        "num_agents": 8,
+        "parallel": True,
+        "dataset": "cifar100",
+        "dataset.num_trains_per_class": args.num_trains_per_class,
+        "dataset.num_vals_per_class": -1,
+        "dataset.remap_labels": True,
+        "dataset.with_replacement": False,
+        "net": "cnn",
+        "net.depth": 4,
+        "num_init_tasks": 4,
+        # "dataset.num_tasks": 20,
+        "dataset.num_tasks": 5,
+        "net.dropout": args.dropout,
+        "train.init_num_epochs": num_epochs,
+        "train.init_component_update_freq": num_epochs,
+        "train.num_epochs": num_epochs,
+        "train.component_update_freq": num_epochs,
+        # "agent.memory_size": args.memory_size,
+        "agent.memory_size": 32,
+        "agent.batch_size": args.batch_size,
+        "train.save_freq": 10,
+        "agent.use_contrastive": False,
+        # "net.no_sparse_basis": args.no_sparse_basis,
+        "net.no_sparse_basis": True,
+
+        # "sharing_strategy.sync_base": args.sync_base,
+        "sharing_strategy.sync_base": True,
+        # "root_save_dir": prefix + f"experiment_results/no_transform_debug_cifar100_vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}_batchsize_{args.batch_size}",
+        # "root_save_dir": prefix + f"experiment_results/DEBUG_vanilla_jorge_setting_no_sparse_sync_{args.sync_base}",
+        "root_save_dir": prefix + f"debug_cifar_experiments/vanilla"
+    }
 
     run_experiment(config, strict=False)
     end = time.time()

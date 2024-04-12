@@ -199,14 +199,17 @@ class CNNSoftLLDynamic(SoftOrderingNet):
             for j in range(self.num_components):
                 if j not in self.candidate_indices or j == self.active_candidate_index:  # Allow only active candidate
                     conv = self.components[j]
-                    out = self.relu(self.maxpool(conv(X)))
-                    if j >= self.num_init_tasks or not self.no_sparse_basis:
-                        out = self.dropout(out)
-                    # out = self.dropout(self.relu(self.maxpool(conv(X))))
+                    # out = self.relu(self.maxpool(conv(X)))
+                    # if j >= self.num_init_tasks or not self.no_sparse_basis:
+                    #     out = self.dropout(out)
+                    # # out = self.dropout(self.relu(self.maxpool(conv(X))))
 
-                    X_tmp += s[j, k] * out
+                    # X_tmp += s[j, k] * out
                     # print('task_id', task_id, 'j', j,
                     #       'k', k, 'contr', torch.sum(s[j, k] * out))
+
+                    out = self.dropout(self.relu(self.maxpool(conv(X))))
+                    X_tmp += s[j, k] * out
             X = X_tmp
         X = X.reshape(-1, X.shape[1] * X.shape[2] * X.shape[3])
         return X

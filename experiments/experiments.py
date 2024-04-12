@@ -135,7 +135,7 @@ if __name__ == "__main__":
         "sharing_strategy.sync_base": True,
         # "root_save_dir": prefix + f"experiment_results/no_transform_debug_cifar100_vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}_batchsize_{args.batch_size}",
         # "root_save_dir": prefix + f"experiment_results/DEBUG_vanilla_jorge_setting_no_sparse_sync_{args.sync_base}",
-        "root_save_dir": prefix + f"debug_cifar_experiments/vanilla"
+        "root_save_dir": prefix + f"debug_cifar_results/vanilla"
     }
 
     run_experiment(config, strict=False)

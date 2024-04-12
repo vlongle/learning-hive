@@ -542,25 +542,35 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
                         # with new module. Update struct + update the active
                         # candidate
-                        # if train_candidate_module:
-                        #     self.net.unfreeze_module(
-                        #         self.net.active_candidate_index)
+                        if train_candidate_module:
+                            self.net.unfreeze_module(
+                                self.net.active_candidate_index)
+
                         self.update_structure(
                             X, Y, task_id, train_mode=train_mode,
                             global_step=i)
                         # self.net.hide_tmp_module()
 
-                        # without new module
-                        # self.net.freeze_module(self.net.active_candidate_index)
-                        if not fair_opt or i % len(self.net.candidate_indices) == 0:
-                            # logging.info(">> TRAINING NOMOD AT EPOCH {}".format(i))
-                            self.net.hide_tmp_modulev2()
-                            self.update_structure(
-                                X, Y, task_id, train_mode=train_mode,
-                                global_step=i)
-                            # self.net.recover_hidden_module()
-                            self.net.recover_hidden_modulev2()
-                            self.net.select_active_module()  # select the next module in round-robin
+                        self.net.freeze_module(self.net.active_candidate_index)
+                        self.net.hide_tmp_modulev2()
+                        self.update_structure(
+                            X, Y, task_id, train_mode=train_mode,
+                            global_step=i)
+                        # self.net.recover_hidden_module()
+                        self.net.recover_hidden_modulev2()
+                        self.net.select_active_module()  # select the next module in round-robin
+
+                        # # without new module
+                        # # self.net.freeze_module(self.net.active_candidate_index)
+                        # if not fair_opt or i % len(self.net.candidate_indices) == 0:
+                        #     # logging.info(">> TRAINING NOMOD AT EPOCH {}".format(i))
+                        #     self.net.hide_tmp_modulev2()
+                        #     self.update_structure(
+                        #         X, Y, task_id, train_mode=train_mode,
+                        #         global_step=i)
+                        #     # self.net.recover_hidden_module()
+                        #     self.net.recover_hidden_modulev2()
+                        # self.net.select_active_module()  # select the next module in round-robin
                 if i % save_freq == 0:
                     self.save_data(i + 1, task_id, testloaders,
                                    mode=train_mode)

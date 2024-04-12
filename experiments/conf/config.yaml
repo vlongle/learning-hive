@@ -20,7 +20,7 @@ agent:
   delta_ood: 1.0
 
 defaults:
-  - train: monolconnectedithic
+  - train: monolithic 
   - dataset: mnist
   - net: mlp
   - sharing_strategy: no_sharing

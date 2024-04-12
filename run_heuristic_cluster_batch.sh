@@ -7,26 +7,28 @@
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
-#SBATCH --array=0-15 # This will run 16 jobs to cover 8 * 2 combinations
+#SBATCH --exclude=ee-3090-1.grasp.maas
+#SBATCH --array=0-7 # This will run 16 jobs to cover 8 * 2 combinations
 
 # Fixed values
 BUDGET="20"
 NUM_COMPS_PER_TASK="5"
-SYNC_BASE="1"
-DATASET="combined"
+DATASET="mnist"
 ENFORCE_BALANCE="1"
 
 # Declare the seeds and algos
 declare -a seeds=("0" "1" "2" "3" "4" "5" "6" "7") # 8 options
-declare -a algos=("modular" "monolithic") # 2 options
+# declare -a algos=("modular" "monolithic") # 2 options
+ALGO="modular"
 
 # Calculate the index for each option based on SLURM_ARRAY_TASK_ID
 SEED_IDX=$((SLURM_ARRAY_TASK_ID % 8))
-ALGO_IDX=$((SLURM_ARRAY_TASK_ID / 8)) # This division will floor towards 0 for the first 8 jobs and be 1 for the next 8
+# ALGO_IDX=$((SLURM_ARRAY_TASK_ID / 8)) # This division will floor towards 0 for the first 8 jobs and be 1 for the next 8
 
 SEED=${seeds[$SEED_IDX]}
-ALGO=${algos[$ALGO_IDX]}
+# ALGO=${algos[$ALGO_IDX]}
 
-srun bash -c "RAY_DEDUP_LOGS=0 python experiments/heuristic_data_experiments.py --dataset $DATASET --budget $BUDGET --num_comms_per_task $NUM_COMPS_PER_TASK --sync_base $SYNC_BASE --seed $SEED --algo $ALGO --enforce_balance $ENFORCE_BALANCE"
+# srun bash -c "RAY_DEDUP_LOGS=0 python experiments/heuristic_data_experiments.py --dataset $DATASET --budget $BUDGET --num_comms_per_task $NUM_COMPS_PER_TASK --seed $SEED --algo $ALGO --enforce_balance $ENFORCE_BALANCE"
+srun bash -c "RAY_DEDUP_LOGS=0 python experiments/recv_experiments.py --dataset $DATASET --num_comms_per_task $NUM_COMPS_PER_TASK --seed $SEED --algo $ALGO"
 
 exit 3

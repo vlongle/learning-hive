@@ -42,8 +42,8 @@ parser.add_argument('--seed', type=int, default=0,
                     help='Seed for the experiment.')
 parser.add_argument('--algo', type=str, default="modular", choices=[
                     "modular", "monolithic"], help='Algorithm for the experiment.')
-# parser.add_argument('--dataset', type=str, default="mnist", choices=[
-#                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
+parser.add_argument('--dataset', type=str, default="mnist", choices=[
+                    "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
 parser.add_argument('--prefilter_strategy', type=str, default="oracle", choices=[
                     "oracle", "raw_distance", "none"], help='Pre-filtering strategy for the experiment.')
 parser.add_argument('--scorer', type=str, default="cross_entropy", choices=[
@@ -89,9 +89,10 @@ if __name__ == "__main__":
         "seed": args.seed,
         # "seed": [0,1,2,3,4,5,6,7],
         "parallel": True,
-        "num_agents": 20,
-        "dataset": "combined",
-        "sharing_strategy.min_task": 4, ## !!!!NOTE: only for the combined dataset
+        "num_agents": 8,
+        # "dataset": "combined",
+        "dataset": args.dataset,
+        # "sharing_strategy.min_task": 4, ## !!!!NOTE: only for the combined dataset
         "dataset.num_trains_per_class": 64,
         "dataset.num_vals_per_class": 50,
         "dataset.remap_labels": True,
@@ -111,7 +112,8 @@ if __name__ == "__main__":
         # "agent.use_ood_separation_loss": False,
            "net.no_sparse_basis": True,
         
-        "root_save_dir": prefix + f"debug_budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size_sync_base_{args.sync_base}/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
+        # "root_save_dir": prefix + f"debug_budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size_sync_base_{args.sync_base}/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
+        "root_save_dir": prefix + f"heuristic_experiment_results/recv_mem_{shared_memory_size}_freq_{comm_freq}",
         "sharing_strategy": "recv_data",
         "sharing_strategy.shared_memory_size": shared_memory_size,
         "sharing_strategy.query_task_mode": query_task_mode,

@@ -142,6 +142,9 @@ class HeuristicDataAgent(Agent):
         query = {k: v for k, v in query.items() if k in available_cls}
 
         total_weight = sum(query.values())
+        if total_weight == 0:
+            return {}
+
         probabilities = {cls: weight /
                          total_weight for cls, weight in query.items()}
 

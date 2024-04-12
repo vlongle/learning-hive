@@ -44,7 +44,7 @@ import os
 import re
 from shell.utils.metric import Metric
 from  shell.utils.record import Record
-result_dir = "budget_experiment_results/jorge_setting_fedavg/comm_freq_20"
+result_dir = "/mnt/kostas-graid/datasets/vlongle/learning_hive/heuristic_experiment_results/heuristic_budget_20_enforce_balance_True_mem_400"
 # result_dir = "/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/vanilla_jorge_setting_basis_no_sparse"
 # result_dir = "/mnt/kostas-graid/datasets/vlongle/experiment_results/no_transform_debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"
 # result_dir = "experiment_results/debug_cifar100_vanilla_jorge_setting_dropout_0.5_memory_64_no_sparse_False_num_trains_256_batchsize_64"

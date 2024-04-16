@@ -22,10 +22,6 @@ parser.add_argument('--seed', type=int, default=0,
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100", "combined"], help='Dataset for the experiment.')
 parser.add_argument('--comm_freq', type=int, default=5)
-# parser.add_argument('--when_reoptimize_structure', type=str,
-#                     default="never", choices=["never", "always", "final"])
-# parser.add_argument('--num_epochs', type=int, default=100)
-parser.add_argument('--num_epochs', type=int, default=3)
 parser.add_argument('--algo', type=str, default="modular", choices=[
                     "monolithic", "modular"], help='Algorithm for the experiment.')
 parser.add_argument('--topology', type=str, default='fully_connected')
@@ -57,12 +53,14 @@ if __name__ == "__main__":
     if args.dataset != "cifar100":
         config = {
             "algo": args.algo,
-            "seed": [1, 2, 3, 4, 5, 6, 7],
+            "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+            # "seed": 0,
             # "seed": args.seed,
             "dataset": args.dataset,
             "num_agents": num_agents,
             "parallel": True,
-            "topology": args.topology,
+            # "topology": args.topology,
+            "topology": ['ring', 'server'],
             "edge_drop_prob": args.edge_drop_prob,
 
             "dataset.num_trains_per_class": 64,
@@ -96,7 +94,7 @@ if __name__ == "__main__":
     else:
         config = {
             "algo": args.algo,
-            "seed": [0,1,2,3,4,5,6,7],
+            "seed": [0, 1, 2, 3, 4, 5, 6, 7],
             "num_agents": 8,
             "parallel": True,
 

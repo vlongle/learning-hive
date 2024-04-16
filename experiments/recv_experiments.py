@@ -16,14 +16,13 @@ Copyright (c) 2023 Long Le
 '''
 
 
+
+
 import time
 import datetime
 from shell.utils.experiment_utils import run_experiment
 import argparse
 from shell.utils.utils import on_desktop
-
-
-
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -33,7 +32,6 @@ def str2bool(v):
         return False
     else:
         raise argparse.ArgumentTypeError('Boolean value expected.')
-
 
 
 parser = argparse.ArgumentParser(
@@ -110,8 +108,8 @@ if __name__ == "__main__":
         "agent.use_contrastive": False,
         "agent.memory_size": memory_size,
         # "agent.use_ood_separation_loss": False,
-           "net.no_sparse_basis": True,
-        
+        "net.no_sparse_basis": True,
+
         # "root_save_dir": prefix + f"debug_budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size_sync_base_{args.sync_base}/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
         "root_save_dir": prefix + f"heuristic_experiment_results/recv_mem_{shared_memory_size}_freq_{comm_freq}",
         "sharing_strategy": "recv_data",
@@ -126,8 +124,6 @@ if __name__ == "__main__":
         "sharing_strategy.scorer": args.scorer,
         "sharing_strategy.sync_base": args.sync_base,
     }
-
-
 
     # config = {
 
@@ -157,8 +153,6 @@ if __name__ == "__main__":
     #     "agent.use_contrastive": False,
     #     "net.no_sparse_basis": True,
 
-
-
     #     # "agent.use_ood_separation_loss": False,
     #         "root_save_dir": prefix + f"budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size_sync_base_{args.sync_base}/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
     #     "sharing_strategy": "recv_data",
@@ -173,7 +167,6 @@ if __name__ == "__main__":
     #     "sharing_strategy.scorer": args.scorer,
     # "sharing_strategy.sync_base": args.sync_base,
     # }
-
 
     run_experiment(config, strict=False)
     end = time.time()

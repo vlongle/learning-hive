@@ -250,7 +250,7 @@ def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='a
     else:
         if remap_name is not None:
             inverse_remap = {v: k for k, v in remap_name.items()}
-            print(inverse_remap)
+            print('inverse map', inverse_remap)
             custom_algo_order = [inverse_remap[a] for a in custom_algo_order]
     for i, algo in enumerate(custom_algo_order):
         if remap_name and algo not in remap_name:

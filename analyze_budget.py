@@ -21,21 +21,22 @@ For cifar100, epochs=500 is stored in
 
 
 # root_result_dir = "budget_experiment_results/jorge_setting_recv_variable_shared_memory_size"
-import os
-import re
-from shell.utils.metric import Metric
-from  shell.utils.record import Record
-root_result_dir = "topology_experiment_results/modmod"
+# root_result_dir = "combined_recv_remove_neighbors_results"
+# root_result_dir = "topology_experiment_results/modmod"
 # root_result_dir = "topology_experiment_results/topology_experiment_results/jorge_setting_fedavg/comm_freq_5"
+
+from  shell.utils.record import Record
+from shell.utils.metric import Metric
+import re
+import os
+# root_result_dir = "budget_experiment_results/jorge_setting_fedavg"
+root_result_dir = "budget_experiment_results/modmod"
 record = Record(f"{root_result_dir}.csv")
 
 pattern = r".*"
 
 num_init_tasks = 4  # vanilla_results
 
-num_epochs_ = 100
-num_init_epochs_ = 300
-start_epoch = 21
 
 for result_dir in os.listdir(root_result_dir):
     for job_name in os.listdir(os.path.join(root_result_dir, result_dir)):
@@ -48,19 +49,14 @@ for result_dir in os.listdir(root_result_dir):
                             continue
                         save_dir = os.path.join(root_result_dir,
                                                 result_dir, job_name, dataset_name, algo, seed, agent_id)
-                        print(save_dir)
                         # if the pattern doesn't match, continue
                         if not re.search(pattern, save_dir):
                             continue
 
-                        num_epochs = num_init_epochs = None
-                        if dataset_name == "cifar100":
-                            num_epochs = num_epochs_
-                            num_init_epochs = num_init_epochs_
-                        m = Metric(save_dir, num_init_tasks, num_epochs=num_epochs,
-                                   num_init_epochs=num_init_epochs)
+                        m = Metric(save_dir, num_init_tasks)
                         # extra_algo = f"{result_dir}_{algo}"
                         extra_algo = f"{algo}_{result_dir}"
+                        # print(save_dir, 'algo', extra_algo)
                         record.write(
                             {
                                 "dataset": dataset_name,
@@ -70,12 +66,11 @@ for result_dir in os.listdir(root_result_dir):
                                 "agent_id": agent_id,
                                 "avg_acc": m.compute_avg_accuracy(),
                                 "final_acc": m.compute_final_accuracy(),
-                                "forward": m.compute_forward_transfer(start_epoch=start_epoch),
-                                "backward": m.compute_backward_transfer(),
-                                "catastrophic": m.compute_catastrophic_forgetting(),
                                 "auc": m.compute_auc(),
                             }
                         )
+                        # print('record', record.df)
+                        # exit(0)
 print(record.df)
 # get the final accuracy with respect to different algo and dataset
 # and whether it uses contrastive loss

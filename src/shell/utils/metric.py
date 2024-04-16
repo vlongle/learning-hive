@@ -31,8 +31,7 @@ class Metric:
     - test_acc: test accuracy of the test task (numeric)
     """
 
-    def __init__(self, save_dir, num_init_tasks=None, num_init_epochs=None,
-                 num_epochs=None):
+    def __init__(self, save_dir, num_init_tasks=None):
         self.save_dir = save_dir
         self.file_path = os.path.join(save_dir, 'record.csv')
         if os.path.exists(self.file_path):
@@ -60,14 +59,6 @@ class Metric:
 
         self.num_init_tasks = num_init_tasks
         self.max_epoch = self.df['epoch'].max()
-        if num_init_epochs is not None and num_epochs is not None:
-            # NOTE: this is prolly BUGGY...
-            # HACK: replace all the rows with epoch == num_init_epochs
-            # or num_epochs to max_epoch to uniformize the metric computation
-            self.df.loc[self.df['epoch'] ==
-                        num_init_epochs+1, 'epoch'] = self.max_epoch
-            self.df.loc[self.df['epoch'] ==
-                        num_epochs+1, 'epoch'] = self.max_epoch
         # 'test_task' column is string, we need to convert train_task to string as well
         self.df['train_task'] = self.df['train_task'].astype(str)
 
@@ -174,7 +165,7 @@ class Metric:
             catastrophic = catastrophic['catastrophic'].mean() * 100
         return catastrophic
 
-    def compute_auc(self, mode='current', tasks=None, metric='test_acc'):
+    def compute_auc(self, mode='avg', tasks=None, metric='test_acc', num_init_tasks=4):
         """
         Compute the AUC based on mode and tasks specified.
 
@@ -186,11 +177,14 @@ class Metric:
         Returns:
         - AUC value as a float.
         """
-        auc_values = []
+        # auc_values = []
 
         if tasks is None:
-            tasks = self.df['train_task'].unique()
+            # tasks = self.df['train_task'].unique()
+            max_task = self.get_max_tasks()
+            tasks = range(num_init_tasks, max_task+1)
 
+        dfs = []
         for task in tasks:
             if mode == 'current':
                 # Filter rows where train_task and test_task match the current task
@@ -203,16 +197,14 @@ class Metric:
             else:
                 raise ValueError("Invalid mode. Choose 'current' or 'avg'.")
 
+            dfs.append(filtered_df)
             # Ensure the dataframe is sorted by epoch.
-            filtered_df = filtered_df.sort_values(by='epoch')
+            # filtered_df = filtered_df.sort_values(by='epoch')
 
-            # Calculate the AUC for the filtered dataframe.
-            auc = np.trapz(filtered_df[metric], filtered_df['epoch'])
-            auc_values.append(auc)
+        df = pd.concat(dfs)
+        agg_df = df.groupby('epoch').agg({metric: 'mean'}).reset_index()
 
-        # For 'avg' mode, the AUC is calculated once above. For 'current' mode, average the AUCs across tasks.
-        final_auc = np.mean(auc_values)
-        return final_auc
+        return np.trapz(agg_df[metric], agg_df['epoch'])
 
 
 def task_similarity(classes_sequence_list, num_tasks, num_classes_per_task):

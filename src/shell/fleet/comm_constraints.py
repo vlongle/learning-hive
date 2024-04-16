@@ -1,11 +1,12 @@
 def compute_data_pt_size(w=1, h=1, c=1, dataset='mnist'):
-    if dataset == "mnist":
-        w = h = 28
-        c = 1
-    elif dataset == "cifar100":
+    if dataset == "cifar100":
         w = h = 32
         c = 3
+    else:
+        w = h = 28
+        c = 1
     return w * h * c
+
 
 def compute_receiver_cost(no_queries, no_neighbors, data_pt_size, frequency=1):
     """
@@ -40,17 +41,27 @@ def compute_mlp_module_size(layer_size=64):
     bias = layer_size
     return weights + bias
 
-def compute_mlp_model_size(layer_size=64, depth=4):
-    return compute_mlp_module_size(layer_size) * depth
+
+def compute_mlp_model_size(layer_size=64, num_modules=4):
+    return compute_mlp_module_size(layer_size) * num_modules
+
+# conv = nn.Conv2d(in_channel=self.channels, out_channel=self.channels,
+#                                 self.conv_kernel, padding=self.padding)
+
+
+def compute_cnn_model_size(in_channels=50, out_channels=50, kernel_size=3, num_modules=4):
+    weights = in_channels * out_channels * kernel_size * kernel_size
+    bias = out_channels
+    return (weights + bias) * num_modules
 
 
 def compute_fedavg_cost(model_size, frequency=1):
     return model_size * frequency
 
+
 def compute_fedcurv_cost(model_size, frequency=1):
     return 2 * compute_fedavg_cost(model_size, frequency)
 
+
 def compute_modular_cost(no_exchanged_components, component_size, frequency=1):
     return no_exchanged_components * component_size * frequency
-
-

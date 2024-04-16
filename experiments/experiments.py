@@ -38,13 +38,13 @@ parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
 parser.add_argument('--seed', type=int, default=0,
                     help='Seed for the experiment.')
-parser.add_argument('--dataset', type=str, default="mnist", choices=[
+parser.add_argument('--dataset', type=str, default="cifar100", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100", "combined"], help='Dataset for the experiment.')
 parser.add_argument('--no_sparse_basis', type=str2bool, default=True)
-parser.add_argument('--algo', type=str, default="modular", choices=[
+parser.add_argument('--algo', type=str, default="monolithic", choices=[
                     "monolithic", "modular"], help='Algorithm for the experiment.')
 parser.add_argument('--dropout', type=float, default=0.5)
-parser.add_argument('--memory_size', type=int, default=32)
+parser.add_argument('--memory_size', type=int, default=128)
 parser.add_argument('--num_trains_per_class', type=int, default=256)
 parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--sync_base', type=str2bool, default=False)
@@ -116,15 +116,15 @@ if __name__ == "__main__":
         "net": "cnn",
         "net.depth": 4,
         "num_init_tasks": 4,
-        # "dataset.num_tasks": 20,
-        "dataset.num_tasks": 5,
+        "dataset.num_tasks": 20,
+        # "dataset.num_tasks": 5,
         "net.dropout": args.dropout,
         "train.init_num_epochs": num_epochs,
         "train.init_component_update_freq": num_epochs,
         "train.num_epochs": num_epochs,
         "train.component_update_freq": num_epochs,
-        # "agent.memory_size": args.memory_size,
-        "agent.memory_size": 32,
+        "agent.memory_size": args.memory_size,
+        # "agent.memory_size": 32,
         "agent.batch_size": args.batch_size,
         "train.save_freq": 10,
         "agent.use_contrastive": False,
@@ -135,7 +135,7 @@ if __name__ == "__main__":
         "sharing_strategy.sync_base": True,
         # "root_save_dir": prefix + f"experiment_results/no_transform_debug_cifar100_vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}_batchsize_{args.batch_size}",
         # "root_save_dir": prefix + f"experiment_results/DEBUG_vanilla_jorge_setting_no_sparse_sync_{args.sync_base}",
-        "root_save_dir": prefix + f"debug_cifar_results/vanilla"
+        "root_save_dir": prefix + f"debug_cifar_results/vanilla_{args.memory_size}"
     }
 
     run_experiment(config, strict=False)

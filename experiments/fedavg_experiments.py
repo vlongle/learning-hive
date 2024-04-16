@@ -57,7 +57,7 @@ if __name__ == "__main__":
     if args.dataset != "cifar100":
         config = {
             "algo": args.algo,
-            "seed": [1, 2, 3, 4, 5, 6, 7],
+            "seed": [0, 1, 2, 3, 4, 5, 6, 7],
             # "seed": args.seed,
             "dataset": args.dataset,
             "num_agents": num_agents,

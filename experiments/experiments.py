@@ -38,12 +38,14 @@ parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
 parser.add_argument('--seed', type=int, default=0,
                     help='Seed for the experiment.')
-parser.add_argument('--dataset', type=str, default="mnist", choices=[
+parser.add_argument('--dataset', type=str, default="cifar100", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100", "combined"], help='Dataset for the experiment.')
 parser.add_argument('--no_sparse_basis', type=str2bool, default=True)
 parser.add_argument('--algo', type=str, default="monolithic", choices=[
+parser.add_argument('--algo', type=str, default="monolithic", choices=[
                     "monolithic", "modular"], help='Algorithm for the experiment.')
 parser.add_argument('--dropout', type=float, default=0.5)
+parser.add_argument('--memory_size', type=int, default=128)
 parser.add_argument('--memory_size', type=int, default=128)
 parser.add_argument('--num_trains_per_class', type=int, default=256)
 parser.add_argument('--batch_size', type=int, default=64)

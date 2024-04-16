@@ -8,10 +8,10 @@
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
 #SBATCH --exclude=ee-3090-1.grasp.maas
-#SBATCH --array=7-7
+#SBATCH --array=0-7
 
 # Fixed values
-BUDGET="80"  # (20, 40, 80)
+BUDGET="20"  # (20, 40, 80)
 NUM_COMPS_PER_TASK="5" # (1,5, 10)
 DATASET="cifar100"
 ENFORCE_BALANCE="0"
@@ -19,7 +19,7 @@ ENFORCE_BALANCE="0"
 # Declare the seeds and algos
 declare -a seeds=("0" "1" "2" "3" "4" "5" "6" "7") # 8 options
 # declare -a algos=("modular" "monolithic") # 2 options
-ALGO="modular"
+ALGO="monolithic"
 
 # Calculate the index for each option based on SLURM_ARRAY_TASK_ID
 SEED_IDX=$((SLURM_ARRAY_TASK_ID % 8))

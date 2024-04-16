@@ -58,7 +58,7 @@ parser.add_argument('--num_queries', type=int, default=20,
                     help='Number of queries for the experiment.')
 parser.add_argument('--num_comms_per_task', type=int, default=5,
                     help='Number of communications per task for the experiment.')
-parser.add_argument('--sync_base', type=str2bool, default=False)
+parser.add_argument('--sync_base', type=str2bool, default=True)
 args = parser.parse_args()
 
 if on_desktop():
@@ -111,7 +111,7 @@ if __name__ == "__main__":
         "net.no_sparse_basis": True,
 
         # "root_save_dir": prefix + f"debug_budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size_sync_base_{args.sync_base}/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
-        "root_save_dir": prefix + f"heuristic_experiment_results/recv_mem_{shared_memory_size}_freq_{comm_freq}",
+        "root_save_dir": prefix + f"combined_recv_remove_neighbors_results/recv_mem_{shared_memory_size}_freq_{comm_freq}",
         "sharing_strategy": "recv_data",
         "sharing_strategy.shared_memory_size": shared_memory_size,
         "sharing_strategy.query_task_mode": query_task_mode,

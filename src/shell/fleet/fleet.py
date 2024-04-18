@@ -125,7 +125,6 @@ class Agent:
 
     def train(self, task_id, start_epoch=0, communication_frequency=None,
               final=True, **kwargs):
-
         # if start_epoch == 0:
         #     for t in range(task_id+1):
         #         self.agent.ood_data[t] = self.get_ood_data(t)
@@ -488,6 +487,7 @@ class Fleet:
         for start_epoch in range(0, num_epochs, comm_freq):
             end_epoch = min(start_epoch + comm_freq, num_epochs)
             final = start_epoch + comm_freq >= num_epochs
+            print('from', start_epoch, 'to', end_epoch, 'final', final)
             if self.sharing_strategy.pre_or_post_comm == "pre" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
                 # print('>>> COMM AT EPOCH', end_epoch)
                 self.communicate(task_id,

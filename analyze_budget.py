@@ -20,17 +20,17 @@ For cifar100, epochs=500 is stored in
 """
 
 
-# root_result_dir = "budget_experiment_results/jorge_setting_recv_variable_shared_memory_size"
+import os
+import re
+from shell.utils.metric import Metric
+from  shell.utils.record import Record
+root_result_dir = "budget_experiment_results/jorge_setting_recv_variable_shared_memory_size"
 # root_result_dir = "combined_recv_remove_neighbors_results"
 # root_result_dir = "topology_experiment_results/modmod"
 # root_result_dir = "topology_experiment_results/topology_experiment_results/jorge_setting_fedavg/comm_freq_5"
 
-from  shell.utils.record import Record
-from shell.utils.metric import Metric
-import re
-import os
 # root_result_dir = "budget_experiment_results/jorge_setting_fedavg"
-root_result_dir = "budget_experiment_results/modmod"
+# root_result_dir = "budget_experiment_results/modmod"
 record = Record(f"{root_result_dir}.csv")
 
 pattern = r".*"

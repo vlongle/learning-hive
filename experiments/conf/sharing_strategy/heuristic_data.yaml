@@ -10,3 +10,4 @@ sync_base: False
 remove_ood_neighbors: True
 min_task: 0
 hash_data: True
+always_query_all_final: True

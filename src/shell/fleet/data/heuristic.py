@@ -106,6 +106,9 @@ class HeuristicDataAgent(Agent):
                         mode = "current"
             else:
                 mode = self.sharing_strategy['query_task_mode']
+
+            if self.sharing_strategy.always_query_all_final and final:
+                mode = "all"
             self.query = self.compute_query(task_id, mode=mode)
         else:
             self.compute_data(task_id)
@@ -117,8 +120,9 @@ class HeuristicDataAgent(Agent):
             self.data[requester] = self.get_data(
                 available_data, query, task_id)
 
-    def get_candidate_data(self, task, map_to_global=True):
-        if task == self.agent.T - 1:
+    def get_candidate_data(self, task, map_to_global=True, task_id=None):
+        # if task == self.agent.T - 1:
+        if task == task_id:
             Xt, yt = self.dataset.trainset[task].tensors
         else:
             Xt, yt, _ = self.agent.replay_buffers[task].get_tensors()
@@ -132,7 +136,7 @@ class HeuristicDataAgent(Agent):
     def get_data_pool(self, task_id):
         available_data = {}
         for t in range(self.min_task, task_id + 1):
-            Xt, yt = self.get_candidate_data(t)
+            Xt, yt = self.get_candidate_data(t, task_id=task_id)
             for c in yt.unique():
                 if c.item() not in available_data:
                     available_data[c.item()] = []

@@ -1,0 +1,2 @@
+python experiments/heuristic_data_experiments.py --dataset cifar100 --algo modular --seed 0 --budget 20
+python experiments/heuristic_data_experiments.py --dataset cifar100 --algo modular --seed 0 --budget 80

@@ -8,7 +8,7 @@
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
 #SBATCH --exclude=ee-3090-1.grasp.maas
-#SBATCH --array=16-50 # For 3*3*8=72 combinations
+#SBATCH --array=60-71 # For 3*3*8=72 combinations
 
 # Declare budgets, number of computations per task, and seeds
 declare -a budgets=("20" "40" "80")  # 3 budget options

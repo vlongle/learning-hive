@@ -1,3 +1,3 @@
-for i in {16..71}; do
-	   scancel 170048_$i
+for i in {60..71}; do
+	   scancel 170196_$i
    done

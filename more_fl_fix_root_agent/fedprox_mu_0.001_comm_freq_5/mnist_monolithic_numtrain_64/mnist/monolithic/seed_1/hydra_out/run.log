@@ -1,0 +1,345 @@
+[2024-04-19 16:26:18,506][root][INFO] - Class sequence: [6 4 1 4 5 6 6 2 2 7 9 7 1 6 4 9 8 5 4 1]
+[2024-04-19 16:26:18,527][root][INFO] - task 0 :(128, 1, 28, 28) (100, 1, 28, 28) (1940, 1, 28, 28)
+[2024-04-19 16:26:18,578][root][INFO] - task 1 :(128, 1, 28, 28) (100, 1, 28, 28) (2117, 1, 28, 28)
+[2024-04-19 16:26:18,601][root][INFO] - task 2 :(128, 1, 28, 28) (100, 1, 28, 28) (1850, 1, 28, 28)
+[2024-04-19 16:26:18,625][root][INFO] - task 3 :(128, 1, 28, 28) (100, 1, 28, 28) (1990, 1, 28, 28)
+[2024-04-19 16:26:18,649][root][INFO] - task 4 :(128, 1, 28, 28) (100, 1, 28, 28) (2060, 1, 28, 28)
+[2024-04-19 16:26:18,675][root][INFO] - task 5 :(128, 1, 28, 28) (100, 1, 28, 28) (2037, 1, 28, 28)
+[2024-04-19 16:26:18,703][root][INFO] - task 6 :(128, 1, 28, 28) (100, 1, 28, 28) (2093, 1, 28, 28)
+[2024-04-19 16:26:18,726][root][INFO] - task 7 :(128, 1, 28, 28) (100, 1, 28, 28) (1991, 1, 28, 28)
+[2024-04-19 16:26:18,749][root][INFO] - task 8 :(128, 1, 28, 28) (100, 1, 28, 28) (1866, 1, 28, 28)
+[2024-04-19 16:26:18,775][root][INFO] - task 9 :(128, 1, 28, 28) (100, 1, 28, 28) (2117, 1, 28, 28)
+[2024-04-19 16:26:18,885][root][INFO] - Class sequence: [6 5 5 7 5 1 3 7 0 2 4 8 7 3 3 7 4 5 2 0]
+[2024-04-19 16:26:18,903][root][INFO] - task 0 :(128, 1, 28, 28) (100, 1, 28, 28) (1850, 1, 28, 28)
+[2024-04-19 16:26:18,924][root][INFO] - task 1 :(128, 1, 28, 28) (100, 1, 28, 28) (1920, 1, 28, 28)
+[2024-04-19 16:26:18,946][root][INFO] - task 2 :(128, 1, 28, 28) (100, 1, 28, 28) (2027, 1, 28, 28)
+[2024-04-19 16:26:18,973][root][INFO] - task 3 :(128, 1, 28, 28) (100, 1, 28, 28) (2038, 1, 28, 28)
+[2024-04-19 16:26:18,995][root][INFO] - task 4 :(128, 1, 28, 28) (100, 1, 28, 28) (2012, 1, 28, 28)
+[2024-04-19 16:26:19,018][root][INFO] - task 5 :(128, 1, 28, 28) (100, 1, 28, 28) (1956, 1, 28, 28)
+[2024-04-19 16:26:19,044][root][INFO] - task 6 :(128, 1, 28, 28) (100, 1, 28, 28) (2038, 1, 28, 28)
+[2024-04-19 16:26:19,071][root][INFO] - task 7 :(128, 1, 28, 28) (100, 1, 28, 28) (2038, 1, 28, 28)
+[2024-04-19 16:26:19,095][root][INFO] - task 8 :(128, 1, 28, 28) (100, 1, 28, 28) (1874, 1, 28, 28)
+[2024-04-19 16:26:19,127][root][INFO] - task 9 :(128, 1, 28, 28) (100, 1, 28, 28) (2012, 1, 28, 28)
+[2024-04-19 16:26:19,260][root][INFO] - Class sequence: [5 4 2 3 6 2 0 5 9 4 8 4 1 7 2 5 5 3 9 6]
+[2024-04-19 16:26:19,287][root][INFO] - task 0 :(128, 1, 28, 28) (100, 1, 28, 28) (1874, 1, 28, 28)
+[2024-04-19 16:26:19,315][root][INFO] - task 1 :(128, 1, 28, 28) (100, 1, 28, 28) (2042, 1, 28, 28)
+[2024-04-19 16:26:19,343][root][INFO] - task 2 :(128, 1, 28, 28) (100, 1, 28, 28) (1990, 1, 28, 28)
+[2024-04-19 16:26:19,370][root][INFO] - task 3 :(128, 1, 28, 28) (100, 1, 28, 28) (1872, 1, 28, 28)
+[2024-04-19 16:26:19,397][root][INFO] - task 4 :(128, 1, 28, 28) (100, 1, 28, 28) (1991, 1, 28, 28)
+[2024-04-19 16:26:19,421][root][INFO] - task 5 :(128, 1, 28, 28) (100, 1, 28, 28) (1956, 1, 28, 28)
+[2024-04-19 16:26:19,453][root][INFO] - task 6 :(128, 1, 28, 28) (100, 1, 28, 28) (2163, 1, 28, 28)
+[2024-04-19 16:26:19,479][root][INFO] - task 7 :(128, 1, 28, 28) (100, 1, 28, 28) (1924, 1, 28, 28)
+[2024-04-19 16:26:19,542][root][INFO] - task 8 :(128, 1, 28, 28) (100, 1, 28, 28) (1902, 1, 28, 28)
+[2024-04-19 16:26:19,569][root][INFO] - task 9 :(128, 1, 28, 28) (100, 1, 28, 28) (1967, 1, 28, 28)
+[2024-04-19 16:26:19,707][root][INFO] - Class sequence: [6 9 8 3 9 7 6 3 0 2 8 6 3 8 5 7 1 4 0 2]
+[2024-04-19 16:26:19,735][root][INFO] - task 0 :(128, 1, 28, 28) (100, 1, 28, 28) (1967, 1, 28, 28)
+[2024-04-19 16:26:19,763][root][INFO] - task 1 :(128, 1, 28, 28) (100, 1, 28, 28) (1984, 1, 28, 28)
+[2024-04-19 16:26:19,793][root][INFO] - task 2 :(128, 1, 28, 28) (100, 1, 28, 28) (2037, 1, 28, 28)
+[2024-04-19 16:26:19,827][root][INFO] - task 3 :(128, 1, 28, 28) (100, 1, 28, 28) (1968, 1, 28, 28)
+[2024-04-19 16:26:19,857][root][INFO] - task 4 :(128, 1, 28, 28) (100, 1, 28, 28) (2012, 1, 28, 28)
+[2024-04-19 16:26:19,883][root][INFO] - task 5 :(128, 1, 28, 28) (100, 1, 28, 28) (1932, 1, 28, 28)
+[2024-04-19 16:26:19,911][root][INFO] - task 6 :(128, 1, 28, 28) (100, 1, 28, 28) (1984, 1, 28, 28)
+[2024-04-19 16:26:19,938][root][INFO] - task 7 :(128, 1, 28, 28) (100, 1, 28, 28) (1920, 1, 28, 28)
+[2024-04-19 16:26:19,969][root][INFO] - task 8 :(128, 1, 28, 28) (100, 1, 28, 28) (2117, 1, 28, 28)
+[2024-04-19 16:26:19,998][root][INFO] - task 9 :(128, 1, 28, 28) (100, 1, 28, 28) (2012, 1, 28, 28)
+[2024-04-19 16:26:20,137][root][INFO] - Class sequence: [9 2 7 6 8 4 8 5 3 9 0 6 6 9 3 9 7 0 1 4]
+[2024-04-19 16:26:20,163][root][INFO] - task 0 :(128, 1, 28, 28) (100, 1, 28, 28) (2041, 1, 28, 28)
+[2024-04-19 16:26:20,196][root][INFO] - task 1 :(128, 1, 28, 28) (100, 1, 28, 28) (1986, 1, 28, 28)
+[2024-04-19 16:26:20,224][root][INFO] - task 2 :(128, 1, 28, 28) (100, 1, 28, 28) (1956, 1, 28, 28)
+[2024-04-19 16:26:20,251][root][INFO] - task 3 :(128, 1, 28, 28) (100, 1, 28, 28) (1866, 1, 28, 28)
+[2024-04-19 16:26:20,281][root][INFO] - task 4 :(128, 1, 28, 28) (100, 1, 28, 28) (2019, 1, 28, 28)
+[2024-04-19 16:26:20,307][root][INFO] - task 5 :(128, 1, 28, 28) (100, 1, 28, 28) (1938, 1, 28, 28)
+[2024-04-19 16:26:20,335][root][INFO] - task 6 :(128, 1, 28, 28) (100, 1, 28, 28) (1967, 1, 28, 28)
+[2024-04-19 16:26:20,365][root][INFO] - task 7 :(128, 1, 28, 28) (100, 1, 28, 28) (2019, 1, 28, 28)
+[2024-04-19 16:26:20,395][root][INFO] - task 8 :(128, 1, 28, 28) (100, 1, 28, 28) (2008, 1, 28, 28)
+[2024-04-19 16:26:20,425][root][INFO] - task 9 :(128, 1, 28, 28) (100, 1, 28, 28) (2117, 1, 28, 28)
+[2024-04-19 16:26:20,559][root][INFO] - Class sequence: [1 2 4 6 1 7 8 7 5 7 6 8 0 5 0 5 6 1 5 2]
+[2024-04-19 16:26:20,589][root][INFO] - task 0 :(128, 1, 28, 28) (100, 1, 28, 28) (2167, 1, 28, 28)
+[2024-04-19 16:26:20,618][root][INFO] - task 1 :(128, 1, 28, 28) (100, 1, 28, 28) (1940, 1, 28, 28)
+[2024-04-19 16:26:20,651][root][INFO] - task 2 :(128, 1, 28, 28) (100, 1, 28, 28) (2163, 1, 28, 28)
+[2024-04-19 16:26:20,688][root][INFO] - task 3 :(128, 1, 28, 28) (100, 1, 28, 28) (2002, 1, 28, 28)
+[2024-04-19 16:26:20,715][root][INFO] - task 4 :(128, 1, 28, 28) (100, 1, 28, 28) (1920, 1, 28, 28)
+[2024-04-19 16:26:20,740][root][INFO] - task 5 :(128, 1, 28, 28) (100, 1, 28, 28) (1932, 1, 28, 28)
+[2024-04-19 16:26:20,769][root][INFO] - task 6 :(128, 1, 28, 28) (100, 1, 28, 28) (1872, 1, 28, 28)
+[2024-04-19 16:26:20,800][root][INFO] - task 7 :(128, 1, 28, 28) (100, 1, 28, 28) (1872, 1, 28, 28)
+[2024-04-19 16:26:20,832][root][INFO] - task 8 :(128, 1, 28, 28) (100, 1, 28, 28) (2093, 1, 28, 28)
+[2024-04-19 16:26:20,859][root][INFO] - task 9 :(128, 1, 28, 28) (100, 1, 28, 28) (1924, 1, 28, 28)
+[2024-04-19 16:26:20,996][root][INFO] - Class sequence: [2 9 0 6 4 1 1 4 9 7 7 5 9 2 2 7 8 9 8 0]
+[2024-04-19 16:26:21,023][root][INFO] - task 0 :(128, 1, 28, 28) (100, 1, 28, 28) (2041, 1, 28, 28)
+[2024-04-19 16:26:21,052][root][INFO] - task 1 :(128, 1, 28, 28) (100, 1, 28, 28) (1938, 1, 28, 28)
+[2024-04-19 16:26:21,083][root][INFO] - task 2 :(128, 1, 28, 28) (100, 1, 28, 28) (2117, 1, 28, 28)
+[2024-04-19 16:26:21,112][root][INFO] - task 3 :(128, 1, 28, 28) (100, 1, 28, 28) (2117, 1, 28, 28)
+[2024-04-19 16:26:21,142][root][INFO] - task 4 :(128, 1, 28, 28) (100, 1, 28, 28) (2037, 1, 28, 28)
+[2024-04-19 16:26:21,171][root][INFO] - task 5 :(128, 1, 28, 28) (100, 1, 28, 28) (1920, 1, 28, 28)
+[2024-04-19 16:26:21,200][root][INFO] - task 6 :(128, 1, 28, 28) (100, 1, 28, 28) (2041, 1, 28, 28)
+[2024-04-19 16:26:21,231][root][INFO] - task 7 :(128, 1, 28, 28) (100, 1, 28, 28) (2060, 1, 28, 28)
+[2024-04-19 16:26:21,260][root][INFO] - task 8 :(128, 1, 28, 28) (100, 1, 28, 28) (1983, 1, 28, 28)
+[2024-04-19 16:26:21,288][root][INFO] - task 9 :(128, 1, 28, 28) (100, 1, 28, 28) (1954, 1, 28, 28)
+[2024-04-19 16:26:21,426][root][INFO] - Class sequence: [2 7 2 4 0 8 5 9 1 9 7 4 4 9 4 8 7 1 0 5]
+[2024-04-19 16:26:21,453][root][INFO] - task 0 :(128, 1, 28, 28) (100, 1, 28, 28) (2060, 1, 28, 28)
+[2024-04-19 16:26:21,495][root][INFO] - task 1 :(128, 1, 28, 28) (100, 1, 28, 28) (2014, 1, 28, 28)
+[2024-04-19 16:26:21,528][root][INFO] - task 2 :(128, 1, 28, 28) (100, 1, 28, 28) (1954, 1, 28, 28)
+[2024-04-19 16:26:21,554][root][INFO] - task 3 :(128, 1, 28, 28) (100, 1, 28, 28) (1901, 1, 28, 28)
+[2024-04-19 16:26:21,587][root][INFO] - task 4 :(128, 1, 28, 28) (100, 1, 28, 28) (2144, 1, 28, 28)
+[2024-04-19 16:26:21,618][root][INFO] - task 5 :(128, 1, 28, 28) (100, 1, 28, 28) (2010, 1, 28, 28)
+[2024-04-19 16:26:21,649][root][INFO] - task 6 :(128, 1, 28, 28) (100, 1, 28, 28) (1991, 1, 28, 28)
+[2024-04-19 16:26:21,676][root][INFO] - task 7 :(128, 1, 28, 28) (100, 1, 28, 28) (1956, 1, 28, 28)
+[2024-04-19 16:26:21,706][root][INFO] - task 8 :(128, 1, 28, 28) (100, 1, 28, 28) (2163, 1, 28, 28)
+[2024-04-19 16:26:21,733][root][INFO] - task 9 :(128, 1, 28, 28) (100, 1, 28, 28) (1872, 1, 28, 28)
+[2024-04-19 16:26:21,868][root][INFO] - Class sequence: [6 5 8 5 7 8 1 5 1 7 9 5 2 0 1 8 4 2 2 1]
+[2024-04-19 16:26:21,891][root][INFO] - task 0 :(128, 1, 28, 28) (100, 1, 28, 28) (1850, 1, 28, 28)
+[2024-04-19 16:26:21,918][root][INFO] - task 1 :(128, 1, 28, 28) (100, 1, 28, 28) (1866, 1, 28, 28)
+[2024-04-19 16:26:21,946][root][INFO] - task 2 :(128, 1, 28, 28) (100, 1, 28, 28) (2002, 1, 28, 28)
+[2024-04-19 16:26:21,972][root][INFO] - task 3 :(128, 1, 28, 28) (100, 1, 28, 28) (2027, 1, 28, 28)
+[2024-04-19 16:26:21,996][root][INFO] - task 4 :(128, 1, 28, 28) (100, 1, 28, 28) (2163, 1, 28, 28)
+[2024-04-19 16:26:22,022][root][INFO] - task 5 :(128, 1, 28, 28) (100, 1, 28, 28) (1901, 1, 28, 28)
+[2024-04-19 16:26:22,046][root][INFO] - task 6 :(128, 1, 28, 28) (100, 1, 28, 28) (2012, 1, 28, 28)
+[2024-04-19 16:26:22,070][root][INFO] - task 7 :(128, 1, 28, 28) (100, 1, 28, 28) (2109, 1, 28, 28)
+[2024-04-19 16:26:22,092][root][INFO] - task 8 :(128, 1, 28, 28) (100, 1, 28, 28) (2014, 1, 28, 28)
+[2024-04-19 16:26:22,115][root][INFO] - task 9 :(128, 1, 28, 28) (100, 1, 28, 28) (2167, 1, 28, 28)
+[2024-04-19 16:26:28,005][root][INFO] - JOINT AGENT None
+[2024-04-19 16:27:23,421][root][INFO] - No. gpus per agent: 0.25
+[2024-04-19 16:27:27,351][root][INFO] - Created fleet with 8 agents
+[2024-04-19 16:27:27,352][root][INFO] - Adding neighbors...
+[2024-04-19 16:27:27,948][root][INFO] - Fleet initialized
+[2024-04-19 16:27:36,247][root][INFO] - task 4 comm at epoch 0
+[2024-04-19 16:27:37,045][root][INFO] - task 4 training from 0 to 5
+[2024-04-19 16:27:42,988][root][INFO] - task 4 comm at epoch 5
+[2024-04-19 16:27:44,078][root][INFO] - task 4 training from 5 to 10
+[2024-04-19 16:27:46,102][root][INFO] - task 4 comm at epoch 10
+[2024-04-19 16:27:46,593][root][INFO] - task 4 training from 10 to 15
+[2024-04-19 16:27:49,676][root][INFO] - task 4 comm at epoch 15
+[2024-04-19 16:27:50,803][root][INFO] - task 4 training from 15 to 20
+[2024-04-19 16:27:53,157][root][INFO] - task 4 comm at epoch 20
+[2024-04-19 16:27:53,844][root][INFO] - task 4 training from 20 to 25
+[2024-04-19 16:27:57,051][root][INFO] - task 4 comm at epoch 25
+[2024-04-19 16:27:58,010][root][INFO] - task 4 training from 25 to 30
+[2024-04-19 16:28:00,373][root][INFO] - task 4 comm at epoch 30
+[2024-04-19 16:28:01,183][root][INFO] - task 4 training from 30 to 35
+[2024-04-19 16:28:04,185][root][INFO] - task 4 comm at epoch 35
+[2024-04-19 16:28:04,984][root][INFO] - task 4 training from 35 to 40
+[2024-04-19 16:28:07,385][root][INFO] - task 4 comm at epoch 40
+[2024-04-19 16:28:08,328][root][INFO] - task 4 training from 40 to 45
+[2024-04-19 16:28:11,373][root][INFO] - task 4 comm at epoch 45
+[2024-04-19 16:28:12,156][root][INFO] - task 4 training from 45 to 50
+[2024-04-19 16:28:14,506][root][INFO] - task 4 comm at epoch 50
+[2024-04-19 16:28:15,484][root][INFO] - task 4 training from 50 to 55
+[2024-04-19 16:28:18,381][root][INFO] - task 4 comm at epoch 55
+[2024-04-19 16:28:19,184][root][INFO] - task 4 training from 55 to 60
+[2024-04-19 16:28:21,525][root][INFO] - task 4 comm at epoch 60
+[2024-04-19 16:28:22,558][root][INFO] - task 4 training from 60 to 65
+[2024-04-19 16:28:25,485][root][INFO] - task 4 comm at epoch 65
+[2024-04-19 16:28:26,366][root][INFO] - task 4 training from 65 to 70
+[2024-04-19 16:28:28,555][root][INFO] - task 4 comm at epoch 70
+[2024-04-19 16:28:29,560][root][INFO] - task 4 training from 70 to 75
+[2024-04-19 16:28:32,492][root][INFO] - task 4 comm at epoch 75
+[2024-04-19 16:28:33,381][root][INFO] - task 4 training from 75 to 80
+[2024-04-19 16:28:35,448][root][INFO] - task 4 comm at epoch 80
+[2024-04-19 16:28:36,389][root][INFO] - task 4 training from 80 to 85
+[2024-04-19 16:28:39,545][root][INFO] - task 4 comm at epoch 85
+[2024-04-19 16:28:40,513][root][INFO] - task 4 training from 85 to 90
+[2024-04-19 16:28:42,541][root][INFO] - task 4 comm at epoch 90
+[2024-04-19 16:28:43,349][root][INFO] - task 4 training from 90 to 95
+[2024-04-19 16:28:46,642][root][INFO] - task 4 comm at epoch 95
+[2024-04-19 16:28:47,587][root][INFO] - task 4 training from 95 to 100
+[2024-04-19 16:28:51,602][root][INFO] - task 5 comm at epoch 0
+[2024-04-19 16:28:52,740][root][INFO] - task 5 training from 0 to 5
+[2024-04-19 16:29:00,483][root][INFO] - task 5 comm at epoch 5
+[2024-04-19 16:29:01,640][root][INFO] - task 5 training from 5 to 10
+[2024-04-19 16:29:03,894][root][INFO] - task 5 comm at epoch 10
+[2024-04-19 16:29:04,796][root][INFO] - task 5 training from 10 to 15
+[2024-04-19 16:29:08,833][root][INFO] - task 5 comm at epoch 15
+[2024-04-19 16:29:10,038][root][INFO] - task 5 training from 15 to 20
+[2024-04-19 16:29:12,285][root][INFO] - task 5 comm at epoch 20
+[2024-04-19 16:29:13,000][root][INFO] - task 5 training from 20 to 25
+[2024-04-19 16:29:17,092][root][INFO] - task 5 comm at epoch 25
+[2024-04-19 16:29:18,046][root][INFO] - task 5 training from 25 to 30
+[2024-04-19 16:29:20,645][root][INFO] - task 5 comm at epoch 30
+[2024-04-19 16:29:21,339][root][INFO] - task 5 training from 30 to 35
+[2024-04-19 16:29:25,540][root][INFO] - task 5 comm at epoch 35
+[2024-04-19 16:29:26,461][root][INFO] - task 5 training from 35 to 40
+[2024-04-19 16:29:29,221][root][INFO] - task 5 comm at epoch 40
+[2024-04-19 16:29:30,004][root][INFO] - task 5 training from 40 to 45
+[2024-04-19 16:29:34,318][root][INFO] - task 5 comm at epoch 45
+[2024-04-19 16:29:35,380][root][INFO] - task 5 training from 45 to 50
+[2024-04-19 16:29:38,000][root][INFO] - task 5 comm at epoch 50
+[2024-04-19 16:29:38,820][root][INFO] - task 5 training from 50 to 55
+[2024-04-19 16:29:43,125][root][INFO] - task 5 comm at epoch 55
+[2024-04-19 16:29:44,182][root][INFO] - task 5 training from 55 to 60
+[2024-04-19 16:29:46,916][root][INFO] - task 5 comm at epoch 60
+[2024-04-19 16:29:47,624][root][INFO] - task 5 training from 60 to 65
+[2024-04-19 16:29:51,919][root][INFO] - task 5 comm at epoch 65
+[2024-04-19 16:29:52,832][root][INFO] - task 5 training from 65 to 70
+[2024-04-19 16:29:55,609][root][INFO] - task 5 comm at epoch 70
+[2024-04-19 16:29:56,443][root][INFO] - task 5 training from 70 to 75
+[2024-04-19 16:30:00,754][root][INFO] - task 5 comm at epoch 75
+[2024-04-19 16:30:01,609][root][INFO] - task 5 training from 75 to 80
+[2024-04-19 16:30:04,419][root][INFO] - task 5 comm at epoch 80
+[2024-04-19 16:30:05,209][root][INFO] - task 5 training from 80 to 85
+[2024-04-19 16:30:09,594][root][INFO] - task 5 comm at epoch 85
+[2024-04-19 16:30:10,433][root][INFO] - task 5 training from 85 to 90
+[2024-04-19 16:30:13,341][root][INFO] - task 5 comm at epoch 90
+[2024-04-19 16:30:14,121][root][INFO] - task 5 training from 90 to 95
+[2024-04-19 16:30:18,574][root][INFO] - task 5 comm at epoch 95
+[2024-04-19 16:30:19,426][root][INFO] - task 5 training from 95 to 100
+[2024-04-19 16:30:24,557][root][INFO] - task 6 comm at epoch 0
+[2024-04-19 16:30:25,637][root][INFO] - task 6 training from 0 to 5
+[2024-04-19 16:30:35,005][root][INFO] - task 6 comm at epoch 5
+[2024-04-19 16:30:35,834][root][INFO] - task 6 training from 5 to 10
+[2024-04-19 16:30:38,644][root][INFO] - task 6 comm at epoch 10
+[2024-04-19 16:30:39,279][root][INFO] - task 6 training from 10 to 15
+[2024-04-19 16:30:43,985][root][INFO] - task 6 comm at epoch 15
+[2024-04-19 16:30:45,163][root][INFO] - task 6 training from 15 to 20
+[2024-04-19 16:30:48,045][root][INFO] - task 6 comm at epoch 20
+[2024-04-19 16:30:48,911][root][INFO] - task 6 training from 20 to 25
+[2024-04-19 16:30:53,288][root][INFO] - task 6 comm at epoch 25
+[2024-04-19 16:30:54,541][root][INFO] - task 6 training from 25 to 30
+[2024-04-19 16:30:57,315][root][INFO] - task 6 comm at epoch 30
+[2024-04-19 16:30:58,314][root][INFO] - task 6 training from 30 to 35
+[2024-04-19 16:31:02,603][root][INFO] - task 6 comm at epoch 35
+[2024-04-19 16:31:03,735][root][INFO] - task 6 training from 35 to 40
+[2024-04-19 16:31:06,502][root][INFO] - task 6 comm at epoch 40
+[2024-04-19 16:31:07,572][root][INFO] - task 6 training from 40 to 45
+[2024-04-19 16:31:11,802][root][INFO] - task 6 comm at epoch 45
+[2024-04-19 16:31:12,998][root][INFO] - task 6 training from 45 to 50
+[2024-04-19 16:31:16,032][root][INFO] - task 6 comm at epoch 50
+[2024-04-19 16:31:17,057][root][INFO] - task 6 training from 50 to 55
+[2024-04-19 16:31:21,229][root][INFO] - task 6 comm at epoch 55
+[2024-04-19 16:31:22,330][root][INFO] - task 6 training from 55 to 60
+[2024-04-19 16:31:25,515][root][INFO] - task 6 comm at epoch 60
+[2024-04-19 16:31:26,675][root][INFO] - task 6 training from 60 to 65
+[2024-04-19 16:31:30,853][root][INFO] - task 6 comm at epoch 65
+[2024-04-19 16:31:31,993][root][INFO] - task 6 training from 65 to 70
+[2024-04-19 16:31:35,470][root][INFO] - task 6 comm at epoch 70
+[2024-04-19 16:31:36,777][root][INFO] - task 6 training from 70 to 75
+[2024-04-19 16:31:44,946][root][INFO] - task 6 comm at epoch 75
+[2024-04-19 16:31:46,641][root][INFO] - task 6 training from 75 to 80
+[2024-04-19 16:31:48,842][root][INFO] - task 6 comm at epoch 80
+[2024-04-19 16:31:49,874][root][INFO] - task 6 training from 80 to 85
+[2024-04-19 16:31:59,498][root][INFO] - task 6 comm at epoch 85
+[2024-04-19 16:32:00,645][root][INFO] - task 6 training from 85 to 90
+[2024-04-19 16:32:03,296][root][INFO] - task 6 comm at epoch 90
+[2024-04-19 16:32:04,513][root][INFO] - task 6 training from 90 to 95
+[2024-04-19 16:32:09,767][root][INFO] - task 6 comm at epoch 95
+[2024-04-19 16:32:10,938][root][INFO] - task 6 training from 95 to 100
+[2024-04-19 16:32:22,398][root][INFO] - task 7 comm at epoch 0
+[2024-04-19 16:32:24,142][root][INFO] - task 7 training from 0 to 5
+[2024-04-19 16:32:39,009][root][INFO] - task 7 comm at epoch 5
+[2024-04-19 16:32:39,591][root][INFO] - task 7 training from 5 to 10
+[2024-04-19 16:32:42,177][root][INFO] - task 7 comm at epoch 10
+[2024-04-19 16:32:43,655][root][INFO] - task 7 training from 10 to 15
+[2024-04-19 16:32:49,611][root][INFO] - task 7 comm at epoch 15
+[2024-04-19 16:32:50,987][root][INFO] - task 7 training from 15 to 20
+[2024-04-19 16:32:54,178][root][INFO] - task 7 comm at epoch 20
+[2024-04-19 16:32:55,725][root][INFO] - task 7 training from 20 to 25
+[2024-04-19 16:33:01,227][root][INFO] - task 7 comm at epoch 25
+[2024-04-19 16:33:02,620][root][INFO] - task 7 training from 25 to 30
+[2024-04-19 16:33:05,814][root][INFO] - task 7 comm at epoch 30
+[2024-04-19 16:33:07,188][root][INFO] - task 7 training from 30 to 35
+[2024-04-19 16:33:12,734][root][INFO] - task 7 comm at epoch 35
+[2024-04-19 16:33:13,907][root][INFO] - task 7 training from 35 to 40
+[2024-04-19 16:33:17,279][root][INFO] - task 7 comm at epoch 40
+[2024-04-19 16:33:18,856][root][INFO] - task 7 training from 40 to 45
+[2024-04-19 16:33:24,571][root][INFO] - task 7 comm at epoch 45
+[2024-04-19 16:33:25,903][root][INFO] - task 7 training from 45 to 50
+[2024-04-19 16:33:29,288][root][INFO] - task 7 comm at epoch 50
+[2024-04-19 16:33:30,375][root][INFO] - task 7 training from 50 to 55
+[2024-04-19 16:33:35,978][root][INFO] - task 7 comm at epoch 55
+[2024-04-19 16:33:36,908][root][INFO] - task 7 training from 55 to 60
+[2024-04-19 16:33:40,608][root][INFO] - task 7 comm at epoch 60
+[2024-04-19 16:33:41,957][root][INFO] - task 7 training from 60 to 65
+[2024-04-19 16:33:48,058][root][INFO] - task 7 comm at epoch 65
+[2024-04-19 16:33:49,002][root][INFO] - task 7 training from 65 to 70
+[2024-04-19 16:33:52,897][root][INFO] - task 7 comm at epoch 70
+[2024-04-19 16:33:53,909][root][INFO] - task 7 training from 70 to 75
+[2024-04-19 16:33:59,836][root][INFO] - task 7 comm at epoch 75
+[2024-04-19 16:34:00,776][root][INFO] - task 7 training from 75 to 80
+[2024-04-19 16:34:04,543][root][INFO] - task 7 comm at epoch 80
+[2024-04-19 16:34:05,626][root][INFO] - task 7 training from 80 to 85
+[2024-04-19 16:34:11,704][root][INFO] - task 7 comm at epoch 85
+[2024-04-19 16:34:12,543][root][INFO] - task 7 training from 85 to 90
+[2024-04-19 16:34:16,427][root][INFO] - task 7 comm at epoch 90
+[2024-04-19 16:34:17,592][root][INFO] - task 7 training from 90 to 95
+[2024-04-19 16:34:23,742][root][INFO] - task 7 comm at epoch 95
+[2024-04-19 16:34:24,611][root][INFO] - task 7 training from 95 to 100
+[2024-04-19 16:34:31,562][root][INFO] - task 8 comm at epoch 0
+[2024-04-19 16:34:32,732][root][INFO] - task 8 training from 0 to 5
+[2024-04-19 16:34:44,737][root][INFO] - task 8 comm at epoch 5
+[2024-04-19 16:34:45,572][root][INFO] - task 8 training from 5 to 10
+[2024-04-19 16:34:49,773][root][INFO] - task 8 comm at epoch 10
+[2024-04-19 16:34:50,432][root][INFO] - task 8 training from 10 to 15
+[2024-04-19 16:34:57,083][root][INFO] - task 8 comm at epoch 15
+[2024-04-19 16:34:57,848][root][INFO] - task 8 training from 15 to 20
+[2024-04-19 16:35:02,085][root][INFO] - task 8 comm at epoch 20
+[2024-04-19 16:35:03,016][root][INFO] - task 8 training from 20 to 25
+[2024-04-19 16:35:09,713][root][INFO] - task 8 comm at epoch 25
+[2024-04-19 16:35:10,543][root][INFO] - task 8 training from 25 to 30
+[2024-04-19 16:35:14,858][root][INFO] - task 8 comm at epoch 30
+[2024-04-19 16:35:15,964][root][INFO] - task 8 training from 30 to 35
+[2024-04-19 16:35:22,637][root][INFO] - task 8 comm at epoch 35
+[2024-04-19 16:35:23,455][root][INFO] - task 8 training from 35 to 40
+[2024-04-19 16:35:27,765][root][INFO] - task 8 comm at epoch 40
+[2024-04-19 16:35:28,876][root][INFO] - task 8 training from 40 to 45
+[2024-04-19 16:35:35,413][root][INFO] - task 8 comm at epoch 45
+[2024-04-19 16:35:36,282][root][INFO] - task 8 training from 45 to 50
+[2024-04-19 16:35:40,328][root][INFO] - task 8 comm at epoch 50
+[2024-04-19 16:35:41,613][root][INFO] - task 8 training from 50 to 55
+[2024-04-19 16:35:48,181][root][INFO] - task 8 comm at epoch 55
+[2024-04-19 16:35:49,065][root][INFO] - task 8 training from 55 to 60
+[2024-04-19 16:35:53,181][root][INFO] - task 8 comm at epoch 60
+[2024-04-19 16:35:54,463][root][INFO] - task 8 training from 60 to 65
+[2024-04-19 16:36:01,088][root][INFO] - task 8 comm at epoch 65
+[2024-04-19 16:36:01,962][root][INFO] - task 8 training from 65 to 70
+[2024-04-19 16:36:06,329][root][INFO] - task 8 comm at epoch 70
+[2024-04-19 16:36:07,582][root][INFO] - task 8 training from 70 to 75
+[2024-04-19 16:36:14,283][root][INFO] - task 8 comm at epoch 75
+[2024-04-19 16:36:15,165][root][INFO] - task 8 training from 75 to 80
+[2024-04-19 16:36:19,492][root][INFO] - task 8 comm at epoch 80
+[2024-04-19 16:36:20,550][root][INFO] - task 8 training from 80 to 85
+[2024-04-19 16:36:28,114][root][INFO] - task 8 comm at epoch 85
+[2024-04-19 16:36:29,007][root][INFO] - task 8 training from 85 to 90
+[2024-04-19 16:36:33,292][root][INFO] - task 8 comm at epoch 90
+[2024-04-19 16:36:34,456][root][INFO] - task 8 training from 90 to 95
+[2024-04-19 16:36:41,252][root][INFO] - task 8 comm at epoch 95
+[2024-04-19 16:36:42,163][root][INFO] - task 8 training from 95 to 100
+[2024-04-19 16:36:49,807][root][INFO] - task 9 comm at epoch 0
+[2024-04-19 16:36:51,012][root][INFO] - task 9 training from 0 to 5
+[2024-04-19 16:37:05,291][root][INFO] - task 9 comm at epoch 5
+[2024-04-19 16:37:06,129][root][INFO] - task 9 training from 5 to 10
+[2024-04-19 16:37:11,307][root][INFO] - task 9 comm at epoch 10
+[2024-04-19 16:37:12,063][root][INFO] - task 9 training from 10 to 15
+[2024-04-19 16:37:20,131][root][INFO] - task 9 comm at epoch 15
+[2024-04-19 16:37:20,989][root][INFO] - task 9 training from 15 to 20
+[2024-04-19 16:37:26,254][root][INFO] - task 9 comm at epoch 20
+[2024-04-19 16:37:27,082][root][INFO] - task 9 training from 20 to 25
+[2024-04-19 16:37:34,977][root][INFO] - task 9 comm at epoch 25
+[2024-04-19 16:37:35,822][root][INFO] - task 9 training from 25 to 30
+[2024-04-19 16:37:41,071][root][INFO] - task 9 comm at epoch 30
+[2024-04-19 16:37:41,890][root][INFO] - task 9 training from 30 to 35
+[2024-04-19 16:37:49,927][root][INFO] - task 9 comm at epoch 35
+[2024-04-19 16:37:50,770][root][INFO] - task 9 training from 35 to 40
+[2024-04-19 16:37:56,112][root][INFO] - task 9 comm at epoch 40
+[2024-04-19 16:37:57,080][root][INFO] - task 9 training from 40 to 45
+[2024-04-19 16:38:05,132][root][INFO] - task 9 comm at epoch 45
+[2024-04-19 16:38:06,027][root][INFO] - task 9 training from 45 to 50
+[2024-04-19 16:38:11,255][root][INFO] - task 9 comm at epoch 50
+[2024-04-19 16:38:12,510][root][INFO] - task 9 training from 50 to 55
+[2024-04-19 16:38:20,505][root][INFO] - task 9 comm at epoch 55
+[2024-04-19 16:38:21,484][root][INFO] - task 9 training from 55 to 60
+[2024-04-19 16:38:26,776][root][INFO] - task 9 comm at epoch 60
+[2024-04-19 16:38:27,986][root][INFO] - task 9 training from 60 to 65
+[2024-04-19 16:38:35,977][root][INFO] - task 9 comm at epoch 65
+[2024-04-19 16:38:36,884][root][INFO] - task 9 training from 65 to 70
+[2024-04-19 16:38:42,125][root][INFO] - task 9 comm at epoch 70
+[2024-04-19 16:38:43,365][root][INFO] - task 9 training from 70 to 75
+[2024-04-19 16:38:51,438][root][INFO] - task 9 comm at epoch 75
+[2024-04-19 16:38:52,348][root][INFO] - task 9 training from 75 to 80
+[2024-04-19 16:38:57,633][root][INFO] - task 9 comm at epoch 80
+[2024-04-19 16:38:58,887][root][INFO] - task 9 training from 80 to 85
+[2024-04-19 16:39:06,825][root][INFO] - task 9 comm at epoch 85
+[2024-04-19 16:39:07,701][root][INFO] - task 9 training from 85 to 90
+[2024-04-19 16:39:13,024][root][INFO] - task 9 comm at epoch 90
+[2024-04-19 16:39:14,160][root][INFO] - task 9 training from 90 to 95
+[2024-04-19 16:39:22,248][root][INFO] - task 9 comm at epoch 95
+[2024-04-19 16:39:23,099][root][INFO] - task 9 training from 95 to 100
+[2024-04-19 16:39:32,018][root][INFO] - Run took 0:13:13.619622

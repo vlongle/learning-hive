@@ -12,3 +12,4 @@ src/shell/datasets/*/
 **engineering/
 **slurm**
 *more_fl
+*modular_backward_cifar_heuristic_results_small_mem_32

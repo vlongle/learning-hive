@@ -66,10 +66,15 @@ class Learner():
         self.mu = self.global_model = None
 
         self.use_aux = False
-        if fl_strategy is not None:
+        if fl_strategy == 'fedprox':
             self.global_model = None
             self.mu = mu
             self.use_aux = True
+        elif fl_strategy == 'fedcurv':
+            self.incoming_models = None
+            self.mu = mu
+            self.use_aux = True
+            self.incoming_fishers = None
 
     def change_save_dir(self, save_dir):
         self.save_dir = create_dir_if_not_exist(save_dir)
@@ -141,12 +146,30 @@ class Learner():
         ce = self.ce_loss(Y_hat, Y)
         return ce
 
+    def compute_fedcurv_loss(self):
+        loss = 0.0
+        for neighbor_id, model in self.incoming_models.items():
+            fisher = self.fisher[neighbor_id]
+            loss += self.compute_ewc_loss(fisher, model)
+        return loss
+
+    def compute_ewc_loss(self, fisher, model):
+        loss = 0.0
+        for n, p in self.net.named_parameters():
+            if n not in fisher:
+                continue
+            _loss = fisher[n] * (p - model[n]) ** 2
+            loss += _loss.sum()
+        return loss
+
     def compute_auxillary_loss(self, X, Y, task_id):
         loss = 0.
         if self.fl_strategy is not None:
             if self.fl_strategy == "fedprox":
                 loss += compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model,
                                                  mu=self.mu)
+            elif self.fl_strategy == "fedcurv":
+                loss += self.mu * self.compute_fedcurv_loss()
             else:
                 raise NotImplementedError(
                     "FL strategy %s not implemented" % self.fl_strategy)

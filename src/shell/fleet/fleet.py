@@ -120,6 +120,9 @@ class Agent:
     def set_fl_strategy(self, fl_strategy):
         self.agent.fl_strategy = fl_strategy
 
+    def get_fl_strategy(self):
+        return self.agent.fl_strategy
+
     def add_neighbors(self, neighbors: Iterable[ray.actor.ActorHandle]):
         self.neighbors = neighbors
 

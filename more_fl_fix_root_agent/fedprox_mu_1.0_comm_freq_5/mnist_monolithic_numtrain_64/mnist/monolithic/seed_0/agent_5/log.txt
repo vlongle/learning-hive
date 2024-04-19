@@ -1,0 +1,805 @@
+INFO:root:Agent: node_id: 5, seed: 5000
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 0, training task: 4
+INFO:root:	task: 0	loss: 0.26789863	acc: 0.939
+INFO:root:	task: 1	loss: 0.19601235	acc: 0.944
+INFO:root:	task: 2	loss: 0.29115671	acc: 0.910
+INFO:root:	task: 3	loss: 0.22514950	acc: 0.957
+INFO:root:	task: 4	loss: 1.38716824	acc: 0.502
+INFO:root:	task: avg	loss: 0.47347708	acc: 0.850
+INFO:root:epochs: 1, training task: 4
+INFO:root:	task: 0	loss: 0.34565372	acc: 0.917
+INFO:root:	task: 1	loss: 0.21313366	acc: 0.941
+INFO:root:	task: 2	loss: 0.27607334	acc: 0.911
+INFO:root:	task: 3	loss: 0.21836451	acc: 0.948
+INFO:root:	task: 4	loss: 0.89636636	acc: 0.500
+INFO:root:	task: avg	loss: 0.38991832	acc: 0.844
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 11, training task: 4
+INFO:root:	task: 0	loss: 0.17695761	acc: 0.944
+INFO:root:	task: 1	loss: 0.17107053	acc: 0.943
+INFO:root:	task: 2	loss: 0.24810700	acc: 0.910
+INFO:root:	task: 3	loss: 0.17210189	acc: 0.955
+INFO:root:	task: 4	loss: 0.67540460	acc: 0.520
+INFO:root:	task: avg	loss: 0.28872833	acc: 0.855
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 21, training task: 4
+INFO:root:	task: 0	loss: 0.15543584	acc: 0.950
+INFO:root:	task: 1	loss: 0.18049694	acc: 0.938
+INFO:root:	task: 2	loss: 0.24534953	acc: 0.911
+INFO:root:	task: 3	loss: 0.17009506	acc: 0.958
+INFO:root:	task: 4	loss: 0.67643411	acc: 0.522
+INFO:root:	task: avg	loss: 0.28556230	acc: 0.856
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 31, training task: 4
+INFO:root:	task: 0	loss: 0.14637441	acc: 0.953
+INFO:root:	task: 1	loss: 0.18461172	acc: 0.936
+INFO:root:	task: 2	loss: 0.24878309	acc: 0.910
+INFO:root:	task: 3	loss: 0.17362698	acc: 0.957
+INFO:root:	task: 4	loss: 0.63896339	acc: 0.546
+INFO:root:	task: avg	loss: 0.27847192	acc: 0.860
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 41, training task: 4
+INFO:root:	task: 0	loss: 0.13533737	acc: 0.956
+INFO:root:	task: 1	loss: 0.19507286	acc: 0.936
+INFO:root:	task: 2	loss: 0.26005688	acc: 0.910
+INFO:root:	task: 3	loss: 0.17936218	acc: 0.957
+INFO:root:	task: 4	loss: 0.63915922	acc: 0.541
+INFO:root:	task: avg	loss: 0.28179770	acc: 0.860
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 51, training task: 4
+INFO:root:	task: 0	loss: 0.13532492	acc: 0.958
+INFO:root:	task: 1	loss: 0.20370876	acc: 0.934
+INFO:root:	task: 2	loss: 0.25261934	acc: 0.911
+INFO:root:	task: 3	loss: 0.17439411	acc: 0.957
+INFO:root:	task: 4	loss: 0.64178765	acc: 0.539
+INFO:root:	task: avg	loss: 0.28156695	acc: 0.860
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 61, training task: 4
+INFO:root:	task: 0	loss: 0.12230456	acc: 0.962
+INFO:root:	task: 1	loss: 0.21951263	acc: 0.929
+INFO:root:	task: 2	loss: 0.25177701	acc: 0.911
+INFO:root:	task: 3	loss: 0.17299235	acc: 0.958
+INFO:root:	task: 4	loss: 0.64473524	acc: 0.538
+INFO:root:	task: avg	loss: 0.28226436	acc: 0.860
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 71, training task: 4
+INFO:root:	task: 0	loss: 0.11445842	acc: 0.964
+INFO:root:	task: 1	loss: 0.22672855	acc: 0.926
+INFO:root:	task: 2	loss: 0.27196040	acc: 0.903
+INFO:root:	task: 3	loss: 0.17838383	acc: 0.958
+INFO:root:	task: 4	loss: 0.63753073	acc: 0.544
+INFO:root:	task: avg	loss: 0.28581238	acc: 0.859
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 81, training task: 4
+INFO:root:	task: 0	loss: 0.11730080	acc: 0.965
+INFO:root:	task: 1	loss: 0.23167018	acc: 0.927
+INFO:root:	task: 2	loss: 0.26902233	acc: 0.905
+INFO:root:	task: 3	loss: 0.17914485	acc: 0.957
+INFO:root:	task: 4	loss: 0.63682116	acc: 0.546
+INFO:root:	task: avg	loss: 0.28679186	acc: 0.860
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 91, training task: 4
+INFO:root:	task: 0	loss: 0.11732429	acc: 0.965
+INFO:root:	task: 1	loss: 0.22568146	acc: 0.928
+INFO:root:	task: 2	loss: 0.28511277	acc: 0.901
+INFO:root:	task: 3	loss: 0.18222482	acc: 0.956
+INFO:root:	task: 4	loss: 0.62006943	acc: 0.582
+INFO:root:	task: avg	loss: 0.28608255	acc: 0.866
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 101, training task: 4
+INFO:root:	task: 0	loss: 0.14159990	acc: 0.960
+INFO:root:	task: 1	loss: 0.20840043	acc: 0.937
+INFO:root:	task: 2	loss: 0.27155424	acc: 0.905
+INFO:root:	task: 3	loss: 0.18626531	acc: 0.955
+INFO:root:	task: 4	loss: 0.59961140	acc: 0.634
+INFO:root:	task: avg	loss: 0.28148626	acc: 0.878
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 0, training task: 5
+INFO:root:	task: 0	loss: 0.10661768	acc: 0.968
+INFO:root:	task: 1	loss: 0.25524407	acc: 0.919
+INFO:root:	task: 2	loss: 0.28671907	acc: 0.903
+INFO:root:	task: 3	loss: 0.18082430	acc: 0.959
+INFO:root:	task: 4	loss: 0.62879655	acc: 0.561
+INFO:root:	task: 5	loss: 0.65964693	acc: 0.495
+INFO:root:	task: avg	loss: 0.35297477	acc: 0.801
+INFO:root:epochs: 1, training task: 5
+INFO:root:	task: 0	loss: 0.11758571	acc: 0.966
+INFO:root:	task: 1	loss: 0.23881447	acc: 0.924
+INFO:root:	task: 2	loss: 0.26737425	acc: 0.906
+INFO:root:	task: 3	loss: 0.17321553	acc: 0.958
+INFO:root:	task: 4	loss: 0.62565834	acc: 0.569
+INFO:root:	task: 5	loss: 0.43060852	acc: 0.852
+INFO:root:	task: avg	loss: 0.30887614	acc: 0.862
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 11, training task: 5
+INFO:root:	task: 0	loss: 0.12376473	acc: 0.967
+INFO:root:	task: 1	loss: 0.24196385	acc: 0.928
+INFO:root:	task: 2	loss: 0.27737882	acc: 0.904
+INFO:root:	task: 3	loss: 0.16780172	acc: 0.960
+INFO:root:	task: 4	loss: 0.62945584	acc: 0.604
+INFO:root:	task: 5	loss: 0.29688477	acc: 0.877
+INFO:root:	task: avg	loss: 0.28954162	acc: 0.873
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 21, training task: 5
+INFO:root:	task: 0	loss: 0.08960857	acc: 0.972
+INFO:root:	task: 1	loss: 0.27053331	acc: 0.913
+INFO:root:	task: 2	loss: 0.27561710	acc: 0.904
+INFO:root:	task: 3	loss: 0.16812971	acc: 0.957
+INFO:root:	task: 4	loss: 0.63540050	acc: 0.566
+INFO:root:	task: 5	loss: 0.28501503	acc: 0.883
+INFO:root:	task: avg	loss: 0.28738404	acc: 0.866
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 31, training task: 5
+INFO:root:	task: 0	loss: 0.09008772	acc: 0.975
+INFO:root:	task: 1	loss: 0.26397993	acc: 0.920
+INFO:root:	task: 2	loss: 0.27199204	acc: 0.909
+INFO:root:	task: 3	loss: 0.16487390	acc: 0.959
+INFO:root:	task: 4	loss: 0.63785978	acc: 0.569
+INFO:root:	task: 5	loss: 0.28210762	acc: 0.878
+INFO:root:	task: avg	loss: 0.28515016	acc: 0.868
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 41, training task: 5
+INFO:root:	task: 0	loss: 0.08168961	acc: 0.975
+INFO:root:	task: 1	loss: 0.27223478	acc: 0.916
+INFO:root:	task: 2	loss: 0.27209871	acc: 0.909
+INFO:root:	task: 3	loss: 0.16552235	acc: 0.960
+INFO:root:	task: 4	loss: 0.63561522	acc: 0.599
+INFO:root:	task: 5	loss: 0.27125703	acc: 0.885
+INFO:root:	task: avg	loss: 0.28306962	acc: 0.874
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 51, training task: 5
+INFO:root:	task: 0	loss: 0.09082804	acc: 0.974
+INFO:root:	task: 1	loss: 0.25801460	acc: 0.925
+INFO:root:	task: 2	loss: 0.27267649	acc: 0.908
+INFO:root:	task: 3	loss: 0.16205932	acc: 0.961
+INFO:root:	task: 4	loss: 0.63818465	acc: 0.594
+INFO:root:	task: 5	loss: 0.26963056	acc: 0.886
+INFO:root:	task: avg	loss: 0.28189894	acc: 0.875
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 61, training task: 5
+INFO:root:	task: 0	loss: 0.07798279	acc: 0.975
+INFO:root:	task: 1	loss: 0.27231972	acc: 0.915
+INFO:root:	task: 2	loss: 0.27689778	acc: 0.907
+INFO:root:	task: 3	loss: 0.16383164	acc: 0.961
+INFO:root:	task: 4	loss: 0.63885452	acc: 0.647
+INFO:root:	task: 5	loss: 0.25838532	acc: 0.891
+INFO:root:	task: avg	loss: 0.28137863	acc: 0.883
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 71, training task: 5
+INFO:root:	task: 0	loss: 0.08704055	acc: 0.975
+INFO:root:	task: 1	loss: 0.26402166	acc: 0.921
+INFO:root:	task: 2	loss: 0.27830619	acc: 0.909
+INFO:root:	task: 3	loss: 0.15869924	acc: 0.961
+INFO:root:	task: 4	loss: 0.64253609	acc: 0.602
+INFO:root:	task: 5	loss: 0.24943788	acc: 0.894
+INFO:root:	task: avg	loss: 0.28000693	acc: 0.877
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 81, training task: 5
+INFO:root:	task: 0	loss: 0.08346934	acc: 0.976
+INFO:root:	task: 1	loss: 0.25830715	acc: 0.923
+INFO:root:	task: 2	loss: 0.27778778	acc: 0.910
+INFO:root:	task: 3	loss: 0.15651523	acc: 0.961
+INFO:root:	task: 4	loss: 0.64244094	acc: 0.586
+INFO:root:	task: 5	loss: 0.24813241	acc: 0.897
+INFO:root:	task: avg	loss: 0.27777547	acc: 0.875
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 91, training task: 5
+INFO:root:	task: 0	loss: 0.07646920	acc: 0.977
+INFO:root:	task: 1	loss: 0.25930437	acc: 0.921
+INFO:root:	task: 2	loss: 0.27217569	acc: 0.910
+INFO:root:	task: 3	loss: 0.15589524	acc: 0.960
+INFO:root:	task: 4	loss: 0.64354382	acc: 0.654
+INFO:root:	task: 5	loss: 0.24501993	acc: 0.896
+INFO:root:	task: avg	loss: 0.27540138	acc: 0.886
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 101, training task: 5
+INFO:root:	task: 0	loss: 0.09290336	acc: 0.973
+INFO:root:	task: 1	loss: 0.24891469	acc: 0.928
+INFO:root:	task: 2	loss: 0.28321858	acc: 0.910
+INFO:root:	task: 3	loss: 0.16254698	acc: 0.958
+INFO:root:	task: 4	loss: 0.64691847	acc: 0.581
+INFO:root:	task: 5	loss: 0.22881916	acc: 0.909
+INFO:root:	task: avg	loss: 0.27722021	acc: 0.876
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 0, training task: 6
+INFO:root:	task: 0	loss: 0.07450358	acc: 0.977
+INFO:root:	task: 1	loss: 0.26491426	acc: 0.917
+INFO:root:	task: 2	loss: 0.27493873	acc: 0.911
+INFO:root:	task: 3	loss: 0.15738909	acc: 0.961
+INFO:root:	task: 4	loss: 0.64625825	acc: 0.571
+INFO:root:	task: 5	loss: 0.24521946	acc: 0.900
+INFO:root:	task: 6	loss: 0.55955369	acc: 0.861
+INFO:root:	task: avg	loss: 0.31753958	acc: 0.871
+INFO:root:epochs: 1, training task: 6
+INFO:root:	task: 0	loss: 0.08017621	acc: 0.977
+INFO:root:	task: 1	loss: 0.25696799	acc: 0.921
+INFO:root:	task: 2	loss: 0.27456636	acc: 0.911
+INFO:root:	task: 3	loss: 0.15746373	acc: 0.960
+INFO:root:	task: 4	loss: 0.64303709	acc: 0.598
+INFO:root:	task: 5	loss: 0.24116462	acc: 0.903
+INFO:root:	task: 6	loss: 0.24893603	acc: 0.930
+INFO:root:	task: avg	loss: 0.27175886	acc: 0.886
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 11, training task: 6
+INFO:root:	task: 0	loss: 0.09025457	acc: 0.973
+INFO:root:	task: 1	loss: 0.25004922	acc: 0.926
+INFO:root:	task: 2	loss: 0.27214666	acc: 0.911
+INFO:root:	task: 3	loss: 0.14961042	acc: 0.959
+INFO:root:	task: 4	loss: 0.64779693	acc: 0.560
+INFO:root:	task: 5	loss: 0.23876465	acc: 0.903
+INFO:root:	task: 6	loss: 0.19169755	acc: 0.943
+INFO:root:	task: avg	loss: 0.26290286	acc: 0.882
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 21, training task: 6
+INFO:root:	task: 0	loss: 0.07986042	acc: 0.975
+INFO:root:	task: 1	loss: 0.24040204	acc: 0.925
+INFO:root:	task: 2	loss: 0.27311177	acc: 0.913
+INFO:root:	task: 3	loss: 0.14926539	acc: 0.960
+INFO:root:	task: 4	loss: 0.64599022	acc: 0.568
+INFO:root:	task: 5	loss: 0.23388993	acc: 0.908
+INFO:root:	task: 6	loss: 0.18501731	acc: 0.942
+INFO:root:	task: avg	loss: 0.25821958	acc: 0.885
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 31, training task: 6
+INFO:root:	task: 0	loss: 0.07637765	acc: 0.975
+INFO:root:	task: 1	loss: 0.24191820	acc: 0.926
+INFO:root:	task: 2	loss: 0.27688338	acc: 0.914
+INFO:root:	task: 3	loss: 0.14777114	acc: 0.962
+INFO:root:	task: 4	loss: 0.65001508	acc: 0.554
+INFO:root:	task: 5	loss: 0.23014094	acc: 0.909
+INFO:root:	task: 6	loss: 0.18308257	acc: 0.945
+INFO:root:	task: avg	loss: 0.25802699	acc: 0.884
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 41, training task: 6
+INFO:root:	task: 0	loss: 0.06650758	acc: 0.979
+INFO:root:	task: 1	loss: 0.24185177	acc: 0.921
+INFO:root:	task: 2	loss: 0.27969048	acc: 0.910
+INFO:root:	task: 3	loss: 0.14687119	acc: 0.963
+INFO:root:	task: 4	loss: 0.64577558	acc: 0.572
+INFO:root:	task: 5	loss: 0.22457983	acc: 0.910
+INFO:root:	task: 6	loss: 0.17774127	acc: 0.945
+INFO:root:	task: avg	loss: 0.25471681	acc: 0.886
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 51, training task: 6
+INFO:root:	task: 0	loss: 0.07222060	acc: 0.978
+INFO:root:	task: 1	loss: 0.23657101	acc: 0.928
+INFO:root:	task: 2	loss: 0.28130429	acc: 0.912
+INFO:root:	task: 3	loss: 0.15081645	acc: 0.961
+INFO:root:	task: 4	loss: 0.64600139	acc: 0.567
+INFO:root:	task: 5	loss: 0.22380704	acc: 0.913
+INFO:root:	task: 6	loss: 0.18090164	acc: 0.948
+INFO:root:	task: avg	loss: 0.25594606	acc: 0.887
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 61, training task: 6
+INFO:root:	task: 0	loss: 0.06484079	acc: 0.980
+INFO:root:	task: 1	loss: 0.24734725	acc: 0.918
+INFO:root:	task: 2	loss: 0.28826394	acc: 0.906
+INFO:root:	task: 3	loss: 0.15023858	acc: 0.961
+INFO:root:	task: 4	loss: 0.65264742	acc: 0.544
+INFO:root:	task: 5	loss: 0.22938940	acc: 0.913
+INFO:root:	task: 6	loss: 0.18261418	acc: 0.944
+INFO:root:	task: avg	loss: 0.25933451	acc: 0.881
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 71, training task: 6
+INFO:root:	task: 0	loss: 0.06029369	acc: 0.981
+INFO:root:	task: 1	loss: 0.24695900	acc: 0.916
+INFO:root:	task: 2	loss: 0.29050646	acc: 0.910
+INFO:root:	task: 3	loss: 0.15547687	acc: 0.962
+INFO:root:	task: 4	loss: 0.64833551	acc: 0.556
+INFO:root:	task: 5	loss: 0.22005755	acc: 0.914
+INFO:root:	task: 6	loss: 0.18107795	acc: 0.946
+INFO:root:	task: avg	loss: 0.25752958	acc: 0.883
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 81, training task: 6
+INFO:root:	task: 0	loss: 0.07339595	acc: 0.978
+INFO:root:	task: 1	loss: 0.23176294	acc: 0.925
+INFO:root:	task: 2	loss: 0.29983019	acc: 0.905
+INFO:root:	task: 3	loss: 0.15161980	acc: 0.961
+INFO:root:	task: 4	loss: 0.64622266	acc: 0.570
+INFO:root:	task: 5	loss: 0.22765628	acc: 0.916
+INFO:root:	task: 6	loss: 0.18010132	acc: 0.948
+INFO:root:	task: avg	loss: 0.25865559	acc: 0.886
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 91, training task: 6
+INFO:root:	task: 0	loss: 0.06241000	acc: 0.981
+INFO:root:	task: 1	loss: 0.23385752	acc: 0.920
+INFO:root:	task: 2	loss: 0.30105486	acc: 0.908
+INFO:root:	task: 3	loss: 0.15868721	acc: 0.960
+INFO:root:	task: 4	loss: 0.64542851	acc: 0.565
+INFO:root:	task: 5	loss: 0.21689212	acc: 0.916
+INFO:root:	task: 6	loss: 0.17737767	acc: 0.949
+INFO:root:	task: avg	loss: 0.25652970	acc: 0.885
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 101, training task: 6
+INFO:root:	task: 0	loss: 0.07577430	acc: 0.978
+INFO:root:	task: 1	loss: 0.23938723	acc: 0.924
+INFO:root:	task: 2	loss: 0.31409881	acc: 0.905
+INFO:root:	task: 3	loss: 0.14647384	acc: 0.962
+INFO:root:	task: 4	loss: 0.65676041	acc: 0.533
+INFO:root:	task: 5	loss: 0.23951406	acc: 0.912
+INFO:root:	task: 6	loss: 0.17446589	acc: 0.953
+INFO:root:	task: avg	loss: 0.26378208	acc: 0.881
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 0, training task: 7
+INFO:root:	task: 0	loss: 0.05685607	acc: 0.981
+INFO:root:	task: 1	loss: 0.24539156	acc: 0.908
+INFO:root:	task: 2	loss: 0.30222980	acc: 0.907
+INFO:root:	task: 3	loss: 0.16118287	acc: 0.960
+INFO:root:	task: 4	loss: 0.64701970	acc: 0.554
+INFO:root:	task: 5	loss: 0.21693099	acc: 0.918
+INFO:root:	task: 6	loss: 0.18386815	acc: 0.945
+INFO:root:	task: 7	loss: 0.79764018	acc: 0.494
+INFO:root:	task: avg	loss: 0.32638992	acc: 0.833
+INFO:root:epochs: 1, training task: 7
+INFO:root:	task: 0	loss: 0.05526517	acc: 0.982
+INFO:root:	task: 1	loss: 0.24608497	acc: 0.908
+INFO:root:	task: 2	loss: 0.29984229	acc: 0.907
+INFO:root:	task: 3	loss: 0.15790568	acc: 0.961
+INFO:root:	task: 4	loss: 0.64639414	acc: 0.558
+INFO:root:	task: 5	loss: 0.21826924	acc: 0.920
+INFO:root:	task: 6	loss: 0.18038348	acc: 0.946
+INFO:root:	task: 7	loss: 0.56109962	acc: 0.679
+INFO:root:	task: avg	loss: 0.29565557	acc: 0.857
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 11, training task: 7
+INFO:root:	task: 0	loss: 0.06526291	acc: 0.979
+INFO:root:	task: 1	loss: 0.22217757	acc: 0.925
+INFO:root:	task: 2	loss: 0.31165176	acc: 0.901
+INFO:root:	task: 3	loss: 0.16195824	acc: 0.959
+INFO:root:	task: 4	loss: 0.63995233	acc: 0.582
+INFO:root:	task: 5	loss: 0.22198809	acc: 0.906
+INFO:root:	task: 6	loss: 0.18152937	acc: 0.946
+INFO:root:	task: 7	loss: 0.34009027	acc: 0.883
+INFO:root:	task: avg	loss: 0.26807632	acc: 0.885
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 21, training task: 7
+INFO:root:	task: 0	loss: 0.05742848	acc: 0.982
+INFO:root:	task: 1	loss: 0.23990090	acc: 0.916
+INFO:root:	task: 2	loss: 0.28740819	acc: 0.907
+INFO:root:	task: 3	loss: 0.14672864	acc: 0.964
+INFO:root:	task: 4	loss: 0.64686101	acc: 0.552
+INFO:root:	task: 5	loss: 0.22603316	acc: 0.910
+INFO:root:	task: 6	loss: 0.18175662	acc: 0.947
+INFO:root:	task: 7	loss: 0.34105696	acc: 0.895
+INFO:root:	task: avg	loss: 0.26589674	acc: 0.884
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 31, training task: 7
+INFO:root:	task: 0	loss: 0.06516717	acc: 0.980
+INFO:root:	task: 1	loss: 0.21652707	acc: 0.929
+INFO:root:	task: 2	loss: 0.29467987	acc: 0.903
+INFO:root:	task: 3	loss: 0.15048125	acc: 0.962
+INFO:root:	task: 4	loss: 0.65371444	acc: 0.542
+INFO:root:	task: 5	loss: 0.22769778	acc: 0.911
+INFO:root:	task: 6	loss: 0.18587998	acc: 0.947
+INFO:root:	task: 7	loss: 0.32764148	acc: 0.891
+INFO:root:	task: avg	loss: 0.26522363	acc: 0.883
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 41, training task: 7
+INFO:root:	task: 0	loss: 0.05897395	acc: 0.981
+INFO:root:	task: 1	loss: 0.22692796	acc: 0.922
+INFO:root:	task: 2	loss: 0.28825730	acc: 0.904
+INFO:root:	task: 3	loss: 0.14603381	acc: 0.963
+INFO:root:	task: 4	loss: 0.64400665	acc: 0.572
+INFO:root:	task: 5	loss: 0.23018498	acc: 0.907
+INFO:root:	task: 6	loss: 0.18831663	acc: 0.945
+INFO:root:	task: 7	loss: 0.31212732	acc: 0.907
+INFO:root:	task: avg	loss: 0.26185358	acc: 0.888
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 51, training task: 7
+INFO:root:	task: 0	loss: 0.06119209	acc: 0.980
+INFO:root:	task: 1	loss: 0.22400192	acc: 0.921
+INFO:root:	task: 2	loss: 0.28955452	acc: 0.905
+INFO:root:	task: 3	loss: 0.15026545	acc: 0.961
+INFO:root:	task: 4	loss: 0.64919009	acc: 0.550
+INFO:root:	task: 5	loss: 0.23163532	acc: 0.911
+INFO:root:	task: 6	loss: 0.18697777	acc: 0.945
+INFO:root:	task: 7	loss: 0.30064682	acc: 0.913
+INFO:root:	task: avg	loss: 0.26168300	acc: 0.886
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 61, training task: 7
+INFO:root:	task: 0	loss: 0.05790793	acc: 0.981
+INFO:root:	task: 1	loss: 0.23224714	acc: 0.919
+INFO:root:	task: 2	loss: 0.28709259	acc: 0.903
+INFO:root:	task: 3	loss: 0.15142428	acc: 0.961
+INFO:root:	task: 4	loss: 0.65148152	acc: 0.543
+INFO:root:	task: 5	loss: 0.22983358	acc: 0.905
+INFO:root:	task: 6	loss: 0.19002724	acc: 0.942
+INFO:root:	task: 7	loss: 0.28371747	acc: 0.908
+INFO:root:	task: avg	loss: 0.26046647	acc: 0.883
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 71, training task: 7
+INFO:root:	task: 0	loss: 0.06307245	acc: 0.980
+INFO:root:	task: 1	loss: 0.22494008	acc: 0.923
+INFO:root:	task: 2	loss: 0.28191152	acc: 0.905
+INFO:root:	task: 3	loss: 0.14823077	acc: 0.959
+INFO:root:	task: 4	loss: 0.64605535	acc: 0.564
+INFO:root:	task: 5	loss: 0.23371108	acc: 0.910
+INFO:root:	task: 6	loss: 0.19194333	acc: 0.942
+INFO:root:	task: 7	loss: 0.28459331	acc: 0.917
+INFO:root:	task: avg	loss: 0.25930724	acc: 0.888
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 81, training task: 7
+INFO:root:	task: 0	loss: 0.06241457	acc: 0.980
+INFO:root:	task: 1	loss: 0.21985285	acc: 0.926
+INFO:root:	task: 2	loss: 0.28382758	acc: 0.908
+INFO:root:	task: 3	loss: 0.14827681	acc: 0.960
+INFO:root:	task: 4	loss: 0.65100944	acc: 0.544
+INFO:root:	task: 5	loss: 0.23579950	acc: 0.909
+INFO:root:	task: 6	loss: 0.19070208	acc: 0.946
+INFO:root:	task: 7	loss: 0.27269937	acc: 0.906
+INFO:root:	task: avg	loss: 0.25807277	acc: 0.885
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 91, training task: 7
+INFO:root:	task: 0	loss: 0.06074112	acc: 0.980
+INFO:root:	task: 1	loss: 0.22730849	acc: 0.925
+INFO:root:	task: 2	loss: 0.28295269	acc: 0.906
+INFO:root:	task: 3	loss: 0.15550916	acc: 0.960
+INFO:root:	task: 4	loss: 0.64766005	acc: 0.555
+INFO:root:	task: 5	loss: 0.22933908	acc: 0.906
+INFO:root:	task: 6	loss: 0.19070307	acc: 0.943
+INFO:root:	task: 7	loss: 0.26079695	acc: 0.916
+INFO:root:	task: avg	loss: 0.25687633	acc: 0.886
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 101, training task: 7
+INFO:root:	task: 0	loss: 0.06154038	acc: 0.982
+INFO:root:	task: 1	loss: 0.22790698	acc: 0.926
+INFO:root:	task: 2	loss: 0.29710460	acc: 0.906
+INFO:root:	task: 3	loss: 0.17121291	acc: 0.958
+INFO:root:	task: 4	loss: 0.64599493	acc: 0.550
+INFO:root:	task: 5	loss: 0.22141928	acc: 0.911
+INFO:root:	task: 6	loss: 0.19289813	acc: 0.942
+INFO:root:	task: 7	loss: 0.22444823	acc: 0.920
+INFO:root:	task: avg	loss: 0.25531568	acc: 0.887
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 0, training task: 8
+INFO:root:	task: 0	loss: 0.06164164	acc: 0.981
+INFO:root:	task: 1	loss: 0.23093192	acc: 0.926
+INFO:root:	task: 2	loss: 0.28739749	acc: 0.906
+INFO:root:	task: 3	loss: 0.14848187	acc: 0.960
+INFO:root:	task: 4	loss: 0.65625500	acc: 0.540
+INFO:root:	task: 5	loss: 0.23599157	acc: 0.908
+INFO:root:	task: 6	loss: 0.19341592	acc: 0.943
+INFO:root:	task: 7	loss: 0.26189633	acc: 0.914
+INFO:root:	task: 8	loss: 1.13462035	acc: 0.069
+INFO:root:	task: avg	loss: 0.35673690	acc: 0.794
+INFO:root:epochs: 1, training task: 8
+INFO:root:	task: 0	loss: 0.05886759	acc: 0.981
+INFO:root:	task: 1	loss: 0.22749394	acc: 0.927
+INFO:root:	task: 2	loss: 0.28484102	acc: 0.908
+INFO:root:	task: 3	loss: 0.14439302	acc: 0.960
+INFO:root:	task: 4	loss: 0.65754082	acc: 0.537
+INFO:root:	task: 5	loss: 0.23519165	acc: 0.907
+INFO:root:	task: 6	loss: 0.19054514	acc: 0.943
+INFO:root:	task: 7	loss: 0.26332715	acc: 0.906
+INFO:root:	task: 8	loss: 0.27636783	acc: 0.923
+INFO:root:	task: avg	loss: 0.25984091	acc: 0.888
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 11, training task: 8
+INFO:root:	task: 0	loss: 0.05970270	acc: 0.982
+INFO:root:	task: 1	loss: 0.23504672	acc: 0.922
+INFO:root:	task: 2	loss: 0.28743099	acc: 0.910
+INFO:root:	task: 3	loss: 0.15070040	acc: 0.960
+INFO:root:	task: 4	loss: 0.65677986	acc: 0.537
+INFO:root:	task: 5	loss: 0.22744698	acc: 0.912
+INFO:root:	task: 6	loss: 0.18386155	acc: 0.946
+INFO:root:	task: 7	loss: 0.24518572	acc: 0.921
+INFO:root:	task: 8	loss: 0.19837976	acc: 0.934
+INFO:root:	task: avg	loss: 0.24939274	acc: 0.892
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 21, training task: 8
+INFO:root:	task: 0	loss: 0.06310968	acc: 0.980
+INFO:root:	task: 1	loss: 0.22243238	acc: 0.921
+INFO:root:	task: 2	loss: 0.28614311	acc: 0.910
+INFO:root:	task: 3	loss: 0.14725474	acc: 0.961
+INFO:root:	task: 4	loss: 0.65468559	acc: 0.543
+INFO:root:	task: 5	loss: 0.22698766	acc: 0.909
+INFO:root:	task: 6	loss: 0.18668750	acc: 0.947
+INFO:root:	task: 7	loss: 0.23750923	acc: 0.922
+INFO:root:	task: 8	loss: 0.19035376	acc: 0.937
+INFO:root:	task: avg	loss: 0.24612929	acc: 0.892
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 31, training task: 8
+INFO:root:	task: 0	loss: 0.06246708	acc: 0.980
+INFO:root:	task: 1	loss: 0.21372041	acc: 0.923
+INFO:root:	task: 2	loss: 0.29153018	acc: 0.908
+INFO:root:	task: 3	loss: 0.14505431	acc: 0.960
+INFO:root:	task: 4	loss: 0.65143992	acc: 0.548
+INFO:root:	task: 5	loss: 0.22057332	acc: 0.911
+INFO:root:	task: 6	loss: 0.18196950	acc: 0.947
+INFO:root:	task: 7	loss: 0.23245531	acc: 0.927
+INFO:root:	task: 8	loss: 0.18713123	acc: 0.941
+INFO:root:	task: avg	loss: 0.24292681	acc: 0.894
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 41, training task: 8
+INFO:root:	task: 0	loss: 0.05984885	acc: 0.982
+INFO:root:	task: 1	loss: 0.22490928	acc: 0.921
+INFO:root:	task: 2	loss: 0.29214334	acc: 0.905
+INFO:root:	task: 3	loss: 0.15054980	acc: 0.960
+INFO:root:	task: 4	loss: 0.64514228	acc: 0.564
+INFO:root:	task: 5	loss: 0.21790261	acc: 0.912
+INFO:root:	task: 6	loss: 0.18368218	acc: 0.945
+INFO:root:	task: 7	loss: 0.22607482	acc: 0.924
+INFO:root:	task: 8	loss: 0.18915348	acc: 0.942
+INFO:root:	task: avg	loss: 0.24326741	acc: 0.895
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 51, training task: 8
+INFO:root:	task: 0	loss: 0.06235436	acc: 0.981
+INFO:root:	task: 1	loss: 0.22021771	acc: 0.923
+INFO:root:	task: 2	loss: 0.29944191	acc: 0.906
+INFO:root:	task: 3	loss: 0.14994273	acc: 0.958
+INFO:root:	task: 4	loss: 0.64475844	acc: 0.578
+INFO:root:	task: 5	loss: 0.21952169	acc: 0.911
+INFO:root:	task: 6	loss: 0.18722183	acc: 0.946
+INFO:root:	task: 7	loss: 0.22197156	acc: 0.926
+INFO:root:	task: 8	loss: 0.19322918	acc: 0.941
+INFO:root:	task: avg	loss: 0.24429549	acc: 0.897
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 61, training task: 8
+INFO:root:	task: 0	loss: 0.06555672	acc: 0.980
+INFO:root:	task: 1	loss: 0.22431856	acc: 0.924
+INFO:root:	task: 2	loss: 0.30557751	acc: 0.902
+INFO:root:	task: 3	loss: 0.15011730	acc: 0.958
+INFO:root:	task: 4	loss: 0.64688193	acc: 0.557
+INFO:root:	task: 5	loss: 0.21692661	acc: 0.914
+INFO:root:	task: 6	loss: 0.17995057	acc: 0.947
+INFO:root:	task: 7	loss: 0.22145740	acc: 0.926
+INFO:root:	task: 8	loss: 0.19184513	acc: 0.942
+INFO:root:	task: avg	loss: 0.24473686	acc: 0.894
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 71, training task: 8
+INFO:root:	task: 0	loss: 0.06395983	acc: 0.981
+INFO:root:	task: 1	loss: 0.23920372	acc: 0.919
+INFO:root:	task: 2	loss: 0.30693782	acc: 0.903
+INFO:root:	task: 3	loss: 0.15078164	acc: 0.958
+INFO:root:	task: 4	loss: 0.65181812	acc: 0.546
+INFO:root:	task: 5	loss: 0.21674198	acc: 0.912
+INFO:root:	task: 6	loss: 0.18037352	acc: 0.946
+INFO:root:	task: 7	loss: 0.21743337	acc: 0.928
+INFO:root:	task: 8	loss: 0.19651604	acc: 0.941
+INFO:root:	task: avg	loss: 0.24708512	acc: 0.893
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 81, training task: 8
+INFO:root:	task: 0	loss: 0.06396928	acc: 0.980
+INFO:root:	task: 1	loss: 0.23275942	acc: 0.922
+INFO:root:	task: 2	loss: 0.30104023	acc: 0.904
+INFO:root:	task: 3	loss: 0.14831781	acc: 0.959
+INFO:root:	task: 4	loss: 0.65219096	acc: 0.548
+INFO:root:	task: 5	loss: 0.22192256	acc: 0.909
+INFO:root:	task: 6	loss: 0.17824816	acc: 0.947
+INFO:root:	task: 7	loss: 0.21239163	acc: 0.928
+INFO:root:	task: 8	loss: 0.18982088	acc: 0.942
+INFO:root:	task: avg	loss: 0.24451788	acc: 0.893
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 91, training task: 8
+INFO:root:	task: 0	loss: 0.07274530	acc: 0.979
+INFO:root:	task: 1	loss: 0.22445972	acc: 0.924
+INFO:root:	task: 2	loss: 0.30995504	acc: 0.903
+INFO:root:	task: 3	loss: 0.14578722	acc: 0.958
+INFO:root:	task: 4	loss: 0.65199253	acc: 0.551
+INFO:root:	task: 5	loss: 0.22008063	acc: 0.911
+INFO:root:	task: 6	loss: 0.17685448	acc: 0.949
+INFO:root:	task: 7	loss: 0.20993280	acc: 0.928
+INFO:root:	task: 8	loss: 0.18944705	acc: 0.944
+INFO:root:	task: avg	loss: 0.24458386	acc: 0.894
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 101, training task: 8
+INFO:root:	task: 0	loss: 0.08137551	acc: 0.977
+INFO:root:	task: 1	loss: 0.20887563	acc: 0.933
+INFO:root:	task: 2	loss: 0.30252195	acc: 0.906
+INFO:root:	task: 3	loss: 0.15427065	acc: 0.958
+INFO:root:	task: 4	loss: 0.65393334	acc: 0.544
+INFO:root:	task: 5	loss: 0.21594279	acc: 0.915
+INFO:root:	task: 6	loss: 0.17500922	acc: 0.950
+INFO:root:	task: 7	loss: 0.20599703	acc: 0.930
+INFO:root:	task: 8	loss: 0.17341267	acc: 0.950
+INFO:root:	task: avg	loss: 0.24125986	acc: 0.896
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 0, training task: 9
+INFO:root:	task: 0	loss: 0.06185587	acc: 0.981
+INFO:root:	task: 1	loss: 0.24350139	acc: 0.915
+INFO:root:	task: 2	loss: 0.31173045	acc: 0.903
+INFO:root:	task: 3	loss: 0.14857912	acc: 0.959
+INFO:root:	task: 4	loss: 0.65449730	acc: 0.546
+INFO:root:	task: 5	loss: 0.21641857	acc: 0.912
+INFO:root:	task: 6	loss: 0.17663802	acc: 0.948
+INFO:root:	task: 7	loss: 0.20885775	acc: 0.928
+INFO:root:	task: 8	loss: 0.19866100	acc: 0.942
+INFO:root:	task: 9	loss: 1.05499189	acc: 0.088
+INFO:root:	task: avg	loss: 0.32757314	acc: 0.812
+INFO:root:epochs: 1, training task: 9
+INFO:root:	task: 0	loss: 0.05311866	acc: 0.983
+INFO:root:	task: 1	loss: 0.26263957	acc: 0.906
+INFO:root:	task: 2	loss: 0.30815848	acc: 0.901
+INFO:root:	task: 3	loss: 0.15729852	acc: 0.958
+INFO:root:	task: 4	loss: 0.64882158	acc: 0.549
+INFO:root:	task: 5	loss: 0.21643596	acc: 0.910
+INFO:root:	task: 6	loss: 0.17781361	acc: 0.943
+INFO:root:	task: 7	loss: 0.20630113	acc: 0.928
+INFO:root:	task: 8	loss: 0.19968265	acc: 0.942
+INFO:root:	task: 9	loss: 0.22635906	acc: 0.940
+INFO:root:	task: avg	loss: 0.24566292	acc: 0.896
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 11, training task: 9
+INFO:root:	task: 0	loss: 0.06757103	acc: 0.979
+INFO:root:	task: 1	loss: 0.21432347	acc: 0.928
+INFO:root:	task: 2	loss: 0.29805625	acc: 0.904
+INFO:root:	task: 3	loss: 0.14468038	acc: 0.960
+INFO:root:	task: 4	loss: 0.64866173	acc: 0.554
+INFO:root:	task: 5	loss: 0.21589147	acc: 0.913
+INFO:root:	task: 6	loss: 0.17046645	acc: 0.949
+INFO:root:	task: 7	loss: 0.21090838	acc: 0.929
+INFO:root:	task: 8	loss: 0.19886681	acc: 0.942
+INFO:root:	task: 9	loss: 0.13205894	acc: 0.951
+INFO:root:	task: avg	loss: 0.23014849	acc: 0.901
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 21, training task: 9
+INFO:root:	task: 0	loss: 0.05968797	acc: 0.981
+INFO:root:	task: 1	loss: 0.25318853	acc: 0.915
+INFO:root:	task: 2	loss: 0.30586572	acc: 0.904
+INFO:root:	task: 3	loss: 0.13995480	acc: 0.961
+INFO:root:	task: 4	loss: 0.64729469	acc: 0.560
+INFO:root:	task: 5	loss: 0.22145618	acc: 0.905
+INFO:root:	task: 6	loss: 0.17314064	acc: 0.951
+INFO:root:	task: 7	loss: 0.21398272	acc: 0.929
+INFO:root:	task: 8	loss: 0.22024448	acc: 0.934
+INFO:root:	task: 9	loss: 0.13815666	acc: 0.950
+INFO:root:	task: avg	loss: 0.23729724	acc: 0.899
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 31, training task: 9
+INFO:root:	task: 0	loss: 0.06927288	acc: 0.980
+INFO:root:	task: 1	loss: 0.20444271	acc: 0.933
+INFO:root:	task: 2	loss: 0.30405399	acc: 0.904
+INFO:root:	task: 3	loss: 0.14033842	acc: 0.959
+INFO:root:	task: 4	loss: 0.64975975	acc: 0.559
+INFO:root:	task: 5	loss: 0.22573246	acc: 0.907
+INFO:root:	task: 6	loss: 0.17094555	acc: 0.951
+INFO:root:	task: 7	loss: 0.21236048	acc: 0.928
+INFO:root:	task: 8	loss: 0.20825606	acc: 0.937
+INFO:root:	task: 9	loss: 0.13072474	acc: 0.951
+INFO:root:	task: avg	loss: 0.23158870	acc: 0.901
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 41, training task: 9
+INFO:root:	task: 0	loss: 0.07342425	acc: 0.978
+INFO:root:	task: 1	loss: 0.19760371	acc: 0.936
+INFO:root:	task: 2	loss: 0.30274622	acc: 0.904
+INFO:root:	task: 3	loss: 0.13815940	acc: 0.959
+INFO:root:	task: 4	loss: 0.65330571	acc: 0.553
+INFO:root:	task: 5	loss: 0.22787955	acc: 0.905
+INFO:root:	task: 6	loss: 0.16868129	acc: 0.950
+INFO:root:	task: 7	loss: 0.20971938	acc: 0.930
+INFO:root:	task: 8	loss: 0.20426579	acc: 0.937
+INFO:root:	task: 9	loss: 0.12907765	acc: 0.951
+INFO:root:	task: avg	loss: 0.23048630	acc: 0.900
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 51, training task: 9
+INFO:root:	task: 0	loss: 0.07015324	acc: 0.980
+INFO:root:	task: 1	loss: 0.20600325	acc: 0.931
+INFO:root:	task: 2	loss: 0.30994792	acc: 0.903
+INFO:root:	task: 3	loss: 0.13667140	acc: 0.960
+INFO:root:	task: 4	loss: 0.65427177	acc: 0.553
+INFO:root:	task: 5	loss: 0.22978114	acc: 0.905
+INFO:root:	task: 6	loss: 0.16892282	acc: 0.950
+INFO:root:	task: 7	loss: 0.20952293	acc: 0.931
+INFO:root:	task: 8	loss: 0.21313164	acc: 0.934
+INFO:root:	task: 9	loss: 0.12811728	acc: 0.953
+INFO:root:	task: avg	loss: 0.23265234	acc: 0.900
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 61, training task: 9
+INFO:root:	task: 0	loss: 0.07031440	acc: 0.981
+INFO:root:	task: 1	loss: 0.20920164	acc: 0.929
+INFO:root:	task: 2	loss: 0.30877600	acc: 0.901
+INFO:root:	task: 3	loss: 0.14209440	acc: 0.957
+INFO:root:	task: 4	loss: 0.67432740	acc: 0.535
+INFO:root:	task: 5	loss: 0.23001989	acc: 0.905
+INFO:root:	task: 6	loss: 0.17019161	acc: 0.951
+INFO:root:	task: 7	loss: 0.20794982	acc: 0.931
+INFO:root:	task: 8	loss: 0.22047536	acc: 0.933
+INFO:root:	task: 9	loss: 0.13498184	acc: 0.952
+INFO:root:	task: avg	loss: 0.23683324	acc: 0.897
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 71, training task: 9
+INFO:root:	task: 0	loss: 0.07234730	acc: 0.980
+INFO:root:	task: 1	loss: 0.20763953	acc: 0.931
+INFO:root:	task: 2	loss: 0.31298827	acc: 0.902
+INFO:root:	task: 3	loss: 0.14118100	acc: 0.959
+INFO:root:	task: 4	loss: 0.65054619	acc: 0.556
+INFO:root:	task: 5	loss: 0.23488321	acc: 0.900
+INFO:root:	task: 6	loss: 0.16893177	acc: 0.950
+INFO:root:	task: 7	loss: 0.20412367	acc: 0.931
+INFO:root:	task: 8	loss: 0.22549367	acc: 0.932
+INFO:root:	task: 9	loss: 0.13294657	acc: 0.951
+INFO:root:	task: avg	loss: 0.23510812	acc: 0.899
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 81, training task: 9
+INFO:root:	task: 0	loss: 0.07406459	acc: 0.980
+INFO:root:	task: 1	loss: 0.20378986	acc: 0.932
+INFO:root:	task: 2	loss: 0.30895249	acc: 0.902
+INFO:root:	task: 3	loss: 0.14395517	acc: 0.961
+INFO:root:	task: 4	loss: 0.64700126	acc: 0.562
+INFO:root:	task: 5	loss: 0.24230246	acc: 0.899
+INFO:root:	task: 6	loss: 0.16718707	acc: 0.952
+INFO:root:	task: 7	loss: 0.20261512	acc: 0.932
+INFO:root:	task: 8	loss: 0.22505722	acc: 0.931
+INFO:root:	task: 9	loss: 0.13416078	acc: 0.951
+INFO:root:	task: avg	loss: 0.23490860	acc: 0.900
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 91, training task: 9
+INFO:root:	task: 0	loss: 0.07633200	acc: 0.977
+INFO:root:	task: 1	loss: 0.19974047	acc: 0.936
+INFO:root:	task: 2	loss: 0.30757659	acc: 0.901
+INFO:root:	task: 3	loss: 0.13801872	acc: 0.959
+INFO:root:	task: 4	loss: 0.65259446	acc: 0.555
+INFO:root:	task: 5	loss: 0.23757056	acc: 0.901
+INFO:root:	task: 6	loss: 0.16760148	acc: 0.951
+INFO:root:	task: 7	loss: 0.20476863	acc: 0.930
+INFO:root:	task: 8	loss: 0.21893670	acc: 0.934
+INFO:root:	task: 9	loss: 0.13098670	acc: 0.952
+INFO:root:	task: avg	loss: 0.23341263	acc: 0.900
+INFO:root:AGGREGATING MODELS...no_components 4
+INFO:root:epochs: 101, training task: 9
+INFO:root:	task: 0	loss: 0.08327200	acc: 0.977
+INFO:root:	task: 1	loss: 0.19606542	acc: 0.935
+INFO:root:	task: 2	loss: 0.32981475	acc: 0.901
+INFO:root:	task: 3	loss: 0.13992105	acc: 0.958
+INFO:root:	task: 4	loss: 0.65727888	acc: 0.553
+INFO:root:	task: 5	loss: 0.23285892	acc: 0.907
+INFO:root:	task: 6	loss: 0.17094064	acc: 0.951
+INFO:root:	task: 7	loss: 0.19755165	acc: 0.931
+INFO:root:	task: 8	loss: 0.23138744	acc: 0.929
+INFO:root:	task: 9	loss: 0.13162121	acc: 0.953
+INFO:root:	task: avg	loss: 0.23707120	acc: 0.900

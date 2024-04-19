@@ -113,6 +113,9 @@ class ParallelSyncBaseFleet(ParallelFleet):
                                                                          deepcopy(net_kwargs), deepcopy(
                                                                              tmp_agent_kwargs),
                                                                          deepcopy(train_kwargs), deepcopy(sharing_strategy))
+
+        logging.info(
+            f"JOINT AGENT {ray.get(self.jointly_trained_agent.get_fl_strategy.remote())}")
         self.num_init_tasks = net_kwargs["num_init_tasks"]
         self.args = (graph, seed, datasets, sharing_strategy, AgentCls,
                      NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs)

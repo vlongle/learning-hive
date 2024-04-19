@@ -374,6 +374,8 @@ class Agent:
     def get_save_dir(self):
         return self.agent.save_dir
 
+    def get_dataset_name(self):
+        return self.dataset.name
 
 @ray.remote
 class ParallelAgent(Agent):
@@ -529,6 +531,9 @@ class ParallelFleet:
         self.sharing_strategy = sharing_strategy
         self.num_coms_per_round = self.sharing_strategy.num_coms_per_round
 
+        self.remove_ood_neighbors = getattr(
+            self.sharing_strategy, 'remove_ood_neighbors', False)
+
         self.create_agents(seed, datasets, AgentCls, NetCls, LearnerCls,
                            net_kwargs, agent_kwargs, train_kwargs)
         self.add_neighbors()
@@ -586,12 +591,20 @@ class ParallelFleet:
 
     def add_neighbors(self):
         logging.info("Adding neighbors...")
-        # adding neighbors
         for agent in self.agents:
             agent_id = ray.get(agent.get_node_id.remote())
-            neighbors = {ray.get(self.agents[neighbor_id].get_node_id.remote()): self.agents[neighbor_id]
-                         for neighbor_id in self.graph.neighbors(agent_id)}
+            neighbors = {}
+            for neighbor_id in self.graph.neighbors(agent_id):
+                if self.remove_ood_neighbors:
+                    # Retrieve dataset names asynchronously and compare
+                    if ray.get(agent.get_dataset_name.remote()) == ray.get(self.agents[neighbor_id].get_dataset_name.remote()):
+                        neighbors[ray.get(
+                            self.agents[neighbor_id].get_node_id.remote())] = self.agents[neighbor_id]
+                else:
+                    neighbors[ray.get(
+                        self.agents[neighbor_id].get_node_id.remote())] = self.agents[neighbor_id]
             agent.add_neighbors.remote(neighbors)
+
 
     def train_and_comm(self, task_id):
         if task_id < self.num_init_tasks:

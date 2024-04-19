@@ -59,7 +59,7 @@ parser.add_argument('--num_queries', type=int, default=20,
 parser.add_argument('--num_comms_per_task', type=int, default=5,
                     help='Number of communications per task for the experiment.')
 
-parser.add_argument('--scale_shared_memory', type=str2bool, default=False)
+parser.add_argument('--scale_shared_memory', type=str2bool, default=True)
 args = parser.parse_args()
 
 if on_desktop():
@@ -82,7 +82,7 @@ if __name__ == "__main__":
     else:
         shared_memory_size = memory_size
 
-    shared_memory_size = memory_size
+    # shared_memory_size = memory_size
     # shared_memory_size = max(args.num_queries * args.num_comms_per_task, memory_size)
 
     query_task_mode = 'current' if args.algo == 'modular' else 'all'
@@ -96,7 +96,8 @@ if __name__ == "__main__":
         config = {
             "algo": args.algo,
             "agent.batch_size": batch_size,
-            "seed": args.seed,
+            # "seed": args.seed,
+            "seed": [0,1,2,3,4,5,6,7],
             "parallel": True,
             "num_agents": num_agents,
             "dataset": args.dataset,
@@ -117,9 +118,13 @@ if __name__ == "__main__":
             "train.save_freq": 10,
             "agent.use_contrastive": False,
             "agent.memory_size": memory_size,
-            "root_save_dir": prefix + f"heuristic_experiment_results/recv_mem_{shared_memory_size}_freq_{comm_freq}",
+            # "root_save_dir": prefix + f"heuristic_experiment_results/recv_mem_{shared_memory_size}_freq_{comm_freq}",
+            "root_save_dir": prefix + f"combined_recv_remove_neighbors_results/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}",
+
+
 
             "sharing_strategy": "recv_data",
+            "sharing_strategy.remove_ood_neighbors": True,
             "sharing_strategy.shared_memory_size": shared_memory_size,
             "sharing_strategy.query_task_mode": query_task_mode,
             "sharing_strategy.num_data_neighbors": args.num_data_neighbors,

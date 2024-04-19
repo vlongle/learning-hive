@@ -21,10 +21,12 @@
 
 
 # # Array of local folders to download
-LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/experiment_results/jorge_setting_recv_variable_shared_memory_size_assign_labels_groundtruth/mem_size_300_comm_freq_9_num_queries_30_assign_labels_groundtruth/cifar100_modular_numtrain_256")
+# LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/debug_cifar_results/vanilla_128")
+# LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/combined_recv_results")
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/combined_recv_remove_neighbors_results")
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
-REMOTE_PATH="/home/vlongle/code/clone/learning-hive/budget_experiment_results/"
+REMOTE_PATH="/home/vlongle/code/learning-hive"
 
 # Check if rsync is installed
 if ! command -v rsync &> /dev/null; then

@@ -13,4 +13,5 @@ sync_base: False
 prefilter_strategy: oracle
 add_data_prefilter_strategy: both
 assign_labels_strategy: same_as_query
+remove_ood_neighbors: True
 min_task: 0

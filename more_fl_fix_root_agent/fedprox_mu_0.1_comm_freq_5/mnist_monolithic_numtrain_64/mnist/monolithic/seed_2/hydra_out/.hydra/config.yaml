@@ -1,0 +1,47 @@
+train:
+  component_update_freq: 100
+  num_epochs: 100
+  init_component_update_freq: 100
+  init_num_epochs: 100
+  save_freq: 10
+dataset:
+  dataset_name: mnist
+  num_tasks: 10
+  num_classes_per_task: 2
+  with_replacement: true
+  num_trains_per_class: 64
+  num_vals_per_class: 50
+  remap_labels: true
+net:
+  name: mlp
+  depth: 4
+  layer_size: 64
+  dropout: 0.5
+  no_sparse_basis: true
+sharing_strategy:
+  name: fedprox
+  num_coms_per_round: 1
+  comm_freq: 5
+  mu: 0.1
+  when_reoptimize_structure: never
+  sync_base: true
+  pre_or_post_comm: pre
+seed: 2
+algo: monolithic
+job_name: mnist_monolithic_numtrain_64
+num_agents: 8
+root_save_dir: more_fl_fix_root_agent/fedprox_mu_0.1_comm_freq_5
+parallel: true
+num_init_tasks: 4
+overwrite: false
+topology: fully_connected
+edge_drop_prob: 0.0
+agent:
+  save_dir: ${root_save_dir}/${job_name}/${dataset.dataset_name}/${algo}/seed_${seed}
+  batch_size: 64
+  memory_size: 32
+  improvement_threshold: 0.05
+  use_contrastive: false
+  use_ood_separation_loss: false
+  lambda_ood: 2.0
+  delta_ood: 1.0

@@ -9,6 +9,7 @@ Copyright (c) 2023 Long Le
 from shell.fleet.fleet import Fleet, ParallelFleet, ParallelAgent, Agent
 from shell.fleet.grad.monograd import ModelSyncAgent, ParallelModelSyncAgent
 from shell.fleet.grad.fedprox import FedProxAgent, ParallelFedProxAgent
+from shell.fleet.grad.fedcurv import FedCurvAgent, ParallelFedCurvAgent
 from shell.fleet.grad.gradient_fleet import SyncBaseFleet, ParallelSyncBaseFleet
 from shell.fleet.grad.modgrad import ModGrad, ParallelModGrad
 from shell.fleet.data.data_fleet import DataFleet, ParallelDataFleet
@@ -91,6 +92,12 @@ AGENT_CLS = {
         "monolithic": {
             True: ParallelFedProxAgent,
             False: FedProxAgent,
+        },
+    },
+    "fedcurv": {
+        "monolithic": {
+            True: ParallelFedCurvAgent,
+            False: FedCurvAgent,
         },
     },
     "recv_data": {

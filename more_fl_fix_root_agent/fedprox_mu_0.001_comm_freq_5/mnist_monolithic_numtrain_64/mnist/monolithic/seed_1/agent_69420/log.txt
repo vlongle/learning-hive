@@ -1,0 +1,109 @@
+INFO:root:Agent: node_id: 69420, seed: 69420001
+INFO:root:epochs: 0, training task: 0
+INFO:root:	task: 0	loss: 0.69227916	acc: 0.518
+INFO:root:	task: avg	loss: 0.69227916	acc: 0.518
+INFO:root:epochs: 0, training task: 0
+INFO:root:	task: 0	loss: 0.69227916	acc: 0.518
+INFO:root:	task: avg	loss: 0.69227916	acc: 0.518
+INFO:root:epochs: 101, training task: 0
+INFO:root:	task: 0	loss: 0.69227916	acc: 0.518
+INFO:root:	task: avg	loss: 0.69227916	acc: 0.518
+INFO:root:epochs: 0, training task: 1
+INFO:root:	task: 0	loss: 0.69227916	acc: 0.518
+INFO:root:	task: 1	loss: 0.69305839	acc: 0.522
+INFO:root:	task: avg	loss: 0.69266878	acc: 0.520
+INFO:root:epochs: 0, training task: 1
+INFO:root:	task: 0	loss: 0.69227916	acc: 0.518
+INFO:root:	task: 1	loss: 0.69305839	acc: 0.522
+INFO:root:	task: avg	loss: 0.69266878	acc: 0.520
+INFO:root:epochs: 101, training task: 1
+INFO:root:	task: 0	loss: 0.69227916	acc: 0.518
+INFO:root:	task: 1	loss: 0.69305839	acc: 0.522
+INFO:root:	task: avg	loss: 0.69266878	acc: 0.520
+INFO:root:epochs: 0, training task: 2
+INFO:root:	task: 0	loss: 0.69227916	acc: 0.518
+INFO:root:	task: 1	loss: 0.69305839	acc: 0.522
+INFO:root:	task: 2	loss: 0.69339753	acc: 0.487
+INFO:root:	task: avg	loss: 0.69291170	acc: 0.509
+INFO:root:epochs: 0, training task: 2
+INFO:root:	task: 0	loss: 0.69227916	acc: 0.518
+INFO:root:	task: 1	loss: 0.69305839	acc: 0.522
+INFO:root:	task: 2	loss: 0.69339753	acc: 0.487
+INFO:root:	task: avg	loss: 0.69291170	acc: 0.509
+INFO:root:epochs: 101, training task: 2
+INFO:root:	task: 0	loss: 0.69227916	acc: 0.518
+INFO:root:	task: 1	loss: 0.69305839	acc: 0.522
+INFO:root:	task: 2	loss: 0.69339753	acc: 0.487
+INFO:root:	task: avg	loss: 0.69291170	acc: 0.509
+INFO:root:epochs: 0, training task: 3
+INFO:root:	task: 0	loss: 0.69227916	acc: 0.518
+INFO:root:	task: 1	loss: 0.69305839	acc: 0.522
+INFO:root:	task: 2	loss: 0.69339753	acc: 0.487
+INFO:root:	task: 3	loss: 0.69800437	acc: 0.440
+INFO:root:	task: avg	loss: 0.69418486	acc: 0.492
+INFO:root:epochs: 1, training task: 3
+INFO:root:	task: 0	loss: 0.69124285	acc: 0.518
+INFO:root:	task: 1	loss: 0.69291792	acc: 0.522
+INFO:root:	task: 2	loss: 0.69257704	acc: 0.487
+INFO:root:	task: 3	loss: 0.69662838	acc: 0.440
+INFO:root:	task: avg	loss: 0.69334155	acc: 0.492
+INFO:root:epochs: 11, training task: 3
+INFO:root:	task: 0	loss: 0.65218664	acc: 0.781
+INFO:root:	task: 1	loss: 0.65047185	acc: 0.478
+INFO:root:	task: 2	loss: 0.57980181	acc: 0.520
+INFO:root:	task: 3	loss: 0.67200717	acc: 0.868
+INFO:root:	task: avg	loss: 0.63861687	acc: 0.662
+INFO:root:epochs: 21, training task: 3
+INFO:root:	task: 0	loss: 0.28168755	acc: 0.885
+INFO:root:	task: 1	loss: 0.34420058	acc: 0.872
+INFO:root:	task: 2	loss: 0.33030542	acc: 0.888
+INFO:root:	task: 3	loss: 0.28712953	acc: 0.917
+INFO:root:	task: avg	loss: 0.31083077	acc: 0.891
+INFO:root:epochs: 31, training task: 3
+INFO:root:	task: 0	loss: 0.25375949	acc: 0.914
+INFO:root:	task: 1	loss: 0.35286459	acc: 0.886
+INFO:root:	task: 2	loss: 0.31035681	acc: 0.899
+INFO:root:	task: 3	loss: 0.20298028	acc: 0.935
+INFO:root:	task: avg	loss: 0.27999029	acc: 0.908
+INFO:root:epochs: 41, training task: 3
+INFO:root:	task: 0	loss: 0.30568202	acc: 0.922
+INFO:root:	task: 1	loss: 0.50681448	acc: 0.884
+INFO:root:	task: 2	loss: 0.40207852	acc: 0.890
+INFO:root:	task: 3	loss: 0.22427340	acc: 0.948
+INFO:root:	task: avg	loss: 0.35971211	acc: 0.911
+INFO:root:epochs: 51, training task: 3
+INFO:root:	task: 0	loss: 0.35052809	acc: 0.918
+INFO:root:	task: 1	loss: 0.54573912	acc: 0.878
+INFO:root:	task: 2	loss: 0.37127017	acc: 0.896
+INFO:root:	task: 3	loss: 0.26749873	acc: 0.945
+INFO:root:	task: avg	loss: 0.38375903	acc: 0.909
+INFO:root:epochs: 61, training task: 3
+INFO:root:	task: 0	loss: 0.37459130	acc: 0.926
+INFO:root:	task: 1	loss: 0.60096532	acc: 0.879
+INFO:root:	task: 2	loss: 0.40750993	acc: 0.890
+INFO:root:	task: 3	loss: 0.29539935	acc: 0.951
+INFO:root:	task: avg	loss: 0.41961647	acc: 0.912
+INFO:root:epochs: 71, training task: 3
+INFO:root:	task: 0	loss: 0.44330373	acc: 0.923
+INFO:root:	task: 1	loss: 0.64581467	acc: 0.885
+INFO:root:	task: 2	loss: 0.41925299	acc: 0.898
+INFO:root:	task: 3	loss: 0.34710971	acc: 0.948
+INFO:root:	task: avg	loss: 0.46387028	acc: 0.914
+INFO:root:epochs: 81, training task: 3
+INFO:root:	task: 0	loss: 0.52880472	acc: 0.916
+INFO:root:	task: 1	loss: 0.63269466	acc: 0.891
+INFO:root:	task: 2	loss: 0.35259005	acc: 0.914
+INFO:root:	task: 3	loss: 0.49512694	acc: 0.934
+INFO:root:	task: avg	loss: 0.50230409	acc: 0.914
+INFO:root:epochs: 91, training task: 3
+INFO:root:	task: 0	loss: 0.48933129	acc: 0.930
+INFO:root:	task: 1	loss: 0.75654260	acc: 0.887
+INFO:root:	task: 2	loss: 0.48461990	acc: 0.903
+INFO:root:	task: 3	loss: 0.39865847	acc: 0.951
+INFO:root:	task: avg	loss: 0.53228807	acc: 0.917
+INFO:root:epochs: 101, training task: 3
+INFO:root:	task: 0	loss: 0.54550572	acc: 0.926
+INFO:root:	task: 1	loss: 0.78685994	acc: 0.891
+INFO:root:	task: 2	loss: 0.51220251	acc: 0.903
+INFO:root:	task: 3	loss: 0.47160383	acc: 0.948
+INFO:root:	task: avg	loss: 0.57904300	acc: 0.917

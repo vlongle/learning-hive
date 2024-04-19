@@ -166,6 +166,6 @@ if __name__ == "__main__":
             "sharing_strategy.pre_or_post_comm": "post" if args.algo == "monolithic" else "pre",
         }
 
-    run_experiment(config, strict=False)
+    run_experiment(170949config, strict=False)
     end = time.time()
     print(f"Experiment runs took {datetime.timedelta(seconds=end-start)}")

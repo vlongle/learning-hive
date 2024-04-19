@@ -65,16 +65,11 @@ class Learner():
         self.fl_strategy = fl_strategy
         self.mu = self.global_model = None
 
+        self.use_aux = False
         if fl_strategy is not None:
             self.global_model = None
             self.mu = mu
-
-        self.use_ood_separation_loss = use_ood_separation_loss
-        self.lambda_ood = lambda_ood
-        self.delta_ood = delta_ood
-        self.ood_loss = OODSeparationLoss(lambda_ood=self.lambda_ood,
-                                          delta=self.delta_ood)
-        self.ood_data = {}
+            self.use_aux = True
 
     def change_save_dir(self, save_dir):
         self.save_dir = create_dir_if_not_exist(save_dir)
@@ -87,14 +82,6 @@ class Learner():
             self.save_dir, "sharing_data_record.csv"))
         # self.writer = SummaryWriter(
         #     log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
-
-    # def apply_transform(self, X):
-    #     # X: (batch_size, n_channels, height, width)
-    #     # apply self.transform to each image in X
-    #     # return: (batch_size, n_channels, height, width)
-    #     return self.train_transform(X)
-        # morally correct way but it's too slow
-        # return torch.stack([self.train_transform(x) for x in X])
 
     def record_shared_data_stats(self, train_task_id, epoch):
         for task_id, replay in sorted(self.shared_replay_buffers.items()):
@@ -112,19 +99,6 @@ class Learner():
             )
 
         self.sharing_data_record.save()
-
-    # def make_shared_memory_loaders(self, batch_size=32):
-    #     self.shared_memory_loaders = {}
-    #     for task_id in self.shared_replay_buffers.keys():
-    #         if len(self.shared_replay_buffers[task_id]) == 0:
-    #             continue
-    #         self.shared_memory_loaders[task_id] = (
-    #             torch.utils.data.DataLoader(self.shared_replay_buffers[task_id],
-    #                                         batch_size=batch_size,
-    #                                         shuffle=True,
-    #                                         num_workers=1,
-    #                                         pin_memory=True
-    #                                         ))
 
     def get_loss_reduction(self):
         if self.use_contrastive:
@@ -164,69 +138,32 @@ class Learner():
         if detach:
             X_encode = X_encode.detach()
         Y_hat = self.net.decoder[task_id](X_encode)
-        # print("structure", self.net.structure[task_id])
-        # print('decoder', self.net.decoder[task_id].bias)
-        # print('comp[0]', self.net.components[0].bias)
-        # print('Y_hat', Y_hat)
-        # check if Y is float if yes, raise error
-        # if Y.dtype == torch.float32:
-        #     print('Y:', Y)
-        #     raise ValueError(
-        #         "?????????????/// Y is float32, make sure to convert to long before passing to compute_cross_entropy_loss")
-        # # check that Y is either 0 or 1
-        # if Y.max() > 1 or Y.min() < 0:
-        #     print('Y:', Y)
-        #     raise ValueError(
-        #         "?????????????/// Y is not binary, make sure to convert to binary before passing to compute_cross_entropy_loss")
-
         ce = self.ce_loss(Y_hat, Y)
         return ce
 
-    # def compute_auxillary_loss(self, X, Y, task_id):
-    #     loss = 0.
-    #     if self.fl_strategy is not None:
-    #         if self.fl_strategy == "fedprox":
-    #             loss += compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model,
-    #                                              mu=self.mu)
-    #         else:
-    #             raise NotImplementedError(
-    #                 "FL strategy %s not implemented" % self.fl_strategy)
+    def compute_auxillary_loss(self, X, Y, task_id):
+        loss = 0.
+        if self.fl_strategy is not None:
+            if self.fl_strategy == "fedprox":
+                loss += compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model,
+                                                 mu=self.mu)
+            else:
+                raise NotImplementedError(
+                    "FL strategy %s not implemented" % self.fl_strategy)
 
-    #     if self.use_ood_separation_loss:
-    #         if X.shape[0] != Y.shape[0]:
-    #             # using contrastive so we have two views
-    #             X, _ = torch.split(X, X.shape[0] // 2, dim=0)
-    #         X_encode = self.net.encode(X, task_id)
-    #         # task_id might be a one value tensor, convert to int
-    #         if isinstance(task_id, torch.Tensor):
-    #             task_id = task_id.item()
-    #         X_ood, *_ = self.ood_data[task_id]
-    #         X_ood = X_ood.to(self.net.device, non_blocking=True)
-    #         ood_encode = self.net.encode(X_ood, task_id)
-    #         loss += self.ood_loss(X_encode, ood_encode)
+        return loss
 
-        # return loss
-
-    def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=False):
+    def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=None):
         """
         Compute main loss + (optional aux loss for FL)
         """
+        if use_aux is None:
+            use_aux = self.use_aux
         loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log)
-        # self.writer.add_scalar(
-        #     f'loss/train_{self.T-1}/task_{task_id}/loss', loss, global_step)
-        # logging.info("before %s", loss)
-        # print("task_loss:", loss, "mu", self.mu)
-        # if use_aux:
-        #     aux_loss = self.compute_auxillary_loss(X, Y, task_id)
-        #     self.writer.add_scalar(
-        #         f'aux_loss/train_{self.T-1}/task_{task_id}/loss', aux_loss, global_step)
-        #     loss += aux_loss
+        if use_aux:
+            aux_loss = self.compute_auxillary_loss(X, Y, task_id)
+            loss += aux_loss
 
-        # print("combined loss:", loss)
-
-        # save loss to self.log_file
-        # NOTE: DEBUG
-        # logging.info(loss.item())
         return loss
 
     def compute_task_loss(self, X, Y, task_id, mode=None, log=False):

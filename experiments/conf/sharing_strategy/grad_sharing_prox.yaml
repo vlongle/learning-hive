@@ -1,4 +1,7 @@
-name: fedprox
+name: fedprox 
 num_coms_per_round: 1
 comm_freq: 1
-mu: 0.1
+mu: 1.0
+when_reoptimize_structure: never
+sync_base: True
+pre_or_post_comm: pre

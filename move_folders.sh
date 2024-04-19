@@ -1,11 +1,11 @@
 #!/bin/bash
 
 # Base directories
-src_dir="combined_recv_remove_neighbors_results"
+src_dir="cifar_heuristic_results_small_mem_32_results/budget"
 dest_base_dir="budget_experiment_results/jorge_setting_recv_variable_shared_memory_size"
 
 # Find all directories in the source directory that need to be moved
-find "$src_dir" -type d -name "combined_modular_numtrain_*" | while read src_subdir; do
+find "$src_dir" -type d -name "*monolithic_numtrain_*" | while read src_subdir; do
   # Extract the relative path of the parent directory of the source subdirectory
   relative_path=$(dirname "${src_subdir#$src_dir/}")
 

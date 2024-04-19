@@ -80,6 +80,7 @@ if __name__ == "__main__":
 
     query_task_mode = 'current' if args.algo == 'modular' else 'all'
     comm_freq = num_epochs // (args.num_comms_per_task + 1)
+    num_agents = 20 if args.dataset == "combined" else 8
 
     root_save_dir = prefix + \
         f"rerun_fashionmnist_recv_results/budget_{args.budget}_comm_freq_{comm_freq}"
@@ -90,7 +91,7 @@ if __name__ == "__main__":
         # "seed": args.seed,
         "seed": [0, 1, 2, 3, 4, 5, 6, 7],
         "parallel": True,
-        "num_agents": 8,
+        "num_agents": num_agents,
         "dataset": "fashionmnist",
         "dataset": args.dataset,
         # "sharing_strategy.min_task": 4, ## !!!!NOTE: only for the combined dataset

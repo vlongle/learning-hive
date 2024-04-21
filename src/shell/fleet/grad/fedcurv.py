@@ -23,7 +23,6 @@ class FedCurvAgent(ModelSyncAgent):
 
     def train(self, task_id, start_epoch=0, communication_frequency=None,
               final=True):
-        self.agent.global_model = copy.deepcopy(self.agent.net)
         self.agent.mu = self.sharing_strategy.mu
         return super().train(task_id, start_epoch, communication_frequency, final)
 

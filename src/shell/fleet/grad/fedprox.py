@@ -12,6 +12,7 @@ class FedProxAgent(ModelSyncAgent):
               final=True):
         self.agent.global_model = copy.deepcopy(self.agent.net)
         self.agent.mu = self.sharing_strategy.mu
+        self.agent.excluded_params = self.excluded_params
         return super().train(task_id, start_epoch, communication_frequency, final)
 
 
@@ -21,7 +22,6 @@ class ParallelFedProxAgent(FedProxAgent):
         for neighbor in self.neighbors.values():
             ray.get(neighbor.receive.remote(
                 self.node_id, deepcopy(self.model), "model"))
-
 
 
 class FedProxModAgent(FedProxAgent):

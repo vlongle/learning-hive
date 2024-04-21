@@ -70,6 +70,7 @@ class Learner():
             self.global_model = None
             self.mu = mu
             self.use_aux = True
+            self.excluded_params = set()
         elif fl_strategy == 'fedcurv':
             self.incoming_models = None
             self.mu = mu
@@ -167,19 +168,22 @@ class Learner():
         if self.fl_strategy is not None:
             if self.fl_strategy == "fedprox":
                 loss += compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model,
-                                                 mu=self.mu)
+                                                 mu=self.mu, excluded_params=self.excluded_params)
             elif self.fl_strategy == "fedcurv":
                 loss += self.mu * self.compute_fedcurv_loss()
             else:
                 raise NotImplementedError(
                     "FL strategy %s not implemented" % self.fl_strategy)
 
+        # logging.info("aux loss %s", loss)
+        # print("aux loss %s", loss)
         return loss
 
     def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=None):
         """
         Compute main loss + (optional aux loss for FL)
         """
+        # print("compute loss", task_id, mode, log, global_step, use_aux)
         if use_aux is None:
             use_aux = self.use_aux
         loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log)

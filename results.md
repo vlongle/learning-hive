@@ -270,9 +270,9 @@ Still can't recover the perf of prev github commit. But anyway.
 
 - Varying topology connectivity [x]
 
-- do the task similarity experiment
+- do the task similarity experiment [NO]
 
-- do demand transfer
+- do demand transfer [NO]
 
 
 - fix the recv modular CIFAR-100. why is the replay buffer changes after each call.

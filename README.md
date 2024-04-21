@@ -26,6 +26,8 @@ In longer-sequence Hard-Data, task distribution can overlap still, which create 
 - [] check ray.put to see if we need deepcopy
 - [] use fixed projections across all agents but still random across tasks?
 
+Need to fix the bug in FedProx. Should only add L2 on the shared params and nothing else. Modular FedAvg and Modular FedProx should be the same.
+
 Using contrastive loss primarily and does not allow cross entropy gradients to flow
 back through the encoding.
 

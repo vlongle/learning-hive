@@ -405,6 +405,8 @@ def make_table_v2(df, remap_name=None, error_type='std'):
     max_values = pivot_mean_df.max()
 
     for index, row in pivot_mean_df.iterrows():
+        if remap_name is not None and index not in remap_name:
+            continue
         html += f'<tr><td>{index if remap_name is None else remap_name[index]}</td>'
         for dataset in pivot_mean_df.columns:
             mean_value = row[dataset]

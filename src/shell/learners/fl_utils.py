@@ -4,8 +4,13 @@ import logging
 
 def model_L2(model1, model2):
     proximal_term = 0.0
-    for w, w_t in zip(model1.parameters(), model2.parameters()):
-        proximal_term += (w - w_t).norm(2)
+    # for w, w_t in zip(model1.parameters(), model2.parameters()):
+    #     proximal_term += (w - w_t).norm(2)
+    for n, w in model1.named_parameters():
+        if n in model2.state_dict():
+            w_t = model2.state_dict()[n]
+            if w.shape == w_t.shape:
+                proximal_term += (w - w_t).norm(2)
     return proximal_term
 
 

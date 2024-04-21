@@ -117,5 +117,3 @@ class ParallelModelSyncAgent(ModelSyncAgent):
         for neighbor in self.neighbors.values():
             ray.get(neighbor.receive.remote(
                 self.node_id, deepcopy(self.model), "model"))
-            # self.bytes_sent[(task_id, communication_round)
-            #                 ] = self.compute_model_size(self.model)

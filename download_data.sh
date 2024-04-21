@@ -26,7 +26,8 @@
 # LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/after_fix_vanilla_cifar_results/heuristic_budget_20_enforce_balance_True_mem_160_sync_base_False_hash_True")
 #LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/after_fix_vanilla_cifar_results/heuristic_budget_20_enforce_balance_False_mem_160_sync_base_False_hash_True")
 # LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/rerun_topology_experiment_results")
-LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/cifar_heuristic_results/budget")
+# LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/cifar_heuristic_results/budget")
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/more_fl_fix_root_agent_results")
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
 # REMOTE_PATH="/home/vlongle/code/learning-hive/new_topology_experiment_results/"

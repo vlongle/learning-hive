@@ -49,14 +49,13 @@ if __name__ == "__main__":
     num_agents = 20 if args.dataset == "combined" else 8
 
     root_save_dir = prefix + \
-        f"more_fl_fix_root_agent/fedprox_mu_{args.mu}_comm_freq_{args.comm_freq}"
+        f"more_fl_fix_root_agent_results/fedprox_mu_{args.mu}_comm_freq_{args.comm_freq}"
 
     if args.dataset != "cifar100":
         config = {
             "algo": args.algo,
             "agent.batch_size": batch_size,
-            # "seed": args.seed,
-            "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+            "seed": args.seed,
             "parallel": True,
             "num_agents": num_agents,
             "dataset": args.dataset,
@@ -90,7 +89,6 @@ if __name__ == "__main__":
         "algo": args.algo,
         "agent.batch_size": batch_size,
         "seed": args.seed,
-        # "seed": [0, 1, 2, 3, 4, 5, 6, 7],
         "parallel": True,
         "num_agents": num_agents,
         "parallel": True,

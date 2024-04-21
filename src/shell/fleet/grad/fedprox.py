@@ -21,3 +21,21 @@ class ParallelFedProxAgent(FedProxAgent):
         for neighbor in self.neighbors.values():
             ray.get(neighbor.receive.remote(
                 self.node_id, deepcopy(self.model), "model"))
+
+
+
+class FedProxModAgent(FedProxAgent):
+    def prepare_model(self):
+        num_init_components = self.net.depth
+        num_components = len(self.net.components)
+        for i in range(num_init_components, num_components):
+            self.excluded_params.add("components.{}".format(i))
+        return super().prepare_model()
+
+
+@ray.remote
+class ParallelFedProxModAgent(FedProxModAgent):
+    def communicate(self, task_id, communication_round, final=False):
+        for neighbor in self.neighbors.values():
+            ray.get(neighbor.receive.remote(
+                self.node_id, deepcopy(self.model), "model"))

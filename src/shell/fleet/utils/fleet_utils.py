@@ -8,8 +8,8 @@ Copyright (c) 2023 Long Le
 '''
 from shell.fleet.fleet import Fleet, ParallelFleet, ParallelAgent, Agent
 from shell.fleet.grad.monograd import ModelSyncAgent, ParallelModelSyncAgent
-from shell.fleet.grad.fedprox import FedProxAgent, ParallelFedProxAgent
-from shell.fleet.grad.fedcurv import FedCurvAgent, ParallelFedCurvAgent
+from shell.fleet.grad.fedprox import FedProxAgent, ParallelFedProxAgent, FedProxModAgent, ParallelFedProxModAgent
+from shell.fleet.grad.fedcurv import FedCurvAgent, ParallelFedCurvAgent, FedCurvModAgent, ParallelFedCurvModAgent
 from shell.fleet.grad.gradient_fleet import SyncBaseFleet, ParallelSyncBaseFleet
 from shell.fleet.grad.modgrad import ModGrad, ParallelModGrad
 from shell.fleet.data.data_fleet import DataFleet, ParallelDataFleet
@@ -30,39 +30,6 @@ BASIC_FLEET_CLS = {
     },
 }
 
-# FLEET_CLS = {
-#     "no_sharing": {
-#         True: ParallelFleet,
-#         False: Fleet,
-#     },
-#     # fedavg
-#     "gradient": {
-#         True: ParallelSyncBaseFleet,
-#         False: SyncBaseFleet,
-#     },
-#     "recv_data": {
-#         True: ParallelDataFleet,
-#         False: DataFleet,
-#     },
-#     # fedprox
-#     "fedprox": {
-#         True: ParallelSyncBaseFleet,
-#         False: SyncBaseFleet,
-#     },
-#     # "debug_joint":{
-#     #     True: ParallelGradFleet,
-#     #     False: GradFleet,
-#     # },
-#     "debug_joint": {
-#         True: ParallelFleet,
-#         False: Fleet,
-#     },
-#     # "sender_data": {},
-#     "modmod": {
-#         True: ParallelFleet,
-#         False: Fleet,
-#     },
-# }
 
 
 AGENT_CLS = {
@@ -93,11 +60,19 @@ AGENT_CLS = {
             True: ParallelFedProxAgent,
             False: FedProxAgent,
         },
+        "modular": {
+            True: ParallelFedProxModAgent,
+            False: FedProxModAgent,
+        },
     },
     "fedcurv": {
         "monolithic": {
             True: ParallelFedCurvAgent,
             False: FedCurvAgent,
+        },
+        "modular": {
+            True: ParallelFedCurvModAgent,
+            False: FedCurvModAgent,
         },
     },
     "recv_data": {

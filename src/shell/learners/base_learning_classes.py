@@ -156,7 +156,7 @@ class Learner():
     def compute_ewc_loss(self, fisher, model):
         loss = 0.0
         for n, p in self.net.named_parameters():
-            if n not in fisher:
+            if n not in fisher or n not in model:
                 continue
             _loss = fisher[n] * (p - model[n]) ** 2
             loss += _loss.sum()

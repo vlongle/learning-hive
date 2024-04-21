@@ -36,9 +36,9 @@ class FedCurvAgent(ModelSyncAgent):
         tmp_dataset.tensors = tmp_dataset.tensors + \
             (torch.full((len(tmp_dataset),), task_id, dtype=int),)
         mega_dataset = ConcatDataset(
-            [get_custom_tensordataset(replay.get_tensors(), name=self.dataset.dataset_name,
+            [get_custom_tensordataset(replay.get_tensors(), name=self.dataset.name,
                                       use_contrastive=self.agent.use_contrastive) for replay in self.agent.replay_buffers.values()] + [tmp_dataset]
-            + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset.dataset_name,
+            + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset.name,
                                         use_contrastive=self.agent.use_contrastive) for replay in self.agent.shared_replay_buffers.values() if len(replay) > 0]
         )
         mega_loader = torch.utils.data.DataLoader(mega_dataset,
@@ -48,7 +48,7 @@ class FedCurvAgent(ModelSyncAgent):
                                                   pin_memory=True
                                                   )
 
-        self.fisher = EWC(self.model, mega_loader).fisher
+        self.fisher = EWC(self.agent, mega_loader).fisher
 
     def communicate(self, task_id, communication_round, final=False):
         for neighbor in self.neighbors.values():
@@ -73,6 +73,26 @@ class FedCurvAgent(ModelSyncAgent):
 
 @ray.remote
 class ParallelFedCurvAgent(FedCurvAgent):
+    def communicate(self, task_id, communication_round, final=False):
+        for neighbor in self.neighbors.values():
+            ray.get(neighbor.receive.remote(
+                self.node_id, deepcopy(self.model), "model"))
+            ray.get(neighbor.receive.remote(
+                self.node_id, deepcopy(self.fisher), "fisher"))
+
+
+
+class FedCurvModAgent(FedCurvAgent):
+    def prepare_model(self):
+        num_init_components = self.net.depth
+        num_components = len(self.net.components)
+        for i in range(num_init_components, num_components):
+            self.excluded_params.add("components.{}".format(i))
+        return super().prepare_model()
+
+
+@ray.remote
+class ParallelFedCurvModAgent(FedCurvModAgent):
     def communicate(self, task_id, communication_round, final=False):
         for neighbor in self.neighbors.values():
             ray.get(neighbor.receive.remote(

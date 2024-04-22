@@ -8,8 +8,6 @@ from typing import Callable, Dict, List, NamedTuple, Optional, Tuple, Union
 from torch.nn import Linear, Module
 
 
-
-
 class EWC(object):
     def __init__(self, model: nn.Module, dataloader):
 
@@ -18,14 +16,13 @@ class EWC(object):
         self._means = {}
         self.fisher = self._diag_fisher()
 
-
     def _diag_fisher(self):
         self.model.net.eval()
         importances = {}
 
-
         # Convert generator to a dict and then deepcopy
-        params = {name: param for name, param in self.model.net.named_parameters()}
+        params = {name: param for name,
+                  param in self.model.net.named_parameters()}
         copied_params = deepcopy(params)
 
         for n, p in copied_params.items():
@@ -44,13 +41,17 @@ class EWC(object):
                 # for task_id_tmp in sorted(all_t.tolist(), reverse=True):
                 Yt = Y[t == task_id_tmp]
                 Xt = X[t == task_id_tmp]
-                l += self.model.compute_loss(Xt,
-                                             Yt, task_id_tmp,
-                                             mode=None,
-                                             global_step=None,
-                                             use_aux=False,
-                                             )
+                l_t = self.model.compute_loss(Xt,
+                                              Yt, task_id_tmp,
+                                              mode='ce',
+                                              global_step=None,
+                                              use_aux=False,
+                                              )
+                l += l_t
 
+            if l is None or not l.requires_grad:
+                continue  # for modular, in the rare case that this batch
+                # doesn't contain the current task. Skip it.
             l.backward()
 
             for (k1, p), (k2, imp) in zip(

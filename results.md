@@ -274,9 +274,7 @@ Still can't recover the perf of prev github commit. But anyway.
 
 - do demand transfer [NO]
 
-
-- fix the recv modular CIFAR-100. why is the replay buffer changes after each call.
-
+- Fix FedAvg for combined. There's a bug somehwere.
 ## Other tricks
 - increase the no. of samples for datasets like MNIST variants can actually make the diff between modular and monolithic more drastic due to mono overfitting
     - drawback: don't add as much modules -> harm the modmod stuff.

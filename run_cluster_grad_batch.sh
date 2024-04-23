@@ -7,17 +7,27 @@
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
-#SBATCH --array=0-7 # This will run 8 jobs
+#SBATCH --array=21-21 # This will run 64 jobs for 4 comm_freqs * 8 seeds * 2 datasets
 
-# Declare the seeds and algo choices
+# Declare the communication frequencies and datasets
 declare -a comm_freqs=("10" "20" "50" "100")
-declare -a algos=("modular" "monolithic")
+declare -a datasets=("combined" "cifar100")
 
-# Map the SLURM_ARRAY_TASK_ID to a seed and algo
-# Ensuring proper array access and logic for distribution across the jobs
-ALGO=${algos[$((SLURM_ARRAY_TASK_ID % 2))]}
-COMM_FREQ_INDEX=$((SLURM_ARRAY_TASK_ID / 2))
+# Fix ALGO to "modular"
+ALGO="modular"
+MU="0.001"
+
+# Calculate indexes for communication frequency, seed, and dataset
+COMM_FREQ_INDEX=$((SLURM_ARRAY_TASK_ID / 16)) # There are 16 jobs for each comm frequency (8 seeds * 2 datasets)
 COMM_FREQ=${comm_freqs[$COMM_FREQ_INDEX]}
 
-# Fixed dataset
-srun bash -c "python experiments/fedavg_experiments.py --algo $ALGO --comm_freq $COMM_FREQ"
+SEED=$(( (SLURM_ARRAY_TASK_ID / 2) % 8 )) # There are 2 jobs for each seed (different datasets)
+
+DATASET_INDEX=$((SLURM_ARRAY_TASK_ID % 2))
+DATASET=${datasets[$DATASET_INDEX]}
+
+# Execute the command with the specified parameters
+# srun bash -c "python experiments/fedavg_experiments.py --algo $ALGO --comm_freq $COMM_FREQ --seed $SEED --dataset $DATASET"
+srun bash -c "python experiments/fedprox_experiments.py --algo $ALGO --comm_freq $COMM_FREQ --seed $SEED --dataset $DATASET --mu $MU"
+
+exit 0

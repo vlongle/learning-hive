@@ -25,7 +25,7 @@ SEED_IDX=$((SLURM_ARRAY_TASK_ID % 8))
 MU=${mus[$MU_IDX]}
 SEED=${seeds[$SEED_IDX]}
 
-srun bash -c "python experiments/fedprox_experiments.py --mu $MU --dataset $DATASET --seed $SEED --algo $ALGO"
-# srun bash -c "python experiments/fedcurv_experiments.py --mu $MU --dataset $DATASET --seed $SEED --algo $ALGO"
+# srun bash -c "python experiments/fedprox_experiments.py --mu $MU --dataset $DATASET --seed $SEED --algo $ALGO"
+srun bash -c "python experiments/fedcurv_experiments.py --mu $MU --dataset $DATASET --seed $SEED --algo $ALGO"
 
 exit 3

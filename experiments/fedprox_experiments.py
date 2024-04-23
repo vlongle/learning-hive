@@ -26,6 +26,8 @@ parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100", "combined"], help='Dataset for the experiment.')
 parser.add_argument('--comm_freq', type=int, default=5)
 parser.add_argument('--mu', type=float, default=0.0)
+parser.add_argument('--topology', type=str, default='fully_connected')
+parser.add_argument('--edge_drop_prob', type=float, default=0.0)
 args = parser.parse_args()
 
 
@@ -48,8 +50,11 @@ if __name__ == "__main__":
 
     num_agents = 20 if args.dataset == "combined" else 8
 
+    # root_save_dir = prefix + \
+    #     f"more_fl_fix_root_agent_fix_fedprox_excluded_set_results/fedprox_mu_{args.mu}_comm_freq_{args.comm_freq}"
+
     root_save_dir = prefix + \
-        f"more_fl_fix_root_agent_fix_fedprox_excluded_set_results/fedprox_mu_{args.mu}_comm_freq_{args.comm_freq}"
+        f"budget_and_topology_fedprox_results/topology_{args.topology}_edge_drop_{args.edge_drop_prob}/fedprox_mu_{args.mu}_comm_freq_{args.comm_freq}"
 
     if args.dataset != "cifar100":
         config = {
@@ -76,6 +81,8 @@ if __name__ == "__main__":
             "agent.use_contrastive": False,
             "agent.memory_size": memory_size,
             "net.no_sparse_basis": True,
+            "topology": args.topology,
+            "edge_drop_prob": args.edge_drop_prob,
 
             "root_save_dir": root_save_dir,
             "sharing_strategy": "grad_sharing_prox",
@@ -118,6 +125,8 @@ if __name__ == "__main__":
         "sharing_strategy.num_coms_per_round": 1,
         "sharing_strategy.comm_freq": args.comm_freq,
         "sharing_strategy.mu": args.mu,
+        "topology": args.topology,
+        "edge_drop_prob": args.edge_drop_prob,
     }
 
 

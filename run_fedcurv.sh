@@ -5,8 +5,8 @@
 #SBATCH --cpus-per-gpu=48
 #SBATCH --mem-per-cpu=2G
 #SBATCH --time=72:00:00
-#SBATCH --qos=normal
-#SBATCH --partition=batch
+#SBATCH --qos=ee-med
+#SBATCH --partition=eaton-compute
 #SBATCH --exclude=ee-3090-1.grasp.maas
 #SBATCH --array=0-127  # For 4 mu * 8 seeds * 4 datasets = 128 combinations
 

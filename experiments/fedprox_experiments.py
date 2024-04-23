@@ -49,7 +49,7 @@ if __name__ == "__main__":
     num_agents = 20 if args.dataset == "combined" else 8
 
     root_save_dir = prefix + \
-        f"more_fl_fix_root_agent_results/fedprox_mu_{args.mu}_comm_freq_{args.comm_freq}"
+        f"more_fl_fix_root_agent_fix_fedprox_excluded_set_results/fedprox_mu_{args.mu}_comm_freq_{args.comm_freq}"
 
     if args.dataset != "cifar100":
         config = {

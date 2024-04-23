@@ -476,61 +476,72 @@ class Fleet:
             agent.add_neighbors(neighbors)
 
     def train_and_comm(self, task_id):
-
         if task_id < self.num_init_tasks:
             # init task
             num_epochs = self.init_num_epochs
         else:
             num_epochs = self.num_epochs
-        comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs + 1
 
-        # Number of times the loop will iterate
-        num_coms = math.ceil(num_epochs / comm_freq)
+        if isinstance(self.comm_freq, dict):
+            comm_freqs = self.comm_freq
+        else:
+            comm_freqs = {'default': self.comm_freq} if self.comm_freq is not None else {
+                'default': num_epochs + 1}
 
-        for start_epoch in range(0, num_epochs, comm_freq):
-            end_epoch = min(start_epoch + comm_freq, num_epochs)
-            final = start_epoch + comm_freq >= num_epochs
+        # Create a combined list of all unique communication epochs, including the last epoch
+        unique_epochs = set()
+        for freq in comm_freqs.values():
+            unique_epochs.update(range(freq, num_epochs + 1, freq))
+        # Ensure the last epoch is always included
+        unique_epochs.add(num_epochs)
+        sorted_epochs = sorted(unique_epochs)
+
+        max_comm_freq = max(comm_freqs.values())
+        num_coms = math.ceil(num_epochs / max_comm_freq)
+
+        start_epoch = 0
+        for end_epoch in sorted_epochs:
+            final = end_epoch == num_epochs
             print('from', start_epoch, 'to', end_epoch, 'final', final)
-            if self.sharing_strategy.pre_or_post_comm == "pre" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                # print('>>> COMM AT EPOCH', end_epoch)
-                self.communicate(task_id,
-                                 end_epoch,
-                                 comm_freq,
-                                 num_epochs,
-                                 start_com_round=(
-                                     start_epoch // comm_freq) * self.num_coms_per_round,
-                                 final=final)
+
+            if self.sharing_strategy.pre_or_post_comm == "pre":
+                for strategy, freq in comm_freqs.items():
+                    if end_epoch % freq == 0 and freq <= num_epochs:
+                        logging.info(
+                            f'>>> {strategy.upper()} COMM AT EPOCH', end_epoch)
+                        self.communicate(
+                            task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
             for agent in self.agents:
-                # only remove modules for the last epoch
                 agent.set_num_coms(task_id, num_coms)
-                agent.train(task_id, start_epoch, comm_freq, final=final)
+                agent.train(task_id, start_epoch, end_epoch -
+                            start_epoch, final=final)
 
-            # print('>> TRAINING FROM', start_epoch,
-            #       'TO', end_epoch)
-            if self.sharing_strategy.pre_or_post_comm == "post" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                # print('>>> COMM AT EPOCH', end_epoch)
-                self.communicate(task_id,
-                                 end_epoch,
-                                 comm_freq,
-                                 num_epochs,
-                                 start_com_round=(
-                                     start_epoch // comm_freq) * self.num_coms_per_round,
-                                 final=final)
+            if self.sharing_strategy.pre_or_post_comm == "post":
+                for strategy, freq in comm_freqs.items():
+                    if end_epoch % freq == 0 and freq <= num_epochs:
+                        logging.info(
+                            f'>>> {strategy.upper()} COMM AT EPOCH', end_epoch)
+                        self.communicate(
+                            task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
-    def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False):
+            start_epoch = end_epoch
+
+    def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False, strategy=None):
         for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
             self.communicate_round(
-                task_id, end_epoch, comm_freq, num_epochs, communication_round, final=final)
+                task_id, end_epoch, comm_freq, num_epochs, communication_round, final=final, strategy=strategy)
 
-    def communicate_round(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False):
+    def communicate_round(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False, strategy=None):
         for agent in self.agents:
             agent.prepare_communicate(
-                task_id, end_epoch, comm_freq, num_epochs, communication_round, final)
+                task_id, end_epoch, comm_freq, num_epochs, communication_round, final, strategy=strategy)
         for agent in self.agents:
-            agent.communicate(task_id, communication_round, final)
+            agent.communicate(task_id, communication_round,
+                              final, strategy=strategy)
         for agent in self.agents:
-            agent.process_communicate(task_id, communication_round, final)
+            agent.process_communicate(
+                task_id, communication_round, final, strategy=strategy)
 
     def get_save_dir(self):
         return [agent.get_save_dir() for agent in self.agents]
@@ -628,54 +639,65 @@ class ParallelFleet:
 
     def train_and_comm(self, task_id):
         if task_id < self.num_init_tasks:
-            # init task
+            # Initialization task
             num_epochs = self.init_num_epochs
         else:
             num_epochs = self.num_epochs
-        comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs + 1
+
+        # Handling different communication frequencies
+        if isinstance(self.comm_freq, dict):
+            comm_freqs = self.comm_freq
+        else:
+            comm_freqs = {'default': self.comm_freq} if self.comm_freq is not None else {
+                'default': num_epochs + 1}
+
+        # Create a combined list of all unique communication epochs
+        unique_epochs = set()
+        for freq in comm_freqs.values():
+            unique_epochs.update(range(freq, num_epochs + 1, freq))
+        # Ensure the last epoch is always included
+        unique_epochs.add(num_epochs)
+        sorted_epochs = sorted(unique_epochs)
+
         # Number of times the loop will iterate
-        num_coms = math.ceil(num_epochs / comm_freq)
+        max_comm_freq = max(comm_freqs.values())
+        num_coms = math.ceil(num_epochs / max_comm_freq)
 
-        for start_epoch in range(0, num_epochs, comm_freq):
-            final = start_epoch + comm_freq >= num_epochs
-            end_epoch = min(start_epoch + comm_freq, num_epochs)
+        start_epoch = 0
+        for end_epoch in sorted_epochs:
+            final = end_epoch == num_epochs
+            logging.info(
+                f'Task {task_id} training from {start_epoch} to {end_epoch}')
+            ray.get([agent.set_num_coms.remote(task_id, num_coms)
+                    for agent in self.agents])
+            ray.get([agent.train.remote(task_id, start_epoch, end_epoch -
+                    start_epoch, final=final) for agent in self.agents])
 
-            if self.sharing_strategy.pre_or_post_comm == "pre" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                logging.info('task {} comm at epoch {}'.format(
-                    task_id, start_epoch))
-                self.communicate(task_id,
-                                 end_epoch,
-                                 comm_freq,
-                                 num_epochs,
-                                 start_com_round=(
-                                     start_epoch // comm_freq) * self.num_coms_per_round,
-                                 final=final)
+            if self.sharing_strategy.pre_or_post_comm == "pre":
+                for strategy, freq in comm_freqs.items():
+                    if end_epoch % freq == 0 and freq <= num_epochs:
+                        logging.info(
+                            f'Task {task_id} {strategy.upper()} COMM AT EPOCH {end_epoch}')
+                        self.communicate(
+                            task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
-            logging.info('task {} training from {} to {}'.format(task_id,
-                                                                 start_epoch, end_epoch))
-            ray.get([agent.set_num_coms.remote(
-                task_id, num_coms) for agent in self.agents])
-            ray.get([agent.train.remote(task_id, start_epoch, comm_freq,
-                                        final=final) for agent in self.agents])
+            if self.sharing_strategy.pre_or_post_comm == "post":
+                for strategy, freq in comm_freqs.items():
+                    if end_epoch % freq == 0 and freq <= num_epochs:
+                        logging.info(
+                            f'Task {task_id} {strategy.upper()} COMM AT EPOCH {end_epoch}')
+                        self.communicate(
+                            task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
-            if self.sharing_strategy.pre_or_post_comm == "post" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                logging.info('task {} comm at epoch {}'.format(
-                    task_id, end_epoch))
-                self.communicate(task_id,
-                                 end_epoch,
-                                 comm_freq,
-                                 num_epochs,
-                                 start_com_round=(
-                                     start_epoch // comm_freq) * self.num_coms_per_round,
-                                 final=final)
+            start_epoch = end_epoch
 
-    def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False):
+    def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False, strategy=None):
         for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
             # parallelize preprocessing to prepare neccessary data
             # before the communication round.
             ray.get([agent.prepare_communicate.remote(task_id, end_epoch, comm_freq,
                                                       num_epochs,
-                                                      communication_round, final)
+                                                      communication_round, final, strategy)
                     for agent in self.agents])
             # NOTE: HACK: communicate in done in sequence to avoid dysnc issues,
             # if the sender sends something to the receiver but the receiver is not paying
@@ -685,9 +707,9 @@ class ParallelFleet:
                 # sequential, because ray.get is blocking to get the result from one
                 # agent before moving to the next.
                 ray.get(agent.communicate.remote(
-                    task_id, communication_round, final))
+                    task_id, communication_round, final, strategy))
 
-            ray.get([agent.process_communicate.remote(task_id, communication_round, final)
+            ray.get([agent.process_communicate.remote(task_id, communication_round, final, strategy)
                     for agent in self.agents])
 
     def get_save_dir(self):

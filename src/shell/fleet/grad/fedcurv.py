@@ -62,12 +62,11 @@ class FedCurvAgent(ModelSyncAgent):
         else:
             raise ValueError(f"Invalid message type: {msg_type}")
 
-    def train(self, task_id, start_epoch=0, communication_frequency=None,
-              final=True):
+    def process_communicate(self, task_id, communication_round, final=False):
         self.agent.incoming_models = self.incoming_models
         self.agent.mu = self.sharing_strategy.mu
         self.agent.fisher = self.incoming_fishers
-        return super().train(task_id, start_epoch, communication_frequency, final)
+        return super().process_communicate(task_id, communication_round, final)
 
 
 @ray.remote
@@ -78,7 +77,6 @@ class ParallelFedCurvAgent(FedCurvAgent):
                 self.node_id, deepcopy(self.model), "model"))
             ray.get(neighbor.receive.remote(
                 self.node_id, deepcopy(self.fisher), "fisher"))
-
 
 
 class FedCurvModAgent(FedCurvAgent):

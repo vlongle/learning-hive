@@ -22,7 +22,6 @@ import logging
 import gc
 
 
-
 def create_general_permutation_matrix(task1_classes, task2_classes):
     # Initialize a zero matrix for the new definition
     assert len(task1_classes) == len(task2_classes)
@@ -59,46 +58,6 @@ class ModuleRanker:
 
     def compute_task_sims(self, neighbor_id, task_id):
         raise NotImplementedError
-
-    # def send_most_similar_module(self, neighbor_id, task_id):
-    #     task_sims = self.compute_task_sims(neighbor_id, task_id)
-    #     # print('task_sims', self.agent.node_id,
-    #     #       neighbor_id, task_id, '>', task_sims)
-    #     module_record = self.agent.agent.dynamic_record.df
-
-    #     for t in range(len(task_sims)):
-    #         if t not in set(module_record['task_id']):
-    #             task_sims[t] = float('-inf')
-    #         if t in set(module_record['task_id']) and not module_record[module_record['task_id'] == t]['add_new_module'].item():
-    #             task_sims[t] = float('-inf')
-
-    #     # print('AFTER PROCESSED: task_sims', self.agent.node_id,
-    #     #       neighbor_id, task_id, '>', task_sims)
-    #     # get the most similar task with the highest similarity. Break ties by the task id
-    #     # (highest wins)
-    #     # most_similar_task = max(
-    #     #     range(len(task_sims)), key=lambda x: (task_sims[x], x))
-    #     # lowest task_id wins
-    #     most_similar_task = max(
-    #         range(len(task_sims)), key=lambda x: (task_sims[x], -x))
-    #     if task_sims[most_similar_task] == float('-inf'):
-    #         return []
-
-    #     task_module = module_record[module_record['task_id']
-    #                                 == most_similar_task]['num_components'].item() - 1
-    #     # print('node', self.node_id, 'for neighbor', neighbor_id, '@ task', task_id, 'sending module', task_module, 'from task', most_similar_task,
-    #     #       'with similarity', task_sims[most_similar_task], 'current no. of modules', len(self.net.components))
-    #     # pathological for replaying ipynb
-    #     if task_module >= len(self.agent.net.components):
-    #         return []
-    #     return [{'source_task_id': most_similar_task,
-    #              'task_sim': task_sims[most_similar_task],
-    #              'module_id': task_module,
-    #              'module': self.agent.net.components[task_module],
-    #              'decoder': self.agent.net.decoder[most_similar_task],
-    #              'structure': self.agent.net.structure[most_similar_task],
-    #              'source_class_labels': self.agent.dataset.class_sequence[most_similar_task * self.agent.dataset.num_classes_per_task:
-    #                                                                       (most_similar_task + 1) * self.agent.dataset.num_classes_per_task]},]
 
     def send_most_similar_modules(self, neighbor_id, task_id):
         task_sims = self.compute_task_sims(neighbor_id, task_id)
@@ -452,12 +411,11 @@ class TryOutModuleSelection(ModuleSelection):
 
             logging.info('Batch {} perfs: {}'.format(
                 i//max_num_modules_tryout, batch_perfs))
-            
+
             del agent_cp, batch_modules
             gc.collect()  # Collect garbage in CPU memory
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
-            
 
         logging.info('All tryout perfs: {}'.format(all_perfs))
         best_index = np.argmax(all_perfs)
@@ -501,9 +459,7 @@ class ModModAgent(Agent):
         self.modmod_record.path = f"{self.save_dir}/modmod_add_modules_record.csv"
         return super().change_save_dir(save_dir)
 
-    def train(self, task_id, start_epoch=0, communication_frequency=None,
-              final=True, **kwargs):
-
+    def prepare_train(self):
         module_list = self.train_kwargs.get("module_list", [])
         decoder_list = self.train_kwargs.get("decoder_list", [])
         structure_list = self.train_kwargs.get("structure_list", [])
@@ -520,7 +476,7 @@ class ModModAgent(Agent):
         if "num_candidate_modules" not in kwargs:  # HACK: to be compatible with the exploratory ipynb
             kwargs["num_candidate_modules"] = num_candidate_modules
 
-        train_candidate_module = not self.sharing_strategy.freeze_candidate_module
+        self.train_kwargs['train_candidate_module'] = not self.sharing_strategy.freeze_candidate_module
 
         # print(f"BEFORE TRAINING {self.node_id} module_list {len(module_list)} decoder_list _{len(decoder_list)} structure_list {len(structure_list)}")
         if self.sharing_strategy.transfer_decoder and len(decoder_list) > 0:
@@ -533,9 +489,6 @@ class ModModAgent(Agent):
             del self.train_kwargs["decoder_list"]
         if "structure_list" in self.train_kwargs:
             del self.train_kwargs["structure_list"]
-
-        return super().train(task_id, start_epoch, communication_frequency, final, train_candidate_module=train_candidate_module,
-                             **kwargs)
 
     def transfer_decoder(self, task_id, decoder):
         decoder, source_class_labels = decoder['decoder'], decoder['source_class_labels']
@@ -607,15 +560,15 @@ class ModModAgent(Agent):
             return
         if communication_round % 2 == 1:
             module_list = self.get_module_list()
-  
+
             row = {
-                    'task_id': task_id,
-                    "source_task_id": -1,
-                    'task_sim': 0,
-                    'module_id': -1,
-                    # 'source_class_labels': None,
-                    'neighbor_id': -1,
-                }
+                'task_id': task_id,
+                "source_task_id": -1,
+                'task_sim': 0,
+                'module_id': -1,
+                # 'source_class_labels': None,
+                'neighbor_id': -1,
+            }
             if len(module_list) == 0:
                 self.train_kwargs["module_list"] = []
                 self.train_kwargs["decoder_list"] = []
@@ -631,7 +584,7 @@ class ModModAgent(Agent):
                     best_match = module_list[best]
                     self.train_kwargs["module_list"] = [best_match['module']]
                     self.train_kwargs["decoder_list"] = [{"decoder": best_match['decoder'],
-                                                        "source_class_labels": best_match['source_class_labels']}]
+                                                          "source_class_labels": best_match['source_class_labels']}]
                     self.train_kwargs["structure_list"] = [{'structure': best_match['structure'],
                                                             'module_id': best_match['module_id']}]
                     # Create a new dictionary with task_id as the first key
@@ -651,12 +604,8 @@ class ModModAgent(Agent):
                 row
             )
             self.modmod_record.save()
-        # else:
-        #     self.task_sims = {}
-        #     for neighbor_id in self.neighbors:
-        #         neighbor_task = self.query_tasks[neighbor_id]
-        #         self.task_sims[neighbor_id] = self.compute_task_similarity(
-        #             neighbor_task, task_id)
+
+            self.prepare_train()
 
     def send_query_task(self, task_id):
         query = self.module_ranker.send_query(task_id)

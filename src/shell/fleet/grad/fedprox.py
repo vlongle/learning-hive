@@ -8,12 +8,12 @@ class FedProxAgent(ModelSyncAgent):
             agent_kwargs["fl_strategy"] = "fedprox"
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
                          net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
-    def train(self, task_id, start_epoch=0, communication_frequency=None,
-              final=True):
+
+    def process_communicate(self, task_id, communication_round, final=False):
         self.agent.global_model = copy.deepcopy(self.agent.net)
         self.agent.mu = self.sharing_strategy.mu
         self.agent.excluded_params = self.excluded_params
-        return super().train(task_id, start_epoch, communication_frequency, final)
+        return super().process_communicate(task_id, communication_round, final)
 
 
 @ray.remote

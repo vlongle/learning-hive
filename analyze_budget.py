@@ -80,34 +80,26 @@ if __name__ == "__main__":
     # root_result_dir = "rerun_fashionmnist_recv_results"
     # root_result_dir = "modular_backward_cifar_heuristic_results_small_mem_32/budget"
     # root_result_dir = "new_topology_experiment_results/modmod"
-    root_result_dir = "best_fl_results"
-    record = analyze_multiple(root_result_dir)
-    print(record.df)
-    # get the final accuracy with respect to different algo and dataset
-    # and whether it uses contrastive loss
-    print("=====FINAL ACC======")
-    print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-        "final_acc"].mean() * 100)
+
+    for root_result_dir in os.listdir("budget_and_topology_fedprox_results"):
+        result = f"budget_and_topology_fedprox_results/{root_result_dir}"
+        if os.path.isdir(result):
+            record = analyze_multiple(result)
+            record.save()
+
+    # root_result_dir = "best_fl_results"
+    # record = analyze_multiple(root_result_dir)
+    # print(record.df)
+    # # get the final accuracy with respect to different algo and dataset
+    # # and whether it uses contrastive loss
+    # print("=====FINAL ACC======")
     # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-    #       "final_acc"].sem() * 100)
+    #     "final_acc"].mean() * 100)
+    # # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+    # #       "final_acc"].sem() * 100)
 
-    print("=====AUC======")
-    print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-        "auc"].mean())
+    # print("=====AUC======")
+    # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
+    #     "auc"].mean())
 
-    record.save()
-# print("=====AVG ACC======")
-# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-#       "avg_acc"].mean() * 100)
-# # print("=====BACKWARD======")
-# # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-# #       "backward"].mean())
-
-# print("=====FORWARD======")
-# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-#       "forward"].mean() * 100)
-
-
-# print("=====CATASTROPHIC======")
-# print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
-#       "catastrophic"].mean())
+    # record.save()

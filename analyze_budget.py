@@ -79,7 +79,8 @@ def analyze_multiple(root_result_dir, num_init_tasks=4, pattern=r".*"):
 if __name__ == "__main__":
     # root_result_dir = "rerun_fashionmnist_recv_results"
     # root_result_dir = "modular_backward_cifar_heuristic_results_small_mem_32/budget"
-    root_result_dir = "new_topology_experiment_results/modmod"
+    # root_result_dir = "new_topology_experiment_results/modmod"
+    root_result_dir = "best_fl_results"
     record = analyze_multiple(root_result_dir)
     print(record.df)
     # get the final accuracy with respect to different algo and dataset
@@ -94,6 +95,7 @@ if __name__ == "__main__":
     print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
         "auc"].mean())
 
+    record.save()
 # print("=====AVG ACC======")
 # print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
 #       "avg_acc"].mean() * 100)

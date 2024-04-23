@@ -274,7 +274,11 @@ Still can't recover the perf of prev github commit. But anyway.
 
 - do demand transfer [NO]
 
-- Fix FedAvg for combined. There's a bug somehwere.
+
+
+- simply averaging help with the backward stuff in modular networks.
+-> Need to do combined stuff
+
 ## Other tricks
 - increase the no. of samples for datasets like MNIST variants can actually make the diff between modular and monolithic more drastic due to mono overfitting
     - drawback: don't add as much modules -> harm the modmod stuff.

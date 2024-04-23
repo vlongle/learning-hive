@@ -37,7 +37,7 @@ def plot_agg_learning_curves(fleet, ax=None, name=None, tasks=None, agent_ids=No
         fig, ax = plt.subplots()
 
     if tasks is None:
-        tasks = range(fleet.num_init_tasks, fleet.num_tasks)
+        tasks = range(fleet.num_init_tasks-1, fleet.num_tasks)
 
     dfs = []
     for agent in fleet.agents:
@@ -200,7 +200,7 @@ def plot_agg_over_seeds(combined_agg_df, title_name=None, ax=None, std_scale=1.0
     ax.tick_params(axis='y', labelsize=16)
 
     ax.grid(True, which='major', linestyle='--', alpha=0.5)
-    # ax.set_ylim(0.4, 1);
+    # ax.set_ylim(0.5, 0.8)
 
 
 def get_auc_stats(seed_aucs):
@@ -224,7 +224,8 @@ def get_auc_stats(seed_aucs):
 def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='avg', error_type='std',
                       save_fig_path=None, bar_width=0.1, figsize=(15, 5),
                       custom_algo_order=None,
-                      plot_prefix_name=""):
+                      plot_prefix_name="",
+                      min_y=50, max_y=None):
     fig, ax = plt.subplots(figsize=figsize)
     # Initialize variables for plotting
     algo_stats_global = {}
@@ -271,8 +272,9 @@ def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='a
     ax.set_title(
         plot_prefix_name + r'$\mathsf{'+mode+'}$ AUC', fontsize=16, weight='bold')
     ax.grid(True, which='major', linestyle='--', alpha=0.5)
-    max_y = 95 if mode == 'current' else 100
-    ax.set_ylim([50, max_y])
+    if max_y is None:
+        max_y = 95 if mode == 'current' else 100
+    ax.set_ylim([min_y, max_y])
 
     plt.tight_layout()
     if save_fig_path is not None:
@@ -421,3 +423,5 @@ def make_table_v2(df, remap_name=None, error_type='std'):
 
     # Display the HTML table in Jupyter Notebook
     display(HTML(html))
+
+    return pivot_mean_df

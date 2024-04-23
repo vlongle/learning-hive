@@ -212,14 +212,14 @@ class Agent:
         return self.agent.train(trainloader, task_id, testloaders=testloaders,
                                 valloader=valloader, start_epoch=start_epoch, **train_kwargs)
 
-    def eval_test(self, task_id):
+    def eval_test(self, task_id, include_avg=False):
         testloaders = {task: torch.utils.data.DataLoader(testset,
                                                          batch_size=128,
                                                          shuffle=False,
                                                          num_workers=4,
                                                          pin_memory=True,
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
-        return eval_net(self.net, testloaders)
+        return eval_net(self.net, testloaders, include_avg=include_avg)
 
     # def eval_val(self, task_id):
     #     valloaders = {task: torch.utils.data.DataLoader(valset,

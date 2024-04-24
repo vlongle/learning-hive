@@ -116,11 +116,11 @@ class RecvDataAgent(Agent):
     """
 
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
-                 sharing_strategy):
+                 sharing_strategy, agent=None, net=None):
         # self.use_ood_separation_loss = sharing_strategy.use_ood_separation_loss
         # agent_kwargs['use_ood_separation_loss'] = self.use_ood_separation_loss
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent, net=net)
 
         self.scorer = SCORER_FN_LOOKUP[self.sharing_strategy.scorer]
         self.scorer_type = SCORER_TYPE_LOOKUP[self.sharing_strategy.scorer]
@@ -291,9 +291,11 @@ class RecvDataAgent(Agent):
 
         neighbor_dataset = self.incoming_query_extra_info[neighbor_id]['query_dataset']
         if neighbor_dataset != self.dataset.name:
-            res =  torch.full((query_global_y.size(0), n_filter_neighbors), -1, dtype=torch.long)
+            res = torch.full((query_global_y.size(
+                0), n_filter_neighbors), -1, dtype=torch.long)
         else:
-            res = self.prefilter_oracle_helper(qX, query_global_y, n_filter_neighbors)
+            res = self.prefilter_oracle_helper(
+                qX, query_global_y, n_filter_neighbors)
         return {
             "task_neighbors_prefilter": res
         }
@@ -596,7 +598,7 @@ class RecvDataAgent(Agent):
 
             self.data[requester] = structured_data['X_neighbors']
             self.extra_info[requester] = structured_data
-        
+
         if was_training:
             self.net.train()
 
@@ -727,19 +729,32 @@ class RecvDataAgent(Agent):
         if communication_round % 2 == 0:
             # send query to neighbors
             for neighbor in self.neighbors.values():
-                neighbor.receive(self.node_id, self.query, "query")
-                neighbor.receive(
-                    self.node_id, self.query_extra_info, "query_extra_info")
+                if isinstance(neighbor, ray.actor.ActorHandle):
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.query, "query"))
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.query_extra_info, "query_extra_info"
+                    ))
+                else:
+                    neighbor.receive(self.node_id, self.query, "query")
+                    neighbor.receive(
+                        self.node_id, self.query_extra_info, "query_extra_info")
         elif communication_round % 2 == 1:
             # send data to the requester
             # for requester in self.incoming_query:
             #     self.neighbors[requester].receive(
             #         self.node_id, self.data[requester], "data")
             for neighbor_id, neighbor in self.neighbors.items():
-                neighbor.receive(
-                    self.node_id, self.data[neighbor_id], "data")
-                neighbor.receive(
-                    self.node_id, self.extra_info[neighbor_id], "extra_info")
+                if isinstance(neighbor, ray.actor.ActorHandle):
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.data[neighbor_id], "data"))
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.extra_info[neighbor_id], "extra_info"))
+                else:
+                    neighbor.receive(
+                        self.node_id, self.data[neighbor_id], "data")
+                    neighbor.receive(
+                        self.node_id, self.extra_info[neighbor_id], "extra_info")
         else:
             raise ValueError(f"Invalid round number {communication_round}")
 

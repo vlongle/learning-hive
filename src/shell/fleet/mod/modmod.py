@@ -425,9 +425,10 @@ class TryOutModuleSelection(ModuleSelection):
 
 
 class ModModAgent(Agent):
-    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
+    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
+                 sharing_strategy, agent=None, net=None):
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent, net=net)
 
         self.modmod_record = Record(
             f"{self.save_dir}/modmod_add_modules_record.csv")
@@ -542,8 +543,12 @@ class ModModAgent(Agent):
             self.send_query_task(task_id)
         else:
             for neighbor_id, neighbor in self.neighbors.items():
-                neighbor.receive(
-                    self.node_id, self.outgoing_modules[neighbor_id], "module")
+                if isinstance(neighbor, ray.actor.ActorHandle):
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.outgoing_modules[neighbor_id], "module"))
+                else:
+                    neighbor.receive(
+                        self.node_id, self.outgoing_modules[neighbor_id], "module")
 
     def get_module_list(self):
         module_list = []
@@ -610,7 +615,11 @@ class ModModAgent(Agent):
     def send_query_task(self, task_id):
         query = self.module_ranker.send_query(task_id)
         for neighbor in self.neighbors.values():
-            neighbor.receive(self.node_id, query, "query_task")
+            if isinstance(neighbor, ray.actor.ActorHandle):
+                ray.get(neighbor.receive.remote(
+                    self.node_id, query, "query_task"))
+            else:
+                neighbor.receive(self.node_id, query, "query_task")
 
 
 @ray.remote

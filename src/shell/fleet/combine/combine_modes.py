@@ -43,21 +43,17 @@ class CombineModesAgent(Agent):
         self.communicator = {}
         for comm in communicator:
             config = load_comm_config(comm)
+            a_kw = deepcopy(self.agent_kwargs)
+            a_kw['save_dir'] = self.root_save_dir
             args = (self.node_id, self.seed, self.dataset, self.NetCls, self.AgentCls,
-                    self.net_kwargs, self.agent_kwargs, self.train_kwargs, config)
+                    deepcopy(self.net_kwargs), a_kw, self.train_kwargs, config, self.agent, self.net)
 
-            comm_cls = AGENT_CLS[config.name][self.algo][self.parallel]
+            comm_cls = AGENT_CLS[config.name][self.algo][False]
 
-            if self.parallel:
-                comm_agent = comm_cls.remote(*args)
-                comm_agent.add_neighbors.remote(self.neighbors)
-            else:
-                comm_agent = comm_cls(*args)
-                comm_agent.add_neighbors(self.neighbors)
+            comm_agent = comm_cls(*args)
+            comm_agent.add_neighbors(self.neighbors)
 
             self.communicator[comm] = comm_agent
-
-        # return communicators
 
     def prepare_communicate(self, task_id, end_epoch, comm_freq,
                             num_epochs,

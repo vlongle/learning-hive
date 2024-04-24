@@ -25,9 +25,10 @@ Only sync modules
 
 
 class ModelSyncAgent(Agent):
-    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
+    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
+                 sharing_strategy, agent=None, net=None):
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent, net=None)
         self.incoming_models = {}
         self.excluded_params = set(
             ["decoder", "structure", "projector", "random_linear_projection"])
@@ -51,7 +52,11 @@ class ModelSyncAgent(Agent):
 
     def communicate(self, task_id, communication_round, final=False):
         for neighbor in self.neighbors.values():
-            neighbor.receive(self.node_id, deepcopy(self.model), "model")
+            if isinstance(neighbor, ray.actor.ActorHandle):
+                ray.get(neighbor.receive.remote(
+                    self.node_id, deepcopy(self.model), "model"))
+            else:
+                neighbor.receive(self.node_id, deepcopy(self.model), "model")
 
     def receive(self, node_id, model, msg_type):
         self.incoming_models[node_id] = model

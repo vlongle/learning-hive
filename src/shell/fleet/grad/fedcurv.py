@@ -14,12 +14,13 @@ import torch
 
 
 class FedCurvAgent(ModelSyncAgent):
-    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
+    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
+                 sharing_strategy, agent=None, net=None):
         if "fl_strategy" not in agent_kwargs:
             agent_kwargs["fl_strategy"] = "fedcurv"
         self.incoming_fishers = {}
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent, net=net)
 
     def train(self, task_id, start_epoch=0, communication_frequency=None,
               final=True):

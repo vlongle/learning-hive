@@ -27,11 +27,13 @@ SEED_SCALE = 1000
 
 
 class Agent:
-    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
+    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy,
+                 agent=None, net=None):
 
         self.seed = seed + SEED_SCALE * node_id
         seed_everything(self.seed)
 
+        self.root_save_dir = agent_kwargs["save_dir"]
         self.save_dir = os.path.join(
             agent_kwargs["save_dir"], f"agent_{str(node_id)}")
         create_dir_if_not_exist(self.save_dir)
@@ -46,44 +48,18 @@ class Agent:
         self.dataset = dataset
         self.batch_size = agent_kwargs.get("batch_size", 64)
         agent_kwargs.pop("batch_size", None)
-        self.net = NetCls(**net_kwargs)
-        agent_kwargs["save_dir"] = self.save_dir
-        self.agent = AgentCls(self.net, **agent_kwargs)
+
+        if agent is not None:
+            self.net = net
+            self.agent = agent
+        else:
+            self.net = NetCls(**net_kwargs)
+            agent_kwargs["save_dir"] = self.save_dir
+            self.agent = AgentCls(self.net, **agent_kwargs)
+
         self.train_kwargs = train_kwargs
 
         self.sharing_strategy = sharing_strategy
-
-    # def get_ood_data(self, task_id, mode='replay'):
-
-    #     if mode == 'replay':
-    #         # Gather data from replay buffers of all tasks except the current task
-    #         replay_buffers = {t: self.agent.replay_buffers[t] for t in range(self.agent.T)
-    #                           if t != task_id}
-    #         if len(replay_buffers) == 0:
-    #             return None, None, None, None
-
-    #         X_past = torch.cat([rb.tensors[0]
-    #                             for t, rb in replay_buffers.items()], dim=0)
-    #         y_past = torch.cat([torch.from_numpy(get_global_label(rb.tensors[1],
-    #                                                               t, self.dataset.class_sequence,
-    #                                                               self.dataset.num_classes_per_task))
-    #                             for t, rb in replay_buffers.items()], dim=0)
-    #     elif mode == 'training':
-    #         # Gather data from training sets of all tasks except the current task
-    #         X_past = torch.cat([self.dataset.trainset[t].tensors[0]
-    #                             for t in range(self.agent.T) if t != task_id], dim=0)
-    #         y_past = torch.cat([torch.from_numpy(get_global_label(self.dataset.trainset[t].tensors[1],
-    #                                                               t, self.dataset.class_sequence,
-    #                                                               self.dataset.num_classes_per_task))
-    #                             for t in range(self.agent.T) if t != task_id], dim=0)
-    #     mask = self.get_ood_data_helper(task_id, y_past)
-    #     X_ood_filtered = X_past[mask]
-    #     y_ood_filtered = y_past[mask]
-
-    #     X_iid_filtered = X_past[~mask]
-    #     y_iid_filtered = y_past[~mask]
-
-    #     return X_ood_filtered, y_ood_filtered, X_iid_filtered, y_iid_filtered
 
     def get_shared_replay_buffers(self):
         return self.agent.shared_replay_buffers
@@ -677,19 +653,20 @@ class ParallelFleet:
         start_epoch = 0
         for end_epoch in sorted_epochs:
             final = end_epoch == num_epochs
-            logging.info(
-                f'Task {task_id} training from {start_epoch} to {end_epoch}')
             ray.get([agent.set_num_coms.remote(task_id, num_coms)
                     for agent in self.agents])
-            ray.get([agent.train.remote(task_id, start_epoch, end_epoch -
-                    start_epoch, final=final) for agent in self.agents])
 
             for strategy, freq in comm_freqs.items():
                 if end_epoch % freq == 0 and freq <= num_epochs and self.sharing_strategy.pre_or_post_comm[strategy] == "pre":
                     logging.info(
-                        f'Task {task_id} {strategy.upper()} COMM AT EPOCH {end_epoch}')
+                        f'Task {task_id} {strategy.upper()} COMM AT EPOCH {start_epoch}')
                     self.communicate(
                         task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
+
+            logging.info(
+                f'Task {task_id} training from {start_epoch} to {end_epoch}')
+            ray.get([agent.train.remote(task_id, start_epoch, end_epoch -
+                    start_epoch, final=final) for agent in self.agents])
 
             for strategy, freq in comm_freqs.items():
                 if end_epoch % freq == 0 and freq <= num_epochs and self.sharing_strategy.pre_or_post_comm[strategy] == "post":

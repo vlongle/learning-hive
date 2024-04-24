@@ -46,28 +46,36 @@ else:
     prefix = "/mnt/kostas-graid/datasets/vlongle/"
 
 
+"""
+NEED TO BE VERY CAREFUL TO STUFF LIKE DYNAMICALLY SETTING CONFIG LIKE
+QUERY_TASK_MODE = "CURRENT" IF ALGO == MODULAR ELSE ALL
+
+"""
 if __name__ == "__main__":
     start = time.time()
 
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
     num_init_tasks = 4
-    num_tasks = 10
-    num_tasks = 5
+    # num_tasks = 10
+    num_tasks = 6
     batch_size = 64
     num_epochs = 100
     num_agents = 20 if args.dataset == "combined" else 8
 
+    combine = 'recv_data'
+    combine = 'modmod'
+    sync_base = "grad" in combine or "modmod" in combine
     root_save_dir = prefix + \
-        f"combine_modes_results"
-
+        f"combine_modes_results/{combine}"
     if args.dataset != "cifar100":
         config = {
 
             "algo": "modular",
             "dataset": args.dataset,
+            "seed": args.seed,
+            # "seed": [0, 1, 2, 3, 4, 5, 6, 7],
             "num_agents": num_agents,
             "agent.batch_size": batch_size,
-            "seed": args.seed,
             "topology": args.topology,
             "edge_drop_prob": args.edge_drop_prob,
             "parallel": True,
@@ -91,9 +99,9 @@ if __name__ == "__main__":
 
 
             "sharing_strategy": "combine_modes",
-            "sharing_strategy.communicator": "'modmod,grad_sharing_prox,recv_data'",
-            # "sharing_strategy.communicator": "'recv_data'",
-
+            # "sharing_strategy.communicator": "'modmod,grad_sharing_prox,recv_data'",
+            "sharing_strategy.communicator": combine,
+            "sharing_strategy.sync_base": sync_base,
             "root_save_dir": root_save_dir,
 
         }
@@ -101,8 +109,8 @@ if __name__ == "__main__":
     else:
         config = {
             "algo": "modular",
-            # "seed": args.seed,
-            "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+            "seed": args.seed,
+            # "seed": [0, 1, 2, 3, 4, 5, 6, 7],
             "num_agents": num_agents,
             "parallel": True,
 
@@ -130,6 +138,13 @@ if __name__ == "__main__":
             'net.no_sparse_basis': True,
 
 
+            "root_save_dir": root_save_dir,
+
+
+            "sharing_strategy": "combine_modes",
+            # "sharing_strategy.communicator": "'modmod,grad_sharing_prox,recv_data'",
+            "sharing_strategy.communicator": combine,
+            "sharing_strategy.sync_base": sync_base,
             "root_save_dir": root_save_dir,
         }
 

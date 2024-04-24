@@ -351,7 +351,25 @@
 #     start_epoch = end_epoch
 
 
-test = "mod"
+# test = "mod"
 
-for s in test.split(","):
-    print(s)
+# for s in test.split(","):
+#     print(s)
+
+
+freq = 100
+num_epochs = 100
+
+
+unique_epochs = set()
+
+unique_epochs.update(range(freq, num_epochs + 1, freq))
+unique_epochs.add(num_epochs)
+sorted_epochs = sorted(unique_epochs)
+
+print(unique_epochs)
+
+start_epoch = 0
+for end_epoch in sorted_epochs:
+    print('from', start_epoch, 'to', end_epoch)
+    start_epoch = end_epoch

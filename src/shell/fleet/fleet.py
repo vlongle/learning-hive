@@ -41,8 +41,6 @@ class Agent:
         logging.basicConfig(level=logging.INFO,
                             handlers=[logging.StreamHandler(),
                                       logging.FileHandler(os.path.join(self.save_dir, "log.txt"))])
-        logging.info(
-            f"Agent: node_id: {node_id}, seed: {self.seed}")
         self.num_coms = {}
         self.node_id = node_id
         self.dataset = dataset
@@ -477,6 +475,7 @@ class Fleet:
         num_coms = math.ceil(num_epochs / max_comm_freq)
 
         start_epoch = 0
+
         for end_epoch in sorted_epochs:
             final = end_epoch == num_epochs
             print('from', start_epoch, 'to', end_epoch, 'final', final)
@@ -651,13 +650,22 @@ class ParallelFleet:
         num_coms = math.ceil(num_epochs / max_comm_freq)
 
         start_epoch = 0
+
+        def should_communicate(freq, start_epoch, end_epoch):
+            if freq > num_epochs:
+                return False
+            if freq == num_epochs:
+                return start_epoch == 0
+            else:
+                return end_epoch % freq == 0
+
         for end_epoch in sorted_epochs:
             final = end_epoch == num_epochs
             ray.get([agent.set_num_coms.remote(task_id, num_coms)
                     for agent in self.agents])
 
             for strategy, freq in comm_freqs.items():
-                if end_epoch % freq == 0 and freq <= num_epochs and self.sharing_strategy.pre_or_post_comm[strategy] == "pre":
+                if should_communicate(freq, start_epoch, end_epoch) and self.sharing_strategy.pre_or_post_comm[strategy] == "pre":
                     logging.info(
                         f'Task {task_id} {strategy.upper()} COMM AT EPOCH {start_epoch}')
                     self.communicate(
@@ -669,7 +677,7 @@ class ParallelFleet:
                     start_epoch, final=final) for agent in self.agents])
 
             for strategy, freq in comm_freqs.items():
-                if end_epoch % freq == 0 and freq <= num_epochs and self.sharing_strategy.pre_or_post_comm[strategy] == "post":
+                if should_communicate(freq, start_epoch, end_epoch) and freq <= num_epochs and self.sharing_strategy.pre_or_post_comm[strategy] == "post":
                     logging.info(
                         f'Task {task_id} {strategy.upper()} COMM AT EPOCH {end_epoch}')
                     self.communicate(

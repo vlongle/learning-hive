@@ -460,7 +460,7 @@ class ModModAgent(Agent):
         self.modmod_record.path = f"{self.save_dir}/modmod_add_modules_record.csv"
         return super().change_save_dir(save_dir)
 
-    def prepare_train(self):
+    def prepare_train(self, task_id):
         module_list = self.train_kwargs.get("module_list", [])
         decoder_list = self.train_kwargs.get("decoder_list", [])
         structure_list = self.train_kwargs.get("structure_list", [])
@@ -474,8 +474,8 @@ class ModModAgent(Agent):
         if len(module_list) == 0:
             num_candidate_modules = 1  # at the very least, we need to consider a random module
 
-        if "num_candidate_modules" not in kwargs:  # HACK: to be compatible with the exploratory ipynb
-            kwargs["num_candidate_modules"] = num_candidate_modules
+        # if "num_candidate_modules" not in kwargs:  # HACK: to be compatible with the exploratory ipynb
+        #     kwargs["num_candidate_modules"] = num_candidate_modules
 
         self.train_kwargs['train_candidate_module'] = not self.sharing_strategy.freeze_candidate_module
 
@@ -610,7 +610,7 @@ class ModModAgent(Agent):
             )
             self.modmod_record.save()
 
-            self.prepare_train()
+            self.prepare_train(task_id)
 
     def send_query_task(self, task_id):
         query = self.module_ranker.send_query(task_id)

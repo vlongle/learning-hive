@@ -21,6 +21,7 @@ import pandas as pd
 from shell.fleet.data.data_utilize import *
 from torch.utils.data.dataset import ConcatDataset, TensorDataset
 from shell.datasets.datasets import get_custom_tensordataset
+from omegaconf import DictConfig
 
 SEED_SCALE = 1000
 
@@ -564,7 +565,7 @@ class ParallelFleet:
         self.num_coms_per_round = self.sharing_strategy.num_coms_per_round
 
         self.remove_ood_neighbors = getattr(
-            self.sharing_strategy, 'remove_ood_neighbors', False)
+            self.sharing_strategy, 'remove_ood_neighbors', True)
 
         self.create_agents(seed, datasets, AgentCls, NetCls, LearnerCls,
                            net_kwargs, agent_kwargs, train_kwargs)
@@ -575,7 +576,12 @@ class ParallelFleet:
         self.comm_freq = sharing_strategy.get("comm_freq", None)
         self.num_init_tasks = net_kwargs["num_init_tasks"]
 
+        self.spawn_communicator()
+
         logging.info("Fleet initialized")
+
+    def spawn_communicator(self):
+        ray.get([agent.spawn_communicator.remote() for agent in self.agents])
 
     def load_model_from_ckpoint(self, paths=None, task_ids=None):
         if paths is None:
@@ -604,7 +610,7 @@ class ParallelFleet:
                                                                       LearnerCls,
                                                                       deepcopy(net_kwargs), deepcopy(
                 agent_kwargs),
-                deepcopy(train_kwargs), deepcopy(self.sharing_strategy))
+                deepcopy(train_kwargs), deepcopy(self.sharing_strategy), True)
             for node_id in self.graph.nodes
         ]
         print('DONE AGENTS...')
@@ -645,11 +651,16 @@ class ParallelFleet:
             num_epochs = self.num_epochs
 
         # Handling different communication frequencies
-        if isinstance(self.comm_freq, dict):
+        if isinstance(self.comm_freq, dict) or isinstance(self.comm_freq, DictConfig):
             comm_freqs = self.comm_freq
         else:
             comm_freqs = {'default': self.comm_freq} if self.comm_freq is not None else {
                 'default': num_epochs + 1}
+
+        # turn all None to num_epochs + 1
+        for key in comm_freqs:
+            if comm_freqs[key] is None:
+                comm_freqs[key] = num_epochs + 1
 
         # Create a combined list of all unique communication epochs
         unique_epochs = set()
@@ -673,26 +684,24 @@ class ParallelFleet:
             ray.get([agent.train.remote(task_id, start_epoch, end_epoch -
                     start_epoch, final=final) for agent in self.agents])
 
-            if self.sharing_strategy.pre_or_post_comm == "pre":
-                for strategy, freq in comm_freqs.items():
-                    if end_epoch % freq == 0 and freq <= num_epochs:
-                        logging.info(
-                            f'Task {task_id} {strategy.upper()} COMM AT EPOCH {end_epoch}')
-                        self.communicate(
-                            task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
+            for strategy, freq in comm_freqs.items():
+                if end_epoch % freq == 0 and freq <= num_epochs and self.sharing_strategy.pre_or_post_comm[strategy] == "pre":
+                    logging.info(
+                        f'Task {task_id} {strategy.upper()} COMM AT EPOCH {end_epoch}')
+                    self.communicate(
+                        task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
-            if self.sharing_strategy.pre_or_post_comm == "post":
-                for strategy, freq in comm_freqs.items():
-                    if end_epoch % freq == 0 and freq <= num_epochs:
-                        logging.info(
-                            f'Task {task_id} {strategy.upper()} COMM AT EPOCH {end_epoch}')
-                        self.communicate(
-                            task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
+            for strategy, freq in comm_freqs.items():
+                if end_epoch % freq == 0 and freq <= num_epochs and self.sharing_strategy.pre_or_post_comm[strategy] == "post":
+                    logging.info(
+                        f'Task {task_id} {strategy.upper()} COMM AT EPOCH {end_epoch}')
+                    self.communicate(
+                        task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
             start_epoch = end_epoch
 
     def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False, strategy=None):
-        for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
+        for communication_round in range(start_com_round, self.num_coms_per_round[strategy] + start_com_round):
             # parallelize preprocessing to prepare neccessary data
             # before the communication round.
             ray.get([agent.prepare_communicate.remote(task_id, end_epoch, comm_freq,

@@ -1,2 +1,6 @@
 name: combine_modes
-communicator: None
+communicator: no_sharing
+sync_base: True
+comm_freq: None
+num_coms_per_round: None
+pre_or_post_comm: None

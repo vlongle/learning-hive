@@ -141,6 +141,7 @@ def setup_experiment(cfg: DictConfig):
                 fake_dataset.valset.append(chosen_d.valset[i])
                 fake_dataset.class_sequence.extend(task_id)
         fleet_additional_cfg['fake_dataset'] = fake_dataset
+
     return graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg
 
 

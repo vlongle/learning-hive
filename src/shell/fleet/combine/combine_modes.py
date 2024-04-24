@@ -7,36 +7,57 @@ Author: Long Le (vlongle@seas.upenn.edu)
 Copyright (c) 2024 Long Le
 '''
 from shell.fleet.fleet import Agent
-from omegaconf import OmegaConf
-from shell.fleet.utils.fleet_utils import AGENT_CLS
 from shell.learners.base_learning_classes import CompositionalDynamicLearner
 import ray
 
+from copy import deepcopy
+from shell.fleet.combine.combine_modes_utils import *
+
+
+# NOTE: need to double check that communicator is able to modify the underlying kwargs for prepare_train
 
 class CombineModesAgent(Agent):
-    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
+    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy,
+                 parallel=False):
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
                          net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
-
-        self.communicator = self.spawn_communicator(
-            self.sharing_strategy.communicator)
 
         self.is_modular = isinstance(self.agent, CompositionalDynamicLearner)
         self.algo = "modular" if self.is_modular else "monolithic"
         # is parallel if self is a ray actor
-        self.parallel = isinstance(self, ray.actor.ActorHandle)
+        self.parallel = parallel
+        self.NetCls = NetCls
+        self.AgentCls = AgentCls
+        self.net_kwargs = net_kwargs
+        self.agent_kwargs = agent_kwargs
+        self.train_kwargs = train_kwargs
+        self.sharing_strategy = sharing_strategy
 
-    def spawn_communicator(self, communicator):
+        # self.communicator = self.spawn_communicator(
+        #     self.sharing_strategy.communicator)
+
+    def spawn_communicator(self, communicator=None):
+        if communicator is None:
+            communicator = self.sharing_strategy.communicator
         communicator = communicator.split(",")
-        communicators = []
+        self.communicator = {}
         for comm in communicator:
-            # load the hydra config in epxeriments/conf/sharing_strategy/{comm}.yaml
-            config_path = f"{comm}.yaml"
-            config = OmegaConf.load(config_path)
-            communicators.append(
-                AGENT_CLS[config.name][self.algo][self.parallel])
+            config = load_comm_config(comm)
+            args = (self.node_id, self.seed, self.dataset, self.NetCls, self.AgentCls,
+                    self.net_kwargs, self.agent_kwargs, self.train_kwargs, config)
 
-        return communicators
+            comm_cls = AGENT_CLS[config.name][self.algo][self.parallel]
+
+            if self.parallel:
+                comm_agent = comm_cls.remote(*args)
+                comm_agent.add_neighbors.remote(self.neighbors)
+            else:
+                comm_agent = comm_cls(*args)
+                comm_agent.add_neighbors(self.neighbors)
+
+            self.communicator[comm] = comm_agent
+
+        # return communicators
 
     def prepare_communicate(self, task_id, end_epoch, comm_freq,
                             num_epochs,
@@ -47,13 +68,13 @@ class CombineModesAgent(Agent):
         self.current_strat = strategy
 
     def process_communicate(self, task_id, communication_round, final, strategy):
-        self.communicator[strategy].prepare_communicate(
+        self.communicator[strategy].process_communicate(
             task_id, communication_round, final)
         self.current_strat = strategy
 
     def communicate(
             self, task_id, communication_round, final, strategy):
-        self.communicator[strategy].prepare_communicate(
+        self.communicator[strategy].communicate(
             task_id, communication_round, final)
         self.current_strat = strategy
 
@@ -61,6 +82,11 @@ class CombineModesAgent(Agent):
         self.communicator[self.current_strat].receive(node_id, data, msg_type)
 
 
-@ray.remote
+@ ray.remote
 class ParallelCombineModesAgent(CombineModesAgent):
     pass
+    # def communicate(self, task_id, communication_round, final=False, strategy=None):
+    #     communicator = self.communicator[strategy]
+    #     for neighbor in self.neighbors.values():
+    #         ray.get(neighbor.receive.remote(
+    #             self.node_id, deepcopy(self.model), "model"))

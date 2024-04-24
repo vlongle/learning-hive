@@ -32,9 +32,10 @@ parser.add_argument('--seed', type=int, default=0,
                     help='Seed for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100", "combined"], help='Dataset for the experiment.')
-parser.add_argument('--sync_base', type=str2bool, default=True)
 parser.add_argument('--topology', type=str, default='fully_connected')
 parser.add_argument('--edge_drop_prob', type=float, default=0.0)
+parser.add_argument('--algo', type=str, default="modular", choices=[
+                    "modular", "monolithic"], help='Algorithm for the experiment.')
 
 args = parser.parse_args()
 
@@ -52,7 +53,8 @@ if __name__ == "__main__":
     num_init_tasks = 4
     num_tasks = 10
     batch_size = 64
-    num_epochs = 100
+    # num_epochs = 100
+    num_epochs = 10
     num_agents = 20 if args.dataset == "combined" else 8
 
     root_save_dir = prefix + \
@@ -76,7 +78,7 @@ if __name__ == "__main__":
             "dataset.num_tasks": num_tasks,
             "net": "mlp",
             "net.depth": num_init_tasks,
-            'net.no_sparse_basis': args.no_sparse_basis,
+            'net.no_sparse_basis': True,
             "num_init_tasks": num_init_tasks,
             "net.dropout": 0.5,
             "train.num_epochs": num_epochs,
@@ -89,7 +91,8 @@ if __name__ == "__main__":
 
 
             "sharing_strategy": "combine_modes",
-            "sharing_strategy.communicator": "modmod,grad_sharing_prox,recv_data",
+            "sharing_strategy.communicator": "'modmod,grad_sharing_prox,recv_data'",
+
             "root_save_dir": root_save_dir,
 
         }
@@ -123,7 +126,7 @@ if __name__ == "__main__":
             "agent.batch_size": 64,
             "train.save_freq": 10,
             "agent.use_contrastive": False,
-            'net.no_sparse_basis': args.no_sparse_basis,
+            'net.no_sparse_basis': True,
 
 
             "root_save_dir": root_save_dir,

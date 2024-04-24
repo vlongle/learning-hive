@@ -301,51 +301,57 @@
 # #     print('training from', i, 'to', i + comm_freq)
 
 
-import math
+# import math
 
 
-comm_freqs = {
-    'data': 5,  # every 5 epochs
-    'gradient': 16,  # every 16 epochs
-    # 'modmod': 100,  # every 100 epochs
-}
+# comm_freqs = {
+#     'data': 5,  # every 5 epochs
+#     'gradient': 16,  # every 16 epochs
+#     # 'modmod': 100,  # every 100 epochs
+# }
 
 
-num_epochs = 100
+# num_epochs = 100
 
 
-# Create a combined list of all unique communication epochs, including the last epoch
-unique_epochs = set()
-for freq in comm_freqs.values():
-    unique_epochs.update(range(freq, num_epochs + 1, freq))
-unique_epochs.add(num_epochs)  # Ensure the last epoch is always included
-sorted_epochs = sorted(unique_epochs)
+# # Create a combined list of all unique communication epochs, including the last epoch
+# unique_epochs = set()
+# for freq in comm_freqs.values():
+#     unique_epochs.update(range(freq, num_epochs + 1, freq))
+# unique_epochs.add(num_epochs)  # Ensure the last epoch is always included
+# sorted_epochs = sorted(unique_epochs)
 
 
-print(sorted_epochs)
+# print(sorted_epochs)
 
-# max_comm_freq = max(comm_freqs.values())
-# num_coms = math.ceil(num_epochs / max_comm_freq)
+# # max_comm_freq = max(comm_freqs.values())
+# # num_coms = math.ceil(num_epochs / max_comm_freq)
 
-start_epoch = 0
-for end_epoch in sorted_epochs:
-    final = end_epoch == num_epochs
-    print('from', start_epoch, 'to', end_epoch, 'final', final)
+# start_epoch = 0
+# for end_epoch in sorted_epochs:
+#     final = end_epoch == num_epochs
+#     print('from', start_epoch, 'to', end_epoch, 'final', final)
 
-#     if self.sharing_strategy.pre_or_post_comm == "pre":
-#         for strategy, freq in comm_freqs.items():
-#             if end_epoch % freq == 0 and freq <= num_epochs:
-#                 print(f'>>> {strategy.upper()} COMM AT EPOCH', end_epoch)
-#                 self.communicate(task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
+# #     if self.sharing_strategy.pre_or_post_comm == "pre":
+# #         for strategy, freq in comm_freqs.items():
+# #             if end_epoch % freq == 0 and freq <= num_epochs:
+# #                 print(f'>>> {strategy.upper()} COMM AT EPOCH', end_epoch)
+# #                 self.communicate(task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
-#     for agent in self.agents:
-#         agent.set_num_coms(task_id, num_coms)
-#         agent.train(task_id, start_epoch, end_epoch - start_epoch, final=final)
+# #     for agent in self.agents:
+# #         agent.set_num_coms(task_id, num_coms)
+# #         agent.train(task_id, start_epoch, end_epoch - start_epoch, final=final)
 
-#     if self.sharing_strategy.pre_or_post_comm == "post":
-#         for strategy, freq in comm_freqs.items():
-#             if end_epoch % freq == 0 and freq <= num_epochs:
-#                 print(f'>>> {strategy.upper()} COMM AT EPOCH', end_epoch)
-#                 self.communicate(task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
+# #     if self.sharing_strategy.pre_or_post_comm == "post":
+# #         for strategy, freq in comm_freqs.items():
+# #             if end_epoch % freq == 0 and freq <= num_epochs:
+# #                 print(f'>>> {strategy.upper()} COMM AT EPOCH', end_epoch)
+# #                 self.communicate(task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
-    start_epoch = end_epoch
+#     start_epoch = end_epoch
+
+
+test = "mod"
+
+for s in test.split(","):
+    print(s)

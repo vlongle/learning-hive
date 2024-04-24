@@ -17,7 +17,29 @@ import time
 import datetime
 import logging
 from shell.utils.experiment_utils import setup_experiment, get_save_dirv2
+from shell.fleet.combine.combine_modes import *
 logging.basicConfig(level=logging.INFO)
+
+
+def handle_combine_modes(cfg):
+    if cfg.sharing_strategy.name != "combine_modes":
+        return cfg
+
+    comm_freqs = {}
+    num_coms_per_round = {}
+    pre_or_post_comm = {}
+    for comm in cfg.sharing_strategy.communicator.split(','):
+        config = load_comm_config(comm)
+        if config['comm_freq'] == "None":
+            config['comm_freq'] = None
+        comm_freqs[comm] = config['comm_freq']
+        num_coms_per_round[comm] = config['num_coms_per_round']
+        pre_or_post_comm[comm] = config['pre_or_post_comm']
+
+    cfg.sharing_strategy.comm_freq = comm_freqs
+    cfg.sharing_strategy.num_coms_per_round = num_coms_per_round
+    cfg.sharing_strategy.pre_or_post_comm = pre_or_post_comm
+    return cfg
 
 
 @hydra.main(config_path="conf", config_name="config", version_base=None)
@@ -34,6 +56,8 @@ def main(cfg: DictConfig) -> None:
 
     graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg = setup_experiment(
         cfg)
+
+    cfg = handle_combine_modes(cfg)
 
     # check if cfg.root_save_dir already exists
 

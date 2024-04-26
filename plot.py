@@ -38,6 +38,8 @@ def plot_agg_learning_curves(fleet, ax=None, name=None, tasks=None, agent_ids=No
 
     if tasks is None:
         tasks = range(fleet.num_init_tasks, fleet.num_tasks)
+    if tasks == "last":
+        tasks = [fleet.num_tasks - 1]
 
     dfs = []
     for agent in fleet.agents:

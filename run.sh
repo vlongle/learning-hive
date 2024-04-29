@@ -1,0 +1,4 @@
+sbatch run_cluster_recv_cifar_topology.sh
+sbatch run_cluster_recv_cifar_topology_random.sh
+sbatch run_cluster_recv_topology.sh
+sbatch run_cluster_recv_topology_random.sh

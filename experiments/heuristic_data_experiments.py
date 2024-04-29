@@ -51,6 +51,8 @@ parser.add_argument('--enforce_balance', type=str2bool, default=False,
 parser.add_argument('--hash_data', type=str2bool, default=True,
                     help='Whether to dedup shared data.')
 parser.add_argument('--scale_shared_memory', type=str2bool, default=True)
+parser.add_argument('--topology', type=str, default='fully_connected')
+parser.add_argument('--edge_drop_prob', type=float, default=0.0)
 
 args = parser.parse_args()
 
@@ -70,8 +72,8 @@ if __name__ == "__main__":
     memory_size = 32
 
     query_task_mode = 'current' if args.algo == 'modular' else 'all'
-    # comm_fre= num_epochs // (args.num_comms_per_task + 1)
-    comm_freq = num_epochs // args.num_comms_per_task
+    comm_freq= num_epochs // (args.num_comms_per_task + 1)
+    # comm_freq = num_epochs // args.num_comms_per_task
     num_agents = 20 if args.dataset == "combined" else 8
     sync_base = True if args.dataset == "combined" else False
 
@@ -83,7 +85,10 @@ if __name__ == "__main__":
     min_task = 4 if args.dataset == "combined" else 0
 
     # root_save_dir = prefix + f"rerun_recv_latest_main_results_query_all_post_comm"
-    root_save_dir = prefix + f"rerun_recv_latest_main_results"
+    # root_save_dir = prefix + f"rerun_recv_latest_main_results"
+    root_save_dir = prefix + \
+        f"new_topology_experiment_results/data/topology_{args.topology}_edge_drop_{args.edge_drop_prob}"
+
     if args.dataset != "cifar100":
         config = {
             "algo": args.algo,
@@ -110,6 +115,9 @@ if __name__ == "__main__":
             "agent.memory_size": memory_size,
             "net.no_sparse_basis": True,
 
+            "topology": args.topology,
+            "edge_drop_prob": args.edge_drop_prob, 
+
             "root_save_dir": root_save_dir,
             "sharing_strategy": "heuristic_data",
             "sharing_strategy.shared_memory_size": shared_memory_size,
@@ -125,11 +133,8 @@ if __name__ == "__main__":
 
             "algo": args.algo,
             "seed": args.seed,
-            # "algo": ["modular", "monolithic"],
-            "seed": [1, 2, 3, 4, 5, 6, 7],
             "num_agents": 8,
             "parallel": True,
-            # "parallel": False,
             "dataset": "cifar100",
             "dataset.num_trains_per_class": 256,
             "dataset.num_vals_per_class": -1,
@@ -145,19 +150,20 @@ if __name__ == "__main__":
             "train.num_epochs": num_epochs,
             "train.component_update_freq": num_epochs,
             "agent.memory_size": memory_size,
-            # "agent.memory_size": 128,
             "agent.batch_size": batch_size,
             "train.save_freq": 10,
             "agent.use_contrastive": False,
             "net.no_sparse_basis": True,
 
-
+            "topology": args.topology,
+            "edge_drop_prob": args.edge_drop_prob, 
 
             "root_save_dir": root_save_dir,
             "sharing_strategy": "heuristic_data",
             "sharing_strategy.shared_memory_size": shared_memory_size,
             "sharing_strategy.comm_freq": comm_freq,
-            "sharing_strategy.sync_base": sync_base,
+            # "sharing_strategy.sync_base": sync_base,
+            "sharing_strategy.sync_base": True,
             "sharing_strategy.query_task_mode": query_task_mode,
             "sharing_strategy.budget": args.budget,
             "sharing_strategy.enforce_balance": args.enforce_balance,
@@ -166,6 +172,6 @@ if __name__ == "__main__":
             "sharing_strategy.pre_or_post_comm": "post" if args.algo == "monolithic" else "pre",
         }
 
-    run_experiment(170949config, strict=False)
+    run_experiment(config, strict=False)
     end = time.time()
     print(f"Experiment runs took {datetime.timedelta(seconds=end-start)}")

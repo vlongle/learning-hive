@@ -8,15 +8,15 @@
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
 #SBATCH --exclude=ee-3090-1.grasp.maas
-#SBATCH --array=14-15 # Adjusted for 3 topologies * 2 datasets * 8 seeds
+#SBATCH --array=0-71 # Adjusted for 3 topologies * 3 datasets * 8 seeds
 
 # Declare the arrays for topologies and datasets
 declare -a topologies=("ring" "tree" "server")
-declare -a datasets=("combined" "cifar100")
+declare -a datasets=("mnist" "fashionmnist" "kmnist")
 
 # Calculate the indices for topology, dataset, and seed
-TOPOLOGY_IDX=$((SLURM_ARRAY_TASK_ID / 16))  # 16 jobs per topology (2 datasets * 8 seeds)
-DATASET_IDX=$(((SLURM_ARRAY_TASK_ID / 8) % 2))  # 8 jobs per dataset
+TOPOLOGY_IDX=$((SLURM_ARRAY_TASK_ID / 24))  # 24 jobs per topology (3 datasets * 8 seeds)
+DATASET_IDX=$(((SLURM_ARRAY_TASK_ID / 8) % 3))  # 8 jobs per dataset
 SEED=$((SLURM_ARRAY_TASK_ID % 8))  # 8 seeds
 
 # Map the SLURM_ARRAY_TASK_ID to topology and dataset

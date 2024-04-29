@@ -8,11 +8,11 @@
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
 #SBATCH --exclude=ee-3090-1.grasp.maas
-#SBATCH --array=0-47 # Adjusted for 3 topologies * 1 dataset * 8 seeds * 2 algos = 48 jobs
+#SBATCH --array=0-47  # Adjusted for 3 topologies * 1 dataset * 8 seeds * 2 algos = 48 jobs
 
 # Declare the arrays for topologies, datasets, and algorithms
 declare -a topologies=("ring" "tree" "server")
-declare -a datasets=("combined")  # Using one dataset
+declare -a datasets=("cifar100")  # Using one dataset
 declare -a algos=("modular" "monolithic")
 
 # Calculate the indices for topology, dataset, seed, and algorithm
@@ -27,6 +27,6 @@ TOPOLOGY=${topologies[$TOPOLOGY_IDX]}
 DATASET=${datasets[$DATASET_IDX]}  # Always "combined"
 
 # Run the command with the specified parameters
-srun bash -c "python experiments/recv_experiments.py --algo $ALGO --seed $SEED --dataset $DATASET --topology $TOPOLOGY"
+srun bash -c "python experiments/heuristic_data_experiments.py --algo $ALGO --seed $SEED --dataset $DATASET --topology $TOPOLOGY"
 
 exit 0

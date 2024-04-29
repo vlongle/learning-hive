@@ -60,9 +60,9 @@ def analyze_save_dirs(save_dirs, pattern=None, num_init_tasks=4, name="result"):
     return record
 
 
-def analyze(result_dir):
+def analyze(result_dir, pattern=None):
     save_dirs = get_save_dirs(result_dir)
-    record = analyze_save_dirs(save_dirs, name=result_dir)
+    record = analyze_save_dirs(save_dirs, name=result_dir, pattern=pattern)
     return record
 
 
@@ -73,11 +73,20 @@ if __name__ == "__main__":
     # root_save_dir = "budget_experiment_results/jorge_setting_recv_variable_shared_memory_size"
     # vanilla_dir = "mem_size_300_comm_freq_9_num_queries_30"
     # result_dir = os.path.join(root_save_dir, vanilla_dir)
-    result_dir = "new_topology_experiment_results/data/topology_random_disconnect_edge_drop_0.9"
+    # result_dir = "new_topology_experiment_results/data/topology_random_disconnect_edge_drop_0.9"
+    # result_dir = "experiment_results/jorge_setting_recv"
+
+    # result_dir = "experiment_results/vanilla_jorge_setting_basis_no_sparse"
+    result_dir = "new_topology_experiment_results/data/topology_random_disconnect_edge_drop_1.0"
+    result_dir = "new_topology_experiment_results/rerun_cifar_mono_at_more_fl_results"
+
+    pattern = None
+    # pattern = f".cifar100_monolithic.*seed_0.*"
 
     # result_dir = "best_fl_results/fedprox_mu_0.001_comm_freq_5"
     # result_dir = "best_fl_results/fedprox_mu_0.001_comm_freq_5"
-    record = analyze(result_dir)
+    record = analyze(result_dir, pattern=pattern)
+    print(record.df)
     print("=====FINAL ACC======")
     print(record.df.groupby(["algo", "dataset", "use_contrastive"])[
         "final_acc"].mean() * 100)

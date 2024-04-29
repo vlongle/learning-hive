@@ -49,7 +49,7 @@ def analyze_multiple(root_result_dir, num_init_tasks=4, pattern=r".*"):
                             save_dir = os.path.join(root_result_dir,
                                                     result_dir, job_name, dataset_name, algo, seed, agent_id)
                             # if the pattern doesn't match, continue
-                            if not re.search(pattern, save_dir):
+                            if not re.search(pattern, save_dir) or not os.path.isdir(save_dir):
                                 continue
 
                             m = Metric(save_dir, num_init_tasks)
@@ -80,7 +80,7 @@ if __name__ == "__main__":
     # root_result_dir = "rerun_fashionmnist_recv_results"
     # root_result_dir = "modular_backward_cifar_heuristic_results_small_mem_32/budget"
     # root_result_dir = "new_topology_experiment_results/modmod"
-    root_result_dir = "best_fl_results"
+    root_result_dir = "budget_fedprox_results"
     record = analyze_multiple(root_result_dir)
     print(record.df)
     # get the final accuracy with respect to different algo and dataset

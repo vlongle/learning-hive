@@ -41,7 +41,7 @@ parser.add_argument('--seed', type=int, default=0,
 parser.add_argument('--algo', type=str, default="modular", choices=[
                     "modular", "monolithic"], help='Algorithm for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
-                    "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
+                    "mnist", "kmnist", "fashionmnist", "cifar100", "combined"], help='Dataset for the experiment.')
 parser.add_argument('--prefilter_strategy', type=str, default="oracle", choices=[
                     "oracle", "raw_distance", "none"], help='Pre-filtering strategy for the experiment.')
 parser.add_argument('--scorer', type=str, default="cross_entropy", choices=[
@@ -76,6 +76,7 @@ if __name__ == "__main__":
     num_tasks = 10
     batch_size = 64
     num_epochs = 100
+    # num_epochs = 10
     memory_size = 32
     # shared_memory_size = max(args.num_queries * args.num_comms_per_task, memory_size)
     shared_memory_size = memory_size
@@ -87,6 +88,8 @@ if __name__ == "__main__":
 
     # root_save_dir = prefix + \
     #     f"rerun_fashionmnist_recv_results/budget_{args.budget}_comm_freq_{comm_freq}"
+
+    min_task = 4 if args.dataset == "combined" else 0
 
     root_save_dir = prefix + \
         f"new_topology_experiment_results/data/topology_{args.topology}_edge_drop_{args.edge_drop_prob}"
@@ -136,6 +139,7 @@ if __name__ == "__main__":
             "sharing_strategy.assign_labels_strategy": args.assign_labels_strategy,
             "sharing_strategy.scorer": args.scorer,
             "sharing_strategy.sync_base": sync_base,
+                        "sharing_strategy.min_task": min_task,
         }
 
     else:
@@ -152,7 +156,8 @@ if __name__ == "__main__":
             "net": "cnn",
             "net.depth": 4,
             "num_init_tasks": 4,
-            "dataset.num_tasks": 20,
+            # "dataset.num_tasks": 20,
+            "dataset.num_tasks": 4,
             "net.dropout": 0.5,
             "train.init_num_epochs": num_epochs,
             "train.init_component_update_freq": num_epochs,
@@ -179,6 +184,7 @@ if __name__ == "__main__":
             "sharing_strategy.assign_labels_strategy": args.assign_labels_strategy,
             "sharing_strategy.scorer": args.scorer,
             "sharing_strategy.sync_base": sync_base,
+                        "sharing_strategy.min_task": min_task,
         }
 
     run_experiment(config, strict=False)

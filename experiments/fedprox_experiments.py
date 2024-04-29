@@ -54,7 +54,7 @@ if __name__ == "__main__":
     #     f"more_fl_fix_root_agent_fix_fedprox_excluded_set_results/fedprox_mu_{args.mu}_comm_freq_{args.comm_freq}"
 
     root_save_dir = prefix + \
-        f"budget_and_topology_fedprox_results/topology_{args.topology}_edge_drop_{args.edge_drop_prob}/fedprox_mu_{args.mu}_comm_freq_{args.comm_freq}"
+        f"topology_fedprox_results/topology_{args.topology}_edge_drop_{args.edge_drop_prob}"
 
     if args.dataset != "cifar100":
         config = {

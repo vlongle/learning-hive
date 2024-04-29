@@ -126,6 +126,12 @@ class HeuristicDataAgent(Agent):
             Xt, yt = self.dataset.trainset[task].tensors
         else:
             Xt, yt, _ = self.agent.replay_buffers[task].get_tensors()
+               
+        if task in self.agent.shared_replay_buffers and len(self.agent.shared_replay_buffers[task]) > 0:
+            Xtt, ytt, _ = self.agent.shared_replay_buffers[task].get_tensors()
+            Xt = torch.cat([Xt, Xtt], dim=0)
+            yt = torch.cat([yt, ytt], dim=0)
+
         if map_to_global:
             # map yt back to the global class labels
             task_cls = self.get_task_class(task)

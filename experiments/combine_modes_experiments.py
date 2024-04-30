@@ -57,9 +57,9 @@ if __name__ == "__main__":
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
     num_init_tasks = 4
     num_tasks = 10
-    # num_tasks = 6
     batch_size = 64
     num_epochs = 100
+    # num_epochs = 10
     num_agents = 20 if args.dataset == "combined" else 8
 
     combine = 'recv_data'

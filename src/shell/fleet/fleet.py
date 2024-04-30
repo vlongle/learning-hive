@@ -23,12 +23,16 @@ from torch.utils.data.dataset import ConcatDataset, TensorDataset
 from shell.datasets.datasets import get_custom_tensordataset
 from omegaconf import DictConfig
 
+
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
+
+
 SEED_SCALE = 1000
 
 
 class Agent:
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy,
-                 agent=None, net=None):
+                 agent=None):
 
         self.seed = seed + SEED_SCALE * node_id
         seed_everything(self.seed)
@@ -52,8 +56,8 @@ class Agent:
 
         if agent is not None:
             logging.info(f"~~~~ Loading agent from checkpoint {agent}")
-            self.net = net
             self.agent = agent
+            self.net = agent.net
         else:
             logging.info(f"~~~~ Creating agent from stratch")
             self.net = NetCls(**net_kwargs)
@@ -106,37 +110,11 @@ class Agent:
     def add_neighbors(self, neighbors: Iterable[ray.actor.ActorHandle]):
         self.neighbors = neighbors
 
-    def train(self, task_id, start_epoch=0, communication_frequency=None,
+    def train(self, task_id, start_epoch=0, num_epochs=None,
               final=True, **kwargs):
-        # if start_epoch == 0:
-        #     for t in range(task_id+1):
-        #         self.agent.ood_data[t] = self.get_ood_data(t)
 
         if task_id >= self.net.num_tasks:
             return
-
-        # dataset = deepcopy(self.dataset.trainset[task_id])
-
-        # self.agent.make_shared_memory_loaders(
-        #     batch_size=self.batch_size)
-
-        # if task_id in self.agent.shared_memory_loaders:
-        #     loader = self.agent.shared_memory_loaders[task_id]
-        #     shared_tensors = loader.dataset.get_tensors()  # X, y, t
-        #     # throw away the task id
-        #     shared_tensors = shared_tensors[:2]
-        #     dataset = CustomConcatDataset(
-        #         dataset.tensors, shared_tensors)
-        #     dataset = get_custom_tensordataset(dataset.tensors, name=self.dataset.name,
-        #                                        use_contrastive=self.agent.use_contrastive)
-
-        # trainloader = (
-        #     torch.utils.data.DataLoader(dataset,
-        #                                 batch_size=self.batch_size,
-        #                                 shuffle=True,
-        #                                 num_workers=4,
-        #                                 pin_memory=True,
-        #                                 ))
 
         trainloader = (
             torch.utils.data.DataLoader(self.dataset.trainset[task_id],
@@ -174,14 +152,18 @@ class Agent:
             if component_update_freq is not None:
                 train_kwargs["component_update_freq"] = component_update_freq
 
-        if communication_frequency is None:
-            # communication_frequency = train_kwargs['num_epochs'] - start_epoch
-            communication_frequency = train_kwargs['num_epochs'] - start_epoch
+        # if communication_frequency is None:
+        #     # communication_frequency = train_kwargs['num_epochs'] - start_epoch
+        #     communication_frequency = train_kwargs['num_epochs'] - start_epoch
 
-        end_epoch = min(start_epoch + communication_frequency,
-                        train_kwargs['num_epochs'])
-        adjusted_num_epochs = end_epoch - start_epoch
-        train_kwargs["num_epochs"] = adjusted_num_epochs
+        # end_epoch = min(start_epoch + communication_frequency,
+        #                 train_kwargs['num_epochs'])
+        # adjusted_num_epochs = end_epoch - start_epoch
+        # train_kwargs["num_epochs"] = adjusted_num_epochs
+
+        if num_epochs is not None:
+            train_kwargs["num_epochs"] = num_epochs
+
         train_kwargs["final"] = final
 
         train_kwargs.update(kwargs)
@@ -648,11 +630,13 @@ class ParallelFleet:
             comm_freqs = {'default': self.comm_freq} if self.comm_freq is not None else {
                 'default': num_epochs + 1}
 
-        if not isinstance(self.sharing_strategy.pre_or_post_comm, dict):
+        if not (isinstance(self.sharing_strategy.pre_or_post_comm, dict) or isinstance(self.sharing_strategy.pre_or_post_comm, DictConfig)):
+            logging.info(
+                f"pre_or_post_comm {self.sharing_strategy.pre_or_post_comm} type {type(self.sharing_strategy.pre_or_post_comm)} IS NOT DICT")
             self.sharing_strategy.pre_or_post_comm = {
                 'default': self.sharing_strategy.pre_or_post_comm}
 
-        if not isinstance(self.num_coms_per_round, dict):
+        if not (isinstance(self.num_coms_per_round, dict) or isinstance(self.num_coms_per_round, DictConfig)):
             self.num_coms_per_round = {
                 'default': self.num_coms_per_round}
 
@@ -673,8 +657,6 @@ class ParallelFleet:
         max_comm_freq = max(comm_freqs.values())
         num_coms = math.ceil(num_epochs / max_comm_freq)
 
-        start_epoch = 0
-
         def should_communicate(freq, start_epoch, end_epoch):
             if freq > num_epochs:
                 return False
@@ -683,12 +665,17 @@ class ParallelFleet:
             else:
                 return end_epoch % freq == 0
 
+        logging.info(
+            f"Task {task_id} comm_freqs: {comm_freqs} pre_or_post: {self.sharing_strategy.pre_or_post_comm} num_coms: {num_coms}")
+        start_epoch = 0
         for end_epoch in sorted_epochs:
             final = end_epoch == num_epochs
             ray.get([agent.set_num_coms.remote(task_id, num_coms)
                     for agent in self.agents])
 
             for strategy, freq in comm_freqs.items():
+                logging.info(
+                    f"should_communicate({freq}, {start_epoch}, {end_epoch}) = {should_communicate(freq, start_epoch, end_epoch)}")
                 if should_communicate(freq, start_epoch, end_epoch) and self.sharing_strategy.pre_or_post_comm[strategy] == "pre":
                     logging.info(
                         f'Task {task_id} {strategy.upper()} COMM AT EPOCH {start_epoch}')
@@ -696,7 +683,7 @@ class ParallelFleet:
                         task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
             logging.info(
-                f'Task {task_id} training from {start_epoch} to {end_epoch}')
+                f'Task {task_id} training from {start_epoch} to {end_epoch} final={final}')
             ray.get([agent.train.remote(task_id, start_epoch, end_epoch -
                     start_epoch, final=final) for agent in self.agents])
 

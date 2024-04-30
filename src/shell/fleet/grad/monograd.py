@@ -26,10 +26,10 @@ Only sync modules
 
 class ModelSyncAgent(Agent):
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
-                 sharing_strategy, agent=None, net=None):
+                 sharing_strategy, agent=None):
 
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent, net=net)
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent)
         self.incoming_models = {}
         self.excluded_params = set(
             ["decoder", "structure", "projector", "random_linear_projection"])

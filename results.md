@@ -274,7 +274,7 @@ Still can't recover the perf of prev github commit. But anyway.
 
 - do demand transfer [NO]
 
-
+Bug in num_candidate_modules len(module_list)
 
 - simply averaging help with the backward stuff in modular networks.
 -> Need to do combined stuff

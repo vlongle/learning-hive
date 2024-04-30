@@ -347,9 +347,9 @@ class TryOutModuleSelection(ModuleSelection):
 
 class ModModAgent(Agent):
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
-                 sharing_strategy, agent=None, net=None):
+                 sharing_strategy, agent=None):
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent, net=net)
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent)
 
         self.modmod_record = Record(
             f"{self.save_dir}/modmod_add_modules_record.csv")
@@ -385,18 +385,6 @@ class ModModAgent(Agent):
         module_list = self.train_kwargs.get("module_list", [])
         decoder_list = self.train_kwargs.get("decoder_list", [])
         structure_list = self.train_kwargs.get("structure_list", [])
-        if self.sharing_strategy.opt_with_random:
-            # optimize the received module along with a random module
-            # as well
-            num_candidate_modules = len(module_list) + 1
-        else:
-            num_candidate_modules = len(module_list)
-
-        if len(module_list) == 0:
-            num_candidate_modules = 1  # at the very least, we need to consider a random module
-
-        # if "num_candidate_modules" not in kwargs:  # HACK: to be compatible with the exploratory ipynb
-        #     kwargs["num_candidate_modules"] = num_candidate_modules
 
         self.train_kwargs['train_candidate_module'] = not self.sharing_strategy.freeze_candidate_module
 
@@ -486,7 +474,6 @@ class ModModAgent(Agent):
             return
         if communication_round % 2 == 1:
             module_list = self.get_module_list()
-
             row = {
                 'task_id': task_id,
                 "source_task_id": -1,
@@ -495,6 +482,7 @@ class ModModAgent(Agent):
                 # 'source_class_labels': None,
                 'neighbor_id': -1,
             }
+            # logging.info(f"module_list {module_list}")
             if len(module_list) == 0:
                 self.train_kwargs["module_list"] = []
                 self.train_kwargs["decoder_list"] = []

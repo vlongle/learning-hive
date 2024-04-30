@@ -4,11 +4,11 @@ import copy
 
 class FedProxAgent(ModelSyncAgent):
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
-                 sharing_strategy, agent=None, net=None):
+                 sharing_strategy, agent=None):
         if "fl_strategy" not in agent_kwargs:
             agent_kwargs["fl_strategy"] = "fedprox"
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent, net=net)
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent)
 
     def process_communicate(self, task_id, communication_round, final=False):
         self.agent.global_model = copy.deepcopy(self.agent.net)

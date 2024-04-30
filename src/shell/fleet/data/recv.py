@@ -116,11 +116,11 @@ class RecvDataAgent(Agent):
     """
 
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
-                 sharing_strategy, agent=None, net=None):
+                 sharing_strategy, agent=None):
         # self.use_ood_separation_loss = sharing_strategy.use_ood_separation_loss
         # agent_kwargs['use_ood_separation_loss'] = self.use_ood_separation_loss
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent, net=net)
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent)
 
         self.scorer = SCORER_FN_LOOKUP[self.sharing_strategy.scorer]
         self.scorer_type = SCORER_TYPE_LOOKUP[self.sharing_strategy.scorer]

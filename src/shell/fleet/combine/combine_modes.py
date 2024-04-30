@@ -46,7 +46,7 @@ class CombineModesAgent(Agent):
             a_kw = deepcopy(self.agent_kwargs)
             a_kw['save_dir'] = self.root_save_dir
             args = (self.node_id, self.seed, self.dataset, self.NetCls, self.AgentCls,
-                    deepcopy(self.net_kwargs), a_kw, self.train_kwargs, config, self.agent, self.net)
+                    deepcopy(self.net_kwargs), a_kw, self.train_kwargs, config, self.agent)
 
             comm_cls = AGENT_CLS[config.name][self.algo][False]
 

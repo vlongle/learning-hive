@@ -446,11 +446,15 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 if module_list is None:
                     module_list = []
                 if num_candidate_modules is None:
-                    num_candidate_modules = len(module_list) + 1
+                    # num_candidate_modules = len(module_list) + 1
+                    num_candidate_modules = max(1, len(module_list))
 
-                logging.info("NO. current components {} NUM_CANDIDATE_MODULES {} len(module_list) {}".format(len(self.net.components),
-                                                                                                             num_candidate_modules,
-                                                                                                             len(module_list)))
+                logging.info("Train task {} NO. current components {} NUM_CANDIDATE_MODULES {} len(module_list) {}".format(task_id, len(self.net.components),
+                                                                                                                           num_candidate_modules,
+                                                                                                                           len(module_list)))
+                if len(module_list) > 0:
+                    assert len(
+                        module_list) == num_candidate_modules, f"len(module_list) {len(module_list)} != num_candidate_modules {num_candidate_modules}"
                 # print('rand torch seed', int(torch.empty(
                 #     (), dtype=torch.int64).random_().item()))
                 self.net.add_tmp_modules(task_id, num_candidate_modules)

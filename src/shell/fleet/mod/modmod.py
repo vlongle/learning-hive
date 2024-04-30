@@ -22,7 +22,6 @@ import logging
 import gc
 
 
-
 def create_general_permutation_matrix(task1_classes, task2_classes):
     # Initialize a zero matrix for the new definition
     assert len(task1_classes) == len(task2_classes)
@@ -59,46 +58,6 @@ class ModuleRanker:
 
     def compute_task_sims(self, neighbor_id, task_id):
         raise NotImplementedError
-
-    # def send_most_similar_module(self, neighbor_id, task_id):
-    #     task_sims = self.compute_task_sims(neighbor_id, task_id)
-    #     # print('task_sims', self.agent.node_id,
-    #     #       neighbor_id, task_id, '>', task_sims)
-    #     module_record = self.agent.agent.dynamic_record.df
-
-    #     for t in range(len(task_sims)):
-    #         if t not in set(module_record['task_id']):
-    #             task_sims[t] = float('-inf')
-    #         if t in set(module_record['task_id']) and not module_record[module_record['task_id'] == t]['add_new_module'].item():
-    #             task_sims[t] = float('-inf')
-
-    #     # print('AFTER PROCESSED: task_sims', self.agent.node_id,
-    #     #       neighbor_id, task_id, '>', task_sims)
-    #     # get the most similar task with the highest similarity. Break ties by the task id
-    #     # (highest wins)
-    #     # most_similar_task = max(
-    #     #     range(len(task_sims)), key=lambda x: (task_sims[x], x))
-    #     # lowest task_id wins
-    #     most_similar_task = max(
-    #         range(len(task_sims)), key=lambda x: (task_sims[x], -x))
-    #     if task_sims[most_similar_task] == float('-inf'):
-    #         return []
-
-    #     task_module = module_record[module_record['task_id']
-    #                                 == most_similar_task]['num_components'].item() - 1
-    #     # print('node', self.node_id, 'for neighbor', neighbor_id, '@ task', task_id, 'sending module', task_module, 'from task', most_similar_task,
-    #     #       'with similarity', task_sims[most_similar_task], 'current no. of modules', len(self.net.components))
-    #     # pathological for replaying ipynb
-    #     if task_module >= len(self.agent.net.components):
-    #         return []
-    #     return [{'source_task_id': most_similar_task,
-    #              'task_sim': task_sims[most_similar_task],
-    #              'module_id': task_module,
-    #              'module': self.agent.net.components[task_module],
-    #              'decoder': self.agent.net.decoder[most_similar_task],
-    #              'structure': self.agent.net.structure[most_similar_task],
-    #              'source_class_labels': self.agent.dataset.class_sequence[most_similar_task * self.agent.dataset.num_classes_per_task:
-    #                                                                       (most_similar_task + 1) * self.agent.dataset.num_classes_per_task]},]
 
     def send_most_similar_modules(self, neighbor_id, task_id):
         task_sims = self.compute_task_sims(neighbor_id, task_id)
@@ -297,54 +256,9 @@ class InstanceMapModuleRanker(ModuleRanker):
             self.agent.net.train()
         return res
 
-    # @torch.inference_mode()
-    # def compute_task_similarity(self, neighbor_id, task_id, k=10):
-    #     was_training = self.agent.net.training
-    #     self.agent.net.eval()
-    #     query = self.agent.query_tasks[neighbor_id]
-    #     X_val, Y_val = self.agent.dataset.valset[task_id].tensors
-    #     res = {}
-    #     baseline = {}  # compute avg distance of cluster yp
-    #     for yp in Y_val.unique():
-    #         X_val_yp = X_val[Y_val == yp].to(self.agent.net.device)
-    #         dist = compute_embedding_dist(
-    #             self.agent.net, X_val_yp, task_id=task_id)  # this is actually similarity NOT distance
-    #         dist, _ = torch.topk(dist, k=1)
-    #         baseline[yp.item()] = dist.mean().item()
-    #         print('baseline', yp, baseline[yp.item()])
-
-    #     for y, data in query.items():
-    #         for yp in Y_val.unique():
-    #             X_val_yp = X_val[Y_val == yp].to(self.agent.net.device)
-    #             # dist = (num_query, N) where N is len(X_val_yp) and num_query is len(data['X']
-    #             dist = compute_embedding_dist(
-    #                 self.agent.net, data['X'], X_val_yp, task_id)
-
-    #             # reduce to (num_query, k) by taking the smallest k distances
-    #             dist, _ = torch.topk(dist, k)
-    #             print('>> dist:', dist.shape)
-    #             # dist = dist.mean(dim=1)
-    #             dist = dist.mean().item() - baseline[yp.item()]
-    #             # # turn dist to 0 or 1 based on the baseline
-    #             # dist = dist > baseline[yp.item()]
-    #             res[(y, yp.item())] = dist
-        # self.dist[(neighbor_id, task_id)] = res
-        # if was_training:
-        #     self.agent.net.train()
-        # return res
-
     @torch.inference_mode()
     def compute_task_similarity(self, neighbor_id, task_id):
         query = self.agent.query_tasks[neighbor_id]
-        # const = 0
-        # for y, data in query.items():
-        #     X = data['X'].to(self.agent.net.device)
-        #     c = compute_consistency(self.agent.net, X, task_id)
-        #     print('neighbor', neighbor_id, 'y', y,
-        #           'task_id', task_id, 'consistency', c)
-        #     const += c
-        # return const
-
         y_preds, ys = [], []
         for y, data in query.items():
             pred = predict(self.agent.net, data['X'], task_id, get_probs=True)
@@ -376,54 +290,11 @@ class TrustSimModuleSelection(ModuleSelection):
         #     x[1], x[0]))
         # lowest task_id wins
         best_match_index = max(enumerate(module_list),
-                               key=lambda x: (x[1]['task_sim'], -x[1]['source_task_id']))[0]
+                               key=lambda x: (x[1]['task_sim'], -x[1]['source_task_id'], x[1]['neighbor_id']))[0]
         return best_match_index, {}
 
 
 class TryOutModuleSelection(ModuleSelection):
-    # def choose_best_module_from_neighbors(self, task_id, module_list):
-    #     perfs = []
-    #     logging.info("Trying out: {} modules".format(len(module_list)))
-    #     for module in module_list:
-    #         # TODO: might be a bit problematic with CUDA...
-    #         agent_cp = copy.deepcopy(self.agent)
-    #         agent_cp.train_kwargs["module_list"] = [module['module']]
-    #         agent_cp.train_kwargs["decoder_list"] = [{"decoder": module['decoder'],
-    #                                                   "source_class_labels": module['source_class_labels']}]
-    #         agent_cp.train_kwargs["structure_list"] = [{'structure': module['structure'],
-    #                                                     'module_id': module['module_id']}]
-    #         # agent_cp.train_kwargs["save_freq"] = 1000
-
-    #         agent_cp.train_kwargs["num_epochs"] = agent_cp.sharing_strategy.num_tryout_epochs
-    #         agent_cp.change_save_dir(f"tryout_{self.agent.save_dir}")
-    #         # print('save_dir', agent_cp.save_dir)
-    #         # exit(0)
-    #         agent_cp.train(task_id, start_epoch=0,
-    #                        communication_frequency=None, final=True,
-    #                        final_save=False)
-    #         perfs.append(agent_cp.eval_test(task_id)['avg'])
-    #         # TODO: record perf
-    #     logging.info('Tryout perfs: {}'.format(perfs))
-    #     return np.argmax(perfs), {"tryout_module_perf": np.max(perfs)}
-
-    # def choose_best_module_from_neighbors(self, task_id, module_list):
-    #     logging.info("Trying out: {} modules".format(len(module_list)))
-    #     agent_cp = copy.deepcopy(self.agent)
-    #     agent_cp.train_kwargs["module_list"] = [
-    #         m['module'] for m in module_list]
-    #     agent_cp.train_kwargs["decoder_list"] = []
-    #     agent_cp.train_kwargs["structure_list"] = []
-    #     agent_cp.train_kwargs["num_epochs"] = agent_cp.sharing_strategy.num_tryout_epochs
-    #     agent_cp.change_save_dir(f"tryout_{self.agent.save_dir}")
-    #     perfs = agent_cp.train(task_id, start_epoch=0,
-    #                            communication_frequency=None, final=True,
-    #                            final_save=False)
-
-    #     perfs = [v for k, v in perfs.items()]
-    #     logging.info('Tryout perfs: {}'.format(perfs))
-    #     print('max perf', np.argmax(perfs), {
-    #           "tryout_module_perf": np.max(perfs)})
-    #     return np.argmax(perfs), {"tryout_module_perf": np.max(perfs)}
 
     def choose_best_module_from_neighbors(self, task_id, module_list):
         max_num_modules_tryout = self.agent.sharing_strategy.max_num_modules_tryout
@@ -452,12 +323,11 @@ class TryOutModuleSelection(ModuleSelection):
 
             logging.info('Batch {} perfs: {}'.format(
                 i//max_num_modules_tryout, batch_perfs))
-            
+
             del agent_cp, batch_modules
             gc.collect()  # Collect garbage in CPU memory
             if torch.cuda.is_available():
                 torch.cuda.empty_cache()
-            
 
         logging.info('All tryout perfs: {}'.format(all_perfs))
         best_index = np.argmax(all_perfs)
@@ -607,15 +477,15 @@ class ModModAgent(Agent):
             return
         if communication_round % 2 == 1:
             module_list = self.get_module_list()
-  
+
             row = {
-                    'task_id': task_id,
-                    "source_task_id": -1,
-                    'task_sim': 0,
-                    'module_id': -1,
-                    # 'source_class_labels': None,
-                    'neighbor_id': -1,
-                }
+                'task_id': task_id,
+                "source_task_id": -1,
+                'task_sim': 0,
+                'module_id': -1,
+                # 'source_class_labels': None,
+                'neighbor_id': -1,
+            }
             if len(module_list) == 0:
                 self.train_kwargs["module_list"] = []
                 self.train_kwargs["decoder_list"] = []
@@ -631,7 +501,7 @@ class ModModAgent(Agent):
                     best_match = module_list[best]
                     self.train_kwargs["module_list"] = [best_match['module']]
                     self.train_kwargs["decoder_list"] = [{"decoder": best_match['decoder'],
-                                                        "source_class_labels": best_match['source_class_labels']}]
+                                                          "source_class_labels": best_match['source_class_labels']}]
                     self.train_kwargs["structure_list"] = [{'structure': best_match['structure'],
                                                             'module_id': best_match['module_id']}]
                     # Create a new dictionary with task_id as the first key

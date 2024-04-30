@@ -20,6 +20,7 @@ from shell.fleet.data.recv import random_scorer, cross_entropy_scorer
 import copy
 import logging
 import gc
+from copy import deepcopy
 
 
 def create_general_permutation_matrix(task1_classes, task2_classes):
@@ -93,9 +94,9 @@ class ModuleRanker:
                 'source_task_id': task,
                 'task_sim': task_sims[task],
                 'module_id': task_module,
-                'module': self.agent.net.components[task_module],
-                'decoder': self.agent.net.decoder[task],
-                'structure': self.agent.net.structure[task],
+                'module': deepcopy(self.agent.net.components[task_module]),
+                'decoder': deepcopy(self.agent.net.decoder[task]),
+                'structure': deepcopy(self.agent.net.structure[task]),
                 'source_class_labels': self.agent.dataset.class_sequence[task * self.agent.dataset.num_classes_per_task:
                                                                          (task + 1) * self.agent.dataset.num_classes_per_task]
             })
@@ -111,7 +112,7 @@ class ModuleRanker:
             outgoing_modules = []
             for i in range(num_newly_added_modules):
                 assert i not in self.agent.net.candidate_indices
-                outgoing_modules.append(self.agent.net.components[i])
+                outgoing_modules.append(deepcopy(self.agent.net.components[i]))
         elif self.agent.sharing_strategy.module_selection == "gt_most_similar":
             outgoing_modules = self.send_most_similar_modules(
                 neighbor_id, task_id)
@@ -456,7 +457,7 @@ class ModModAgent(Agent):
         elif msg_type == "module":
             self.incoming_modules[sender_id] = data
 
-    def communicate(self, task_id, communication_round, final=None, **kwargs):
+    def communicate(self, task_id, communication_round, final=None, strategy=None, **kwargs):
         if task_id < self.net.num_init_tasks + 1:
             return
         if communication_round % 2 == 0:
@@ -480,7 +481,7 @@ class ModModAgent(Agent):
             module_list += extra_info_ls
         return module_list
 
-    def process_communicate(self, task_id, communication_round, final=None, **kwargs):
+    def process_communicate(self, task_id, communication_round, final=None, stategy=None, **kwargs):
         if task_id < self.net.num_init_tasks + 1:
             return
         if communication_round % 2 == 1:
@@ -550,7 +551,7 @@ class ParallelModModAgent(ModModAgent):
         for neighbor in self.neighbors.values():
             ray.get(neighbor.receive.remote(self.node_id, query, "query_task"))
 
-    def communicate(self, task_id, communication_round, final=None):
+    def communicate(self, task_id, communication_round, final=None, strategy=None, **kwargs):
         if task_id < self.net.num_init_tasks + 1:
             return
         if communication_round % 2 == 0:

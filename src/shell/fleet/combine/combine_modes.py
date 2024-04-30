@@ -19,14 +19,13 @@ import logging
 
 class CombineModesAgent(Agent):
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy,
-                 parallel=False):
+                 ):
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
                          net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
 
         self.is_modular = isinstance(self.agent, CompositionalDynamicLearner)
         self.algo = "modular" if self.is_modular else "monolithic"
         # is parallel if self is a ray actor
-        self.parallel = parallel
         self.NetCls = NetCls
         self.AgentCls = AgentCls
         self.net_kwargs = net_kwargs

@@ -63,10 +63,11 @@ if __name__ == "__main__":
     num_tasks = 10
     batch_size = 64
     num_epochs = 100
+    # num_epochs = 10
     num_agents = 20 if args.dataset == "combined" else 8
 
     root_save_dir = prefix + \
-        f"combine_modes_results/debug_modmod"
+        f"combine_modes_results/debug_modmod_on_branch_combine_modes"
 
     if args.dataset != "cifar100":
         config = {

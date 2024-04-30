@@ -47,10 +47,15 @@ class Agent:
         self.batch_size = agent_kwargs.get("batch_size", 64)
         agent_kwargs.pop("batch_size", None)
 
+        logging.info(
+            f"Agent: node_id: {node_id}, seed: {self.seed}")
+
         if agent is not None:
+            logging.info(f"~~~~ Loading agent from checkpoint {agent}")
             self.net = net
             self.agent = agent
         else:
+            logging.info(f"~~~~ Creating agent from stratch")
             self.net = NetCls(**net_kwargs)
             agent_kwargs["save_dir"] = self.save_dir
             self.agent = AgentCls(self.net, **agent_kwargs)
@@ -590,16 +595,16 @@ class ParallelFleet:
         return ray.get([agent.eval_test.remote(task_id) for agent in self.agents])
 
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
-        print('CREATING AGENTS...')
+        logging.info('CREATING AGENTS...')
         self.agents = [
             AgentCls.options(num_gpus=self.num_gpus_per_agent).remote(node_id, seed, datasets[node_id], NetCls,
                                                                       LearnerCls,
                                                                       deepcopy(net_kwargs), deepcopy(
                 agent_kwargs),
-                deepcopy(train_kwargs), deepcopy(self.sharing_strategy), True)
+                deepcopy(train_kwargs), deepcopy(self.sharing_strategy))
             for node_id in self.graph.nodes
         ]
-        print('DONE AGENTS...')
+        logging.info('DONE AGENTS...')
 
         # make sure that all agents share the same (random) preprocessing parameters in MNIST variants
         # check that self.agents[0].net has "random_linear_projection" layer, if yes, then share it
@@ -642,6 +647,14 @@ class ParallelFleet:
         else:
             comm_freqs = {'default': self.comm_freq} if self.comm_freq is not None else {
                 'default': num_epochs + 1}
+
+        if not isinstance(self.sharing_strategy.pre_or_post_comm, dict):
+            self.sharing_strategy.pre_or_post_comm = {
+                'default': self.sharing_strategy.pre_or_post_comm}
+
+        if not isinstance(self.num_coms_per_round, dict):
+            self.num_coms_per_round = {
+                'default': self.num_coms_per_round}
 
         # turn all None to num_epochs + 1
         for key in comm_freqs:

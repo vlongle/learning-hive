@@ -294,12 +294,12 @@ class TrustSimModuleSelection(ModuleSelection):
     def choose_best_module_from_neighbors(self, task_id, module_list):
         # module_list is a list of (t, sim, module)
         # find the most similar task based on the similarity score. Break ties by the task id
-        # (highest task id wins)
+        # (highest task id wins) and then by the neighbor id (highest neighbor id wins)
         # best_match = max(module_list, key=lambda x: (
         #     x[1], x[0]))
         # lowest task_id wins
         best_match_index = max(enumerate(module_list),
-                               key=lambda x: (x[1]['task_sim'], -x[1]['source_task_id']))[0]
+                               key=lambda x: (x[1]['task_sim'], -x[1]['source_task_id'], x[1]['neighbor_id']))[0]
         return best_match_index, {}
 
 
@@ -436,7 +436,7 @@ class ModModAgent(Agent):
         #       self.net.structure[task_id].shape)
 
     def prepare_communicate(self,  task_id, end_epoch, comm_freq, num_epochs, communication_round,
-                            final=None):
+                            final=None, strategy=None, **kwargs):
         if task_id < self.net.num_init_tasks + 1:
             return
         if communication_round % 2 == 1:
@@ -456,7 +456,7 @@ class ModModAgent(Agent):
         elif msg_type == "module":
             self.incoming_modules[sender_id] = data
 
-    def communicate(self, task_id, communication_round, final=None):
+    def communicate(self, task_id, communication_round, final=None, **kwargs):
         if task_id < self.net.num_init_tasks + 1:
             return
         if communication_round % 2 == 0:
@@ -480,7 +480,7 @@ class ModModAgent(Agent):
             module_list += extra_info_ls
         return module_list
 
-    def process_communicate(self, task_id, communication_round, final=None):
+    def process_communicate(self, task_id, communication_round, final=None, **kwargs):
         if task_id < self.net.num_init_tasks + 1:
             return
         if communication_round % 2 == 1:

@@ -387,7 +387,8 @@ class Fleet:
         self.num_init_tasks = net_kwargs["num_init_tasks"]
         self.num_tasks = net_kwargs["num_tasks"]
 
-        self.spawn_communicator()
+        if sharing_strategy.name == "combine_modes":
+            self.spawn_communicator()
         logging.info("Fleet initialized")
 
     def spawn_communicator(self):
@@ -509,7 +510,11 @@ class Fleet:
             start_epoch = end_epoch
 
     def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False, strategy=None):
-        for communication_round in range(start_com_round, self.num_coms_per_round[strategy] + start_com_round):
+        if strategy is not None:
+            num_coms_per_round = self.num_coms_per_round[strategy]
+        else:
+            num_coms_per_round = self.num_coms_per_round
+        for communication_round in range(start_com_round, num_coms_per_round + start_com_round):
             self.communicate_round(
                 task_id, end_epoch, comm_freq, num_epochs, communication_round, final=final, strategy=strategy)
 
@@ -556,7 +561,8 @@ class ParallelFleet:
         self.comm_freq = sharing_strategy.get("comm_freq", None)
         self.num_init_tasks = net_kwargs["num_init_tasks"]
 
-        self.spawn_communicator()
+        if sharing_strategy.name == "combine_modes":
+            self.spawn_communicator()
 
         logging.info("Fleet initialized")
 
@@ -691,7 +697,12 @@ class ParallelFleet:
             start_epoch = end_epoch
 
     def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False, strategy=None):
-        for communication_round in range(start_com_round, self.num_coms_per_round[strategy] + start_com_round):
+        if strategy is not None:
+            num_coms_per_round = self.num_coms_per_round[strategy]
+        else:
+            num_coms_per_round = self.num_coms_per_round
+
+        for communication_round in range(start_com_round, num_coms_per_round + start_com_round):
             # parallelize preprocessing to prepare neccessary data
             # before the communication round.
             ray.get([agent.prepare_communicate.remote(task_id, end_epoch, comm_freq,

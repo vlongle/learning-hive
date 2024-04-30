@@ -506,9 +506,12 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
                         # with new module. Update struct + update the active
                         # candidate
-                        if train_candidate_module:
-                            self.net.unfreeze_module(
-                                self.net.active_candidate_index)
+                        # if train_candidate_module:
+                        #     self.net.unfreeze_module(
+                        #         self.net.active_candidate_index)
+
+                        self.net.unfreeze_module(
+                            self.net.active_candidate_index)
 
                         self.update_structure(
                             X, Y, task_id, train_mode=train_mode,

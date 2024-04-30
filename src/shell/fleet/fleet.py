@@ -387,7 +387,12 @@ class Fleet:
         self.num_init_tasks = net_kwargs["num_init_tasks"]
         self.num_tasks = net_kwargs["num_tasks"]
 
+        self.spawn_communicator()
         logging.info("Fleet initialized")
+
+    def spawn_communicator(self):
+        for agent in self.agents:
+            agent.spawn_communicator()
 
     def eval_test(self, task_id=None):
         if task_id is None:
@@ -504,7 +509,7 @@ class Fleet:
             start_epoch = end_epoch
 
     def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False, strategy=None):
-        for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
+        for communication_round in range(start_com_round, self.num_coms_per_round[strategy] + start_com_round):
             self.communicate_round(
                 task_id, end_epoch, comm_freq, num_epochs, communication_round, final=final, strategy=strategy)
 

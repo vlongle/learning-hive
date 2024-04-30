@@ -256,42 +256,6 @@ class InstanceMapModuleRanker(ModuleRanker):
             self.agent.net.train()
         return res
 
-    # @torch.inference_mode()
-    # def compute_task_similarity(self, neighbor_id, task_id, k=10):
-    #     was_training = self.agent.net.training
-    #     self.agent.net.eval()
-    #     query = self.agent.query_tasks[neighbor_id]
-    #     X_val, Y_val = self.agent.dataset.valset[task_id].tensors
-    #     res = {}
-    #     baseline = {}  # compute avg distance of cluster yp
-    #     for yp in Y_val.unique():
-    #         X_val_yp = X_val[Y_val == yp].to(self.agent.net.device)
-    #         dist = compute_embedding_dist(
-    #             self.agent.net, X_val_yp, task_id=task_id)  # this is actually similarity NOT distance
-    #         dist, _ = torch.topk(dist, k=1)
-    #         baseline[yp.item()] = dist.mean().item()
-    #         print('baseline', yp, baseline[yp.item()])
-
-    #     for y, data in query.items():
-    #         for yp in Y_val.unique():
-    #             X_val_yp = X_val[Y_val == yp].to(self.agent.net.device)
-    #             # dist = (num_query, N) where N is len(X_val_yp) and num_query is len(data['X']
-    #             dist = compute_embedding_dist(
-    #                 self.agent.net, data['X'], X_val_yp, task_id)
-
-    #             # reduce to (num_query, k) by taking the smallest k distances
-    #             dist, _ = torch.topk(dist, k)
-    #             print('>> dist:', dist.shape)
-    #             # dist = dist.mean(dim=1)
-    #             dist = dist.mean().item() - baseline[yp.item()]
-    #             # # turn dist to 0 or 1 based on the baseline
-    #             # dist = dist > baseline[yp.item()]
-    #             res[(y, yp.item())] = dist
-        # self.dist[(neighbor_id, task_id)] = res
-        # if was_training:
-        #     self.agent.net.train()
-        # return res
-
     @torch.inference_mode()
     def compute_task_similarity(self, neighbor_id, task_id):
         query = self.agent.query_tasks[neighbor_id]
@@ -340,50 +304,6 @@ class TrustSimModuleSelection(ModuleSelection):
 
 
 class TryOutModuleSelection(ModuleSelection):
-    # def choose_best_module_from_neighbors(self, task_id, module_list):
-    #     perfs = []
-    #     logging.info("Trying out: {} modules".format(len(module_list)))
-    #     for module in module_list:
-    #         # TODO: might be a bit problematic with CUDA...
-    #         agent_cp = copy.deepcopy(self.agent)
-    #         agent_cp.train_kwargs["module_list"] = [module['module']]
-    #         agent_cp.train_kwargs["decoder_list"] = [{"decoder": module['decoder'],
-    #                                                   "source_class_labels": module['source_class_labels']}]
-    #         agent_cp.train_kwargs["structure_list"] = [{'structure': module['structure'],
-    #                                                     'module_id': module['module_id']}]
-    #         # agent_cp.train_kwargs["save_freq"] = 1000
-
-    #         agent_cp.train_kwargs["num_epochs"] = agent_cp.sharing_strategy.num_tryout_epochs
-    #         agent_cp.change_save_dir(f"tryout_{self.agent.save_dir}")
-    #         # print('save_dir', agent_cp.save_dir)
-    #         # exit(0)
-    #         agent_cp.train(task_id, start_epoch=0,
-    #                        communication_frequency=None, final=True,
-    #                        final_save=False)
-    #         perfs.append(agent_cp.eval_test(task_id)['avg'])
-    #         # TODO: record perf
-    #     logging.info('Tryout perfs: {}'.format(perfs))
-    #     return np.argmax(perfs), {"tryout_module_perf": np.max(perfs)}
-
-    # def choose_best_module_from_neighbors(self, task_id, module_list):
-    #     logging.info("Trying out: {} modules".format(len(module_list)))
-    #     agent_cp = copy.deepcopy(self.agent)
-    #     agent_cp.train_kwargs["module_list"] = [
-    #         m['module'] for m in module_list]
-    #     agent_cp.train_kwargs["decoder_list"] = []
-    #     agent_cp.train_kwargs["structure_list"] = []
-    #     agent_cp.train_kwargs["num_epochs"] = agent_cp.sharing_strategy.num_tryout_epochs
-    #     agent_cp.change_save_dir(f"tryout_{self.agent.save_dir}")
-    #     perfs = agent_cp.train(task_id, start_epoch=0,
-    #                            communication_frequency=None, final=True,
-    #                            final_save=False)
-
-    #     perfs = [v for k, v in perfs.items()]
-    #     logging.info('Tryout perfs: {}'.format(perfs))
-    #     print('max perf', np.argmax(perfs), {
-    #           "tryout_module_perf": np.max(perfs)})
-    #     return np.argmax(perfs), {"tryout_module_perf": np.max(perfs)}
-
     def choose_best_module_from_neighbors(self, task_id, module_list):
         max_num_modules_tryout = self.agent.sharing_strategy.max_num_modules_tryout
         logging.info("Trying out: {} modules in batches of up to {}".format(

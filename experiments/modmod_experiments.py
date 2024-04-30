@@ -65,6 +65,9 @@ if __name__ == "__main__":
     num_epochs = 100
     num_agents = 20 if args.dataset == "combined" else 8
 
+    root_save_dir = prefix + \
+        f"combine_modes_results/debug_modmod"
+
     if args.dataset != "cifar100":
         config = {
 
@@ -72,8 +75,7 @@ if __name__ == "__main__":
             "dataset": args.dataset,
             "num_agents": num_agents,
             "agent.batch_size": batch_size,
-            # "seed": args.seed,
-            "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+            "seed": args.seed,
             "topology": args.topology,
             "edge_drop_prob": args.edge_drop_prob,
             "parallel": True,
@@ -113,8 +115,7 @@ if __name__ == "__main__":
             "sharing_strategy.num_shared_module": args.num_shared_module,
             "sharing_strategy.num_tryout_epochs": args.num_tryout_epochs,
             "sharing_strategy.max_num_modules_tryout": args.max_num_modules_tryout,
-            # "root_save_dir": prefix + f"budget_experiment_results/modmod/tryout_epochs_{args.num_tryout_epochs}_max_modules_{args.max_num_modules_tryout}_num_shared_modules_{args.num_shared_module}_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}_transfer_decoder_{args.transfer_decoder}_transfer_structure_{args.transfer_structure}_no_sparse_basis_{args.no_sparse_basis}",
-            "root_save_dir": prefix + f"topology_experiment_results/modmod/topology_{args.topology}_edge_drop_{args.edge_drop_prob}",
+            "root_save_dir": root_save_dir,
 
             "overwrite": False,
         }
@@ -128,7 +129,7 @@ if __name__ == "__main__":
             "seed": [0, 1, 2, 3, 4, 5, 6, 7],
             "num_agents": num_agents,
             "parallel": True,
-            
+
             "topology": args.topology,
             "edge_drop_prob": args.edge_drop_prob,
 

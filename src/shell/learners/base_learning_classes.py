@@ -225,23 +225,69 @@ class Learner():
     def train(self, *args, **kwargs):
         raise NotImplementedError('Training loop is algorithm specific')
 
+    # def init_train(self, trainloader, task_id, start_epoch, num_epochs, save_freq=1, testloaders=None,
+    #                final=True):
+    #     if self.init_trainloaders is None:
+    #         self.init_trainloaders = {}
+    #     self.init_trainloaders[task_id] = trainloader
+    #     if len(self.init_trainloaders) == self.net.num_init_tasks:
+    #         # print([(len(loader), len(loader.dataset))
+    #         #       for loader in self.init_trainloaders.values()])
+    #         for i in range(start_epoch, num_epochs + start_epoch):
+    #             # print('epoch', i)
+    #             # for j in range(len(self.net.components)):
+    #             #     print('\t component', j)
+    #             #     print(
+    #             #         '\t', self.net.components[j].bias.mean(), self.net.components[j].weight.mean())
+    #             #     print('\t', self.net.structure[j])
+    #             #     print('\t', self.net.decoder[j].bias.mean(),
+    #             #           self.net.decoder[j].weight.mean())
+    #             for XY_all in zip_longest(*self.init_trainloaders.values()):
+    #                 for task, XY in zip(self.init_trainloaders.keys(), XY_all):
+    #                     if XY is not None:
+    #                         X, Y = XY
+    #                         if isinstance(X, list):
+    #                             # contrastive two views
+    #                             X = torch.cat([X[0], X[1]], dim=0)
+    #                         # print('BEFORE: comp[0]',
+    #                         #       self.net.components[0].bias)
+    #                         X = X.to(self.net.device, non_blocking=True)
+    #                         Y = Y.to(self.net.device, non_blocking=True)
+    #                         self.gradient_step(X, Y, task, global_step=i)
+    #                         # print('AFTER: comp[0]',
+    #                         #       self.net.components[0].bias)
+    #             # exit(0)
+    #             if i % save_freq == 0:
+    #                 self.save_data(i + 1, task_id, testloaders)
+
+    #         # if final:
+    #         #     self.save_data(num_epochs + start_epoch + 1, task_id,
+    #         #                    testloaders, final_save=final)
+
+    #             # for task, loader in self.init_trainloaders.items():
+    #             #     self.update_multitask_cost(loader, task)
+    #     else:
+    #         self.save_data(start_epoch, task_id,
+    #                        testloaders, final_save=final)
+    #     # print('DONE init train task', task_id, 'rand torch seed', int(torch.empty(
+    #     #     (), dtype=torch.int64).random_().item()))
+    #     if final:
+    #         self.save_data(num_epochs + start_epoch + 1, task_id,
+    #                        testloaders, final_save=final)
+    #         self.update_multitask_cost(
+    #             self.init_trainloaders[task_id], task_id)
+    #     # self.update_multitask_cost(
+    #     #     self.init_trainloaders[task_id], task_id)
+
+
+
     def init_train(self, trainloader, task_id, start_epoch, num_epochs, save_freq=1, testloaders=None,
                    final=True):
         if self.init_trainloaders is None:
             self.init_trainloaders = {}
         self.init_trainloaders[task_id] = trainloader
         if len(self.init_trainloaders) == self.net.num_init_tasks:
-            # print([(len(loader), len(loader.dataset))
-            #       for loader in self.init_trainloaders.values()])
             for i in range(start_epoch, num_epochs + start_epoch):
-                # print('epoch', i)
-                # for j in range(len(self.net.components)):
-                #     print('\t component', j)
-                #     print(
-                #         '\t', self.net.components[j].bias.mean(), self.net.components[j].weight.mean())
-                #     print('\t', self.net.structure[j])
-                #     print('\t', self.net.decoder[j].bias.mean(),
-                #           self.net.decoder[j].weight.mean())
                 for XY_all in zip_longest(*self.init_trainloaders.values()):
                     for task, XY in zip(self.init_trainloaders.keys(), XY_all):
                         if XY is not None:
@@ -249,35 +295,21 @@ class Learner():
                             if isinstance(X, list):
                                 # contrastive two views
                                 X = torch.cat([X[0], X[1]], dim=0)
-                            # print('BEFORE: comp[0]',
-                            #       self.net.components[0].bias)
                             X = X.to(self.net.device, non_blocking=True)
                             Y = Y.to(self.net.device, non_blocking=True)
                             self.gradient_step(X, Y, task, global_step=i)
-                            # print('AFTER: comp[0]',
-                            #       self.net.components[0].bias)
-                # exit(0)
                 if i % save_freq == 0:
                     self.save_data(i + 1, task_id, testloaders)
 
-            # if final:
-            #     self.save_data(num_epochs + start_epoch + 1, task_id,
-            #                    testloaders, final_save=final)
-
-                # for task, loader in self.init_trainloaders.items():
-                #     self.update_multitask_cost(loader, task)
+            if final:
+                self.save_data(num_epochs + start_epoch + 1, task_id,
+                               testloaders, final_save=final)
+                for task, loader in self.init_trainloaders.items():
+                    self.update_multitask_cost(loader, task)
         else:
             self.save_data(start_epoch, task_id,
                            testloaders, final_save=final)
-        # print('DONE init train task', task_id, 'rand torch seed', int(torch.empty(
-        #     (), dtype=torch.int64).random_().item()))
-        if final:
-            self.save_data(num_epochs + start_epoch + 1, task_id,
-                           testloaders, final_save=final)
-            self.update_multitask_cost(
-                self.init_trainloaders[task_id], task_id)
-        # self.update_multitask_cost(
-        #     self.init_trainloaders[task_id], task_id)
+
 
     def evaluate(self, testloaders, mode=None, eval_no_update=True):
         was_training = self.net.training

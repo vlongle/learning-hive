@@ -28,7 +28,9 @@
 # LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/rerun_topology_experiment_results")
 # LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/cifar_heuristic_results/budget")
 # LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/budget_and_topology_fedprox_results")
-LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/new_topology_experiment_results/data")
+# LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/new_topology_experiment_results/data")
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/new_topology_experiment_results/data/topology_random_disconnect_edge_drop_1.0")
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/rerun_cifar_mono_at_more_fl_results")
 #LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/more_fl_fix_root_agent_results")
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"

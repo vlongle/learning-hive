@@ -1,13 +1,12 @@
 #!/bin/bash
-#SBATCH --output=slurm_outs/slurm-%j.out
-#SBATCH --gpus=2
+#SBATCH --output=slurm_outs/vanilla/%A_%a.out
+#SBATCH --gpus=1
 #SBATCH --nodes=1
-#SBATCH --cpus-per-gpu=8
-#SBATCH --mem-per-cpu=4G
+#SBATCH --cpus-per-gpu=48
+#SBATCH --mem-per-cpu=2G
 #SBATCH --time=72:00:00
-#SBATCH --qos=ee-med
-#SBATCH --partition=eaton-compute
-#SBATCH --nodelist=ee-a6000-1.grasp.maas   # Use only the specific node with A6000 GPUs
+#SBATCH --qos=normal
+#SBATCH --partition=batch
 #SBATCH --array=0-7   # This will run 8 jobs with seeds from 0 to 7
 
 # Use SLURM_ARRAY_TASK_ID directly to get the seed

@@ -42,11 +42,8 @@ parser.add_argument('--dataset', type=str, default="cifar100", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100", "combined"], help='Dataset for the experiment.')
 parser.add_argument('--no_sparse_basis', type=str2bool, default=True)
 parser.add_argument('--algo', type=str, default="monolithic", choices=[
-parser.add_argument('--algo', type=str, default="monolithic", choices=[
                     "monolithic", "modular"], help='Algorithm for the experiment.')
 parser.add_argument('--dropout', type=float, default=0.5)
-parser.add_argument('--memory_size', type=int, default=128)
-parser.add_argument('--memory_size', type=int, default=128)
 parser.add_argument('--num_trains_per_class', type=int, default=256)
 parser.add_argument('--batch_size', type=int, default=64)
 parser.add_argument('--sync_base', type=str2bool, default=False)
@@ -107,8 +104,7 @@ if __name__ == "__main__":
     # # # === CNN experiments: CIFAR100 ===
     config = {
         "algo": args.algo,
-        # "seed": args.seed,
-        "seed": [6, 7],
+        "seed": args.seed,
         "num_agents": 8,
         "parallel": True,
         "dataset": "cifar100",
@@ -125,7 +121,8 @@ if __name__ == "__main__":
         "train.init_component_update_freq": num_epochs,
         "train.num_epochs": num_epochs,
         "train.component_update_freq": num_epochs,
-        "agent.memory_size": args.memory_size,
+        # "agent.memory_size": args.memory_size,
+        "agent.memory_size": 32,
         "agent.batch_size": args.batch_size,
         "train.save_freq": 10,
         "agent.use_contrastive": False,
@@ -137,7 +134,7 @@ if __name__ == "__main__":
         # "root_save_dir": prefix + f"experiment_results/no_transform_debug_cifar100_vanilla_jorge_setting_dropout_{args.dropout}_memory_{args.memory_size}_no_sparse_{args.no_sparse_basis}_num_trains_{args.num_trains_per_class}_batchsize_{args.batch_size}",
         # "root_save_dir": prefix + f"experiment_results/DEBUG_vanilla_jorge_setting_no_sparse_sync_{args.sync_base}",
         # "root_save_dir": prefix + f"debug_cifar_results/vanilla"
-        "root_save_dir": prefix + f"debug_cifar_results/vanilla_{args.memory_size}"
+        "root_save_dir": prefix + f"rerun_cifar_mono_at_more_fl_results"
     }
 
     run_experiment(config, strict=False)

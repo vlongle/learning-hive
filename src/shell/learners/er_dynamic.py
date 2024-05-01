@@ -97,9 +97,9 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         mega_dataset = ConcatDataset(
             [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
                                       use_contrastive=self.use_contrastive) for t, replay in self.replay_buffers.items()] + [tmp_dataset]
-            + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
-                                        use_contrastive=self.use_contrastive) for t, replay in self.shared_replay_buffers.items()
-               if t != task_id and len(replay) > 0]
+            # + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
+            #                             use_contrastive=self.use_contrastive) for t, replay in self.shared_replay_buffers.items()
+            #    if t != task_id and len(replay) > 0]
         )
 
         batch_size = trainloader.batch_size

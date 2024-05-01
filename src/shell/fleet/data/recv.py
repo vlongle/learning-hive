@@ -172,7 +172,7 @@ class RecvDataAgent(Agent):
         else:
             Xt = self.agent.replay_buffers[task].tensors[0]
             yt = self.agent.replay_buffers[task].tensors[1]
-        
+
         if task in self.agent.shared_replay_buffers and len(self.agent.shared_replay_buffers[task]) > 0:
             Xtt, ytt, _ = self.agent.shared_replay_buffers[task].get_tensors()
             Xt = torch.cat([Xt, Xtt], dim=0)
@@ -296,9 +296,11 @@ class RecvDataAgent(Agent):
 
         neighbor_dataset = self.incoming_query_extra_info[neighbor_id]['query_dataset']
         if neighbor_dataset != self.dataset.name:
-            res =  torch.full((query_global_y.size(0), n_filter_neighbors), -1, dtype=torch.long)
+            res = torch.full((query_global_y.size(
+                0), n_filter_neighbors), -1, dtype=torch.long)
         else:
-            res = self.prefilter_oracle_helper(qX, query_global_y, n_filter_neighbors)
+            res = self.prefilter_oracle_helper(
+                qX, query_global_y, n_filter_neighbors)
         return {
             "task_neighbors_prefilter": res
         }
@@ -603,7 +605,7 @@ class RecvDataAgent(Agent):
 
             self.data[requester] = structured_data['X_neighbors']
             self.extra_info[requester] = structured_data
-        
+
         if was_training:
             self.net.train()
 
@@ -700,7 +702,8 @@ class RecvDataAgent(Agent):
     def prepare_communicate(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False,):
         if communication_round % 2 == 0:
             self.incoming_query, self.incoming_data, self.incoming_extra_info, self.incoming_query_extra_info = {}, {}, {}, {}
-        if task_id < self.agent.net.num_init_tasks:
+        # if task_id < self.agent.net.num_init_tasks:
+        if task_id < self.agent.net.num_init_tasks-1:
             return
         if communication_round % 2 == 0:
             if 'query_task_mode' not in self.sharing_strategy:
@@ -727,7 +730,8 @@ class RecvDataAgent(Agent):
 
     # potentially parallelizable
     def communicate(self, task_id, communication_round, final=False):
-        if task_id < self.agent.net.num_init_tasks:
+        # if task_id < self.agent.net.num_init_tasks:
+        if task_id < self.agent.net.num_init_tasks-1:
             # NOTE: don't communicate for the first few tasks to
             # allow agents some initital training to find their weakness
             return
@@ -751,7 +755,8 @@ class RecvDataAgent(Agent):
             raise ValueError(f"Invalid round number {communication_round}")
 
     def process_communicate(self, task_id, communication_round, final=False):
-        if task_id < self.agent.net.num_init_tasks:
+        # if task_id < self.agent.net.num_init_tasks:
+        if task_id < self.agent.net.num_init_tasks-1:
             return
         if communication_round % 2 == 0:
             pass
@@ -847,7 +852,8 @@ class RecvDataAgent(Agent):
 @ray.remote
 class ParallelRecvDataAgent(RecvDataAgent):
     def communicate(self, task_id, communication_round, final=False):
-        if task_id < self.agent.net.num_init_tasks:
+        # if task_id < self.agent.net.num_init_tasks:
+        if task_id < self.agent.net.num_init_tasks-1:
             # NOTE: don't communicate for the first few tasks to
             # allow agents some initital training to find their weakness
             return

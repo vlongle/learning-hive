@@ -92,8 +92,8 @@ if __name__ == "__main__":
     min_task = 4 if args.dataset == "combined" else 0
 
     root_save_dir = prefix + \
-        f"new_topology_experiment_results/data/topology_{args.topology}_edge_drop_{args.edge_drop_prob}"
-    
+        f"rerun_no_sparse_basis_recv_results"
+
     if args.dataset != "cifar100":
         config = {
             "algo": args.algo,
@@ -101,9 +101,7 @@ if __name__ == "__main__":
             "seed": args.seed,
             "parallel": True,
             "num_agents": num_agents,
-            "dataset": "fashionmnist",
             "dataset": args.dataset,
-            # "sharing_strategy.min_task": 4, ## !!!!NOTE: only for the combined dataset
             "dataset.num_trains_per_class": 64,
             "dataset.num_vals_per_class": 50,
             "dataset.remap_labels": True,
@@ -120,13 +118,10 @@ if __name__ == "__main__":
             "train.save_freq": 10,
             "agent.use_contrastive": False,
             "agent.memory_size": memory_size,
-            # "agent.use_ood_separation_loss": False,
             "net.no_sparse_basis": True,
             "topology": args.topology,
             "edge_drop_prob": args.edge_drop_prob,
 
-            # "root_save_dir": prefix + f"debug_budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size_sync_base_{args.sync_base}/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
-            # "root_save_dir": prefix + f"combined_recv_remove_neighbors_results/recv_mem_{shared_memory_size}_freq_{comm_freq}",
             "root_save_dir": root_save_dir,
             "sharing_strategy": "recv_data",
             "sharing_strategy.shared_memory_size": shared_memory_size,
@@ -139,7 +134,7 @@ if __name__ == "__main__":
             "sharing_strategy.assign_labels_strategy": args.assign_labels_strategy,
             "sharing_strategy.scorer": args.scorer,
             "sharing_strategy.sync_base": sync_base,
-                        "sharing_strategy.min_task": min_task,
+            "sharing_strategy.min_task": min_task,
         }
 
     else:
@@ -169,7 +164,7 @@ if __name__ == "__main__":
             "agent.use_contrastive": False,
             "net.no_sparse_basis": True,
             "topology": args.topology,
-            "edge_drop_prob": args.edge_drop_prob, 
+            "edge_drop_prob": args.edge_drop_prob,
 
             # "agent.use_ood_separation_loss": False,
             "root_save_dir": root_save_dir,
@@ -184,7 +179,7 @@ if __name__ == "__main__":
             "sharing_strategy.assign_labels_strategy": args.assign_labels_strategy,
             "sharing_strategy.scorer": args.scorer,
             "sharing_strategy.sync_base": sync_base,
-                        "sharing_strategy.min_task": min_task,
+            "sharing_strategy.min_task": min_task,
         }
 
     run_experiment(config, strict=False)

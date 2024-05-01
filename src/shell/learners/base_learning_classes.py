@@ -301,14 +301,20 @@ class Learner():
                 if i % save_freq == 0:
                     self.save_data(i + 1, task_id, testloaders)
 
-            if final:
-                self.save_data(num_epochs + start_epoch + 1, task_id,
-                               testloaders, final_save=final)
-                for task, loader in self.init_trainloaders.items():
-                    self.update_multitask_cost(loader, task)
+            # if final:
+            #     self.save_data(num_epochs + start_epoch + 1, task_id,
+            #                    testloaders, final_save=final)
+            #     for task, loader in self.init_trainloaders.items():
+            #         self.update_multitask_cost(loader, task)
         else:
             self.save_data(start_epoch, task_id,
                            testloaders, final_save=final)
+        
+        if final:
+            self.save_data(num_epochs + start_epoch + 1, task_id,
+                            testloaders, final_save=final)
+            self.update_multitask_cost(
+                self.init_trainloaders[task_id], task_id)
 
 
     def evaluate(self, testloaders, mode=None, eval_no_update=True):

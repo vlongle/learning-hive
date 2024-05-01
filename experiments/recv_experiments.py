@@ -50,7 +50,7 @@ parser.add_argument('--add_data_prefilter_strategy', type=str, default="both", c
     'task_neighbors_prefilter', 'global_y_prefilter', 'both'], help='Add data prefilter strategy for the experiment.')
 # parser.add_argument('--assign_labels_strategy', type=str, default="same_as_query", choices=[
 #     'groundtruth', 'same_as_query'], help='Assign labels strategy for the experiment.')
-parser.add_argument('--assign_labels_strategy', type=str, default="groundtruth", choices=[
+parser.add_argument('--assign_labels_strategy', type=str, default="same_as_query", choices=[
     'groundtruth', 'same_as_query'], help='Assign labels strategy for the experiment.')
 parser.add_argument('--num_data_neighbors', type=int, default=5,
                     help='Number of data neighbors for the experiment.')
@@ -84,15 +84,17 @@ if __name__ == "__main__":
     query_task_mode = 'current' if args.algo == 'modular' else 'all'
     comm_freq = num_epochs // (args.num_comms_per_task + 1)
     num_agents = 20 if args.dataset == "combined" else 8
-    sync_base = True if args.dataset == "combined" else False
+    # sync_base = True if args.dataset == "combined" else False
 
     # root_save_dir = prefix + \
     #     f"rerun_fashionmnist_recv_results/budget_{args.budget}_comm_freq_{comm_freq}"
 
     min_task = 4 if args.dataset == "combined" else 0
 
+    # root_save_dir = prefix + \
+    #     f"rerun_no_sparse_basis_recv_results_{args.assign_labels_strategy}_no_sync_base"
     root_save_dir = prefix + \
-        f"rerun_no_sparse_basis_recv_results"
+        f"rerun_same_setting"
 
     if args.dataset != "cifar100":
         config = {
@@ -118,7 +120,8 @@ if __name__ == "__main__":
             "train.save_freq": 10,
             "agent.use_contrastive": False,
             "agent.memory_size": memory_size,
-            "net.no_sparse_basis": True,
+            # "net.no_sparse_basis": True,
+            "net.no_sparse_basis": False,
             "topology": args.topology,
             "edge_drop_prob": args.edge_drop_prob,
 
@@ -133,7 +136,8 @@ if __name__ == "__main__":
             "sharing_strategy.add_data_prefilter_strategy": args.add_data_prefilter_strategy,
             "sharing_strategy.assign_labels_strategy": args.assign_labels_strategy,
             "sharing_strategy.scorer": args.scorer,
-            "sharing_strategy.sync_base": sync_base,
+            # "sharing_strategy.sync_base": True,
+            "sharing_strategy.sync_base": False,
             "sharing_strategy.min_task": min_task,
         }
 
@@ -151,8 +155,8 @@ if __name__ == "__main__":
             "net": "cnn",
             "net.depth": 4,
             "num_init_tasks": 4,
-            # "dataset.num_tasks": 20,
-            "dataset.num_tasks": 4,
+            "dataset.num_tasks": 20,
+            # "dataset.num_tasks": 4,
             "net.dropout": 0.5,
             "train.init_num_epochs": num_epochs,
             "train.init_component_update_freq": num_epochs,
@@ -162,7 +166,8 @@ if __name__ == "__main__":
             "agent.batch_size": batch_size,
             "train.save_freq": 10,
             "agent.use_contrastive": False,
-            "net.no_sparse_basis": True,
+            # "net.no_sparse_basis": True,
+            "net.no_sparse_basis": False,
             "topology": args.topology,
             "edge_drop_prob": args.edge_drop_prob,
 

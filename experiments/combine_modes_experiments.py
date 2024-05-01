@@ -63,10 +63,18 @@ if __name__ == "__main__":
     num_agents = 20 if args.dataset == "combined" else 8
 
     combine = 'recv_data'
-    combine = 'modmod'
+    # combine = 'modmod'
     sync_base = "grad" in combine or "modmod" in combine
+
+    # NOTE: HACK: BUG::: min_task == 4 is going to be a problem
+    # with the combined data recv in this config..., also same_as_query for MNIST variants,
+    # and also somehow no_sparse_basis=False??
+
+    no_sparse_basis = False  # the same level
+    # no_sparse_basis = True  # this is actually much worse
+
     root_save_dir = prefix + \
-        f"combine_modes_results/{combine}"
+        f"combine_modes_results/{combine}_no_sparse_{no_sparse_basis}"
     if args.dataset != "cifar100":
         config = {
 
@@ -86,7 +94,7 @@ if __name__ == "__main__":
             "dataset.num_tasks": num_tasks,
             "net": "mlp",
             "net.depth": num_init_tasks,
-            'net.no_sparse_basis': True,
+            'net.no_sparse_basis': no_sparse_basis,
             "num_init_tasks": num_init_tasks,
             "net.dropout": 0.5,
             "train.num_epochs": num_epochs,

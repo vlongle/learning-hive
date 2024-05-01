@@ -85,12 +85,16 @@ if __name__ == "__main__":
     num_agents = 20 if args.dataset == "combined" else 8
     sync_base = True if args.dataset == "combined" else False
 
+    min_task = 4 if args.dataset == "combined" else 0
+
     # root_save_dir = prefix + \
     #     f"rerun_fashionmnist_recv_results/budget_{args.budget}_comm_freq_{comm_freq}"
 
     root_save_dir = prefix + \
-        f"new_topology_experiment_results/data/topology_{args.topology}_edge_drop_{args.edge_drop_prob}"
-    
+        f"combine_modes_results/debug_recv_data"
+
+    no_sparse_basis = False
+
     if args.dataset != "cifar100":
         config = {
             "algo": args.algo,
@@ -100,7 +104,7 @@ if __name__ == "__main__":
             "num_agents": num_agents,
             "dataset": "fashionmnist",
             "dataset": args.dataset,
-            # "sharing_strategy.min_task": 4, ## !!!!NOTE: only for the combined dataset
+            "sharing_strategy.min_task": min_task,
             "dataset.num_trains_per_class": 64,
             "dataset.num_vals_per_class": 50,
             "dataset.remap_labels": True,
@@ -118,7 +122,7 @@ if __name__ == "__main__":
             "agent.use_contrastive": False,
             "agent.memory_size": memory_size,
             # "agent.use_ood_separation_loss": False,
-            "net.no_sparse_basis": True,
+            "net.no_sparse_basis": no_sparse_basis,
             "topology": args.topology,
             "edge_drop_prob": args.edge_drop_prob,
 
@@ -164,7 +168,7 @@ if __name__ == "__main__":
             "agent.use_contrastive": False,
             "net.no_sparse_basis": True,
             "topology": args.topology,
-            "edge_drop_prob": args.edge_drop_prob, 
+            "edge_drop_prob": args.edge_drop_prob,
 
             # "agent.use_ood_separation_loss": False,
             "root_save_dir": root_save_dir,

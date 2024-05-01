@@ -139,18 +139,18 @@ class Agent:
         train_kwargs = self.train_kwargs.copy()
 
         # use `init_num_epochs` and `init_component_update_freq` for the first few tasks
-        num_epochs, component_update_freq = None, None
+        # num_epochs, component_update_freq = None, None
         if "init_num_epochs" in train_kwargs:
-            num_epochs = train_kwargs.pop(
+            train_kwargs.pop(
                 "init_num_epochs")
         if "init_component_update_freq" in train_kwargs:
-            component_update_freq = train_kwargs.pop(
+            train_kwargs.pop(
                 "init_component_update_freq")
-        if task_id < self.agent.net.num_init_tasks:
-            if num_epochs is not None:
-                train_kwargs["num_epochs"] = num_epochs
-            if component_update_freq is not None:
-                train_kwargs["component_update_freq"] = component_update_freq
+        # if task_id < self.agent.net.num_init_tasks:
+        #     if num_epochs is not None:
+        #         train_kwargs["num_epochs"] = num_epochs
+        #     if component_update_freq is not None:
+        #         train_kwargs["component_update_freq"] = component_update_freq
 
         # if communication_frequency is None:
         #     # communication_frequency = train_kwargs['num_epochs'] - start_epoch
@@ -167,6 +167,8 @@ class Agent:
         train_kwargs["final"] = final
 
         train_kwargs.update(kwargs)
+        logging.info(
+            f"Training from {start_epoch} for {train_kwargs['num_epochs']} arg {num_epochs}")
 
         # print('train task', task_id, 'rand torch seed', int(torch.empty(
         #     (), dtype=torch.int64).random_().item()))
@@ -667,6 +669,7 @@ class ParallelFleet:
 
         logging.info(
             f"Task {task_id} comm_freqs: {comm_freqs} pre_or_post: {self.sharing_strategy.pre_or_post_comm} num_coms: {num_coms}")
+        logging.info(f"sorted_epochs: {sorted_epochs}")
         start_epoch = 0
         for end_epoch in sorted_epochs:
             final = end_epoch == num_epochs
@@ -674,8 +677,6 @@ class ParallelFleet:
                     for agent in self.agents])
 
             for strategy, freq in comm_freqs.items():
-                logging.info(
-                    f"should_communicate({freq}, {start_epoch}, {end_epoch}) = {should_communicate(freq, start_epoch, end_epoch)}")
                 if should_communicate(freq, start_epoch, end_epoch) and self.sharing_strategy.pre_or_post_comm[strategy] == "pre":
                     logging.info(
                         f'Task {task_id} {strategy.upper()} COMM AT EPOCH {start_epoch}')
@@ -683,7 +684,7 @@ class ParallelFleet:
                         task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
             logging.info(
-                f'Task {task_id} training from {start_epoch} to {end_epoch} final={final}')
+                f'Task {task_id} training from {start_epoch} to {end_epoch} final={final} for {end_epoch - start_epoch} epochs')
             ray.get([agent.train.remote(task_id, start_epoch, end_epoch -
                     start_epoch, final=final) for agent in self.agents])
 

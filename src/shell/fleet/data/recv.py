@@ -692,10 +692,12 @@ class RecvDataAgent(Agent):
                 y_t, [task] * len(y_t), self.dataset.class_sequence, self.dataset.num_classes_per_task)
         return ret
 
-    def prepare_communicate(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False,):
+    def prepare_communicate(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False, strategy=False):
         if communication_round % 2 == 0:
             self.incoming_query, self.incoming_data, self.incoming_extra_info, self.incoming_query_extra_info = {}, {}, {}, {}
-        if task_id < self.agent.net.num_init_tasks:
+        # if task_id < self.agent.net.num_init_tasks:
+        # NOTE: HACK: TMP for mnist, fashionmnist, kmnist
+        if task_id < self.agent.net.num_init_tasks-1:
             return
         if communication_round % 2 == 0:
             if 'query_task_mode' not in self.sharing_strategy:
@@ -721,10 +723,10 @@ class RecvDataAgent(Agent):
             raise ValueError(f"Invalid round number {communication_round}")
 
     # potentially parallelizable
-    def communicate(self, task_id, communication_round, final=False):
-        if task_id < self.agent.net.num_init_tasks:
-            # NOTE: don't communicate for the first few tasks to
-            # allow agents some initital training to find their weakness
+    def communicate(self, task_id, communication_round, final=False, strategy=None):
+        # if task_id < self.agent.net.num_init_tasks:
+        # NOTE: HACK: TMP for mnist, fashionmnist, kmnist
+        if task_id < self.agent.net.num_init_tasks-1:
             return
         if communication_round % 2 == 0:
             # send query to neighbors
@@ -758,8 +760,10 @@ class RecvDataAgent(Agent):
         else:
             raise ValueError(f"Invalid round number {communication_round}")
 
-    def process_communicate(self, task_id, communication_round, final=False):
-        if task_id < self.agent.net.num_init_tasks:
+    def process_communicate(self, task_id, communication_round, final=False, strategy=None):
+        # if task_id < self.agent.net.num_init_tasks:
+        # NOTE: HACK: TMP for mnist, fashionmnist, kmnist
+        if task_id < self.agent.net.num_init_tasks-1:
             return
         if communication_round % 2 == 0:
             pass
@@ -854,10 +858,10 @@ class RecvDataAgent(Agent):
 
 @ray.remote
 class ParallelRecvDataAgent(RecvDataAgent):
-    def communicate(self, task_id, communication_round, final=False):
-        if task_id < self.agent.net.num_init_tasks:
-            # NOTE: don't communicate for the first few tasks to
-            # allow agents some initital training to find their weakness
+    def communicate(self, task_id, communication_round, final=False, strategy=None):
+        # if task_id < self.agent.net.num_init_tasks:
+        # NOTE: HACK: TMP for mnist, fashionmnist, kmnist
+        if task_id < self.agent.net.num_init_tasks-1:
             return
         if communication_round % 2 == 0:
             # send query to neighbors

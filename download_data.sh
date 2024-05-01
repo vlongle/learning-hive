@@ -28,13 +28,14 @@
 # LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/rerun_topology_experiment_results")
 # LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/cifar_heuristic_results/budget")
 LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/more_fl_fix_root_agent_fix_fedprox_excluded_set_results")
+LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/combine_modes_results/debug_recv_data_no_sparse_False_sync_base_False_assign_labels_same_as_query")
 #LOCAL_FOLDERS=("/mnt/kostas-graid/datasets/vlongle/learning_hive/more_fl_fix_root_agent_results")
 REMOTE_USER="vlongle"
 REMOTE_HOST="158.130.50.18"
 # REMOTE_PATH="/home/vlongle/code/learning-hive/new_topology_experiment_results/"
 # REMOTE_PATH="/home/vlongle/code/learning-hive/rerun_opt_heuristic_experiment_results/"
 #REMOTE_PATH="/home/vlongle/code/learning-hive/after_fix_vanilla_cifar_results/"
-REMOTE_PATH="/home/vlongle/code/learning-hive"
+REMOTE_PATH="/home/vlongle/code/learning-hive/combine_modes_results"
 # REMOTE_PATH="/home/vlongle/code/learning-hive/combined_data_experiment_results/"
 
 # Check if rsync is installed

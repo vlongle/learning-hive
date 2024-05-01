@@ -90,10 +90,13 @@ if __name__ == "__main__":
     # root_save_dir = prefix + \
     #     f"rerun_fashionmnist_recv_results/budget_{args.budget}_comm_freq_{comm_freq}"
 
-    root_save_dir = prefix + \
-        f"combine_modes_results/debug_recv_data"
-
     no_sparse_basis = False
+    sync_base = False
+    assign_labels_strategy="same_as_query"
+
+    root_save_dir = prefix + \
+        f"combine_modes_results/debug_recv_data_no_sparse_{no_sparse_basis}_sync_base_{sync_base}_assign_labels_{assign_labels_strategy}"
+
 
     if args.dataset != "cifar100":
         config = {
@@ -102,7 +105,6 @@ if __name__ == "__main__":
             "seed": args.seed,
             "parallel": True,
             "num_agents": num_agents,
-            "dataset": "fashionmnist",
             "dataset": args.dataset,
             "sharing_strategy.min_task": min_task,
             "dataset.num_trains_per_class": 64,
@@ -121,13 +123,10 @@ if __name__ == "__main__":
             "train.save_freq": 10,
             "agent.use_contrastive": False,
             "agent.memory_size": memory_size,
-            # "agent.use_ood_separation_loss": False,
             "net.no_sparse_basis": no_sparse_basis,
             "topology": args.topology,
             "edge_drop_prob": args.edge_drop_prob,
 
-            # "root_save_dir": prefix + f"debug_budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size_sync_base_{args.sync_base}/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
-            # "root_save_dir": prefix + f"combined_recv_remove_neighbors_results/recv_mem_{shared_memory_size}_freq_{comm_freq}",
             "root_save_dir": root_save_dir,
             "sharing_strategy": "recv_data",
             "sharing_strategy.shared_memory_size": shared_memory_size,
@@ -137,7 +136,7 @@ if __name__ == "__main__":
             "sharing_strategy.comm_freq": comm_freq,
             "sharing_strategy.prefilter_strategy": args.prefilter_strategy,
             "sharing_strategy.add_data_prefilter_strategy": args.add_data_prefilter_strategy,
-            "sharing_strategy.assign_labels_strategy": args.assign_labels_strategy,
+            "sharing_strategy.assign_labels_strategy": assign_labels_strategy,
             "sharing_strategy.scorer": args.scorer,
             "sharing_strategy.sync_base": sync_base,
         }

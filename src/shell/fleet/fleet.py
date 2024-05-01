@@ -110,7 +110,7 @@ class Agent:
     def add_neighbors(self, neighbors: Iterable[ray.actor.ActorHandle]):
         self.neighbors = neighbors
 
-    def train(self, task_id, start_epoch=0, num_epochs=None,
+    def train(self, task_id, start_epoch=0, communication_frequency=None,
               final=True, **kwargs):
 
         if task_id >= self.net.num_tasks:
@@ -120,61 +120,51 @@ class Agent:
             torch.utils.data.DataLoader(self.dataset.trainset[task_id],
                                         batch_size=self.batch_size,
                                         shuffle=True,
-                                        # shuffle=False,
-                                        num_workers=4,
+                                        num_workers=2,
                                         pin_memory=True,
                                         ))
         testloaders = {task: torch.utils.data.DataLoader(testset,
                                                          batch_size=256,
                                                          shuffle=False,
-                                                         num_workers=4,
+                                                         num_workers=2,
                                                          pin_memory=True,
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
         valloader = torch.utils.data.DataLoader(self.dataset.valset[task_id],
                                                 batch_size=256,
                                                 shuffle=False,
-                                                num_workers=4,
+                                                num_workers=2,
                                                 pin_memory=True,
                                                 )
         train_kwargs = self.train_kwargs.copy()
 
         # use `init_num_epochs` and `init_component_update_freq` for the first few tasks
-        # num_epochs, component_update_freq = None, None
+        num_epochs, component_update_freq = None, None
         if "init_num_epochs" in train_kwargs:
-            train_kwargs.pop(
+            num_epochs = train_kwargs.pop(
                 "init_num_epochs")
         if "init_component_update_freq" in train_kwargs:
-            train_kwargs.pop(
+            component_update_freq = train_kwargs.pop(
                 "init_component_update_freq")
-        # if task_id < self.agent.net.num_init_tasks:
-        #     if num_epochs is not None:
-        #         train_kwargs["num_epochs"] = num_epochs
-        #     if component_update_freq is not None:
-        #         train_kwargs["component_update_freq"] = component_update_freq
+        if task_id < self.agent.net.num_init_tasks:
+            if num_epochs is not None:
+                train_kwargs["num_epochs"] = num_epochs
+            if component_update_freq is not None:
+                train_kwargs["component_update_freq"] = component_update_freq
 
-        # if communication_frequency is None:
-        #     # communication_frequency = train_kwargs['num_epochs'] - start_epoch
-        #     communication_frequency = train_kwargs['num_epochs'] - start_epoch
+        if communication_frequency is None:
+            # communication_frequency = train_kwargs['num_epochs'] - start_epoch
+            communication_frequency = train_kwargs['num_epochs'] - start_epoch
 
-        # end_epoch = min(start_epoch + communication_frequency,
-        #                 train_kwargs['num_epochs'])
-        # adjusted_num_epochs = end_epoch - start_epoch
-        # train_kwargs["num_epochs"] = adjusted_num_epochs
-
-        if num_epochs is not None:
-            train_kwargs["num_epochs"] = num_epochs
-
+        end_epoch = min(start_epoch + communication_frequency,
+                        train_kwargs['num_epochs'])
+        adjusted_num_epochs = end_epoch - start_epoch
+        train_kwargs["num_epochs"] = adjusted_num_epochs
         train_kwargs["final"] = final
 
         train_kwargs.update(kwargs)
-        logging.info(
-            f"Training from {start_epoch} for {train_kwargs['num_epochs']} arg {num_epochs}")
 
-        # print('train task', task_id, 'rand torch seed', int(torch.empty(
-        #     (), dtype=torch.int64).random_().item()))
-
-        return self.agent.train(trainloader, task_id, testloaders=testloaders,
-                                valloader=valloader, start_epoch=start_epoch, **train_kwargs)
+        self.agent.train(trainloader, task_id, testloaders=testloaders,
+                         valloader=valloader, start_epoch=start_epoch, **train_kwargs)
 
     def eval_test(self, task_id, include_avg=False):
         testloaders = {task: torch.utils.data.DataLoader(testset,

@@ -43,11 +43,9 @@ def plot_agg_learning_curves(fleet, ax=None, name=None, tasks=None, agent_ids=No
     for agent in fleet.agents:
         if agent_ids is not None and agent.node_id not in agent_ids:
             continue
-        print('agent', agent.node_id)
         df = agent.get_record().df
         for task in tasks:
             task_df = df[df["train_task"] == task]
-            print('task_df\n', task_df.head(10))
             if mode == "current":
                 task_df = task_df[task_df["test_task"] == str(task)]
             elif mode == "avg":

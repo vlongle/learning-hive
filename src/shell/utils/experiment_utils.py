@@ -22,7 +22,6 @@ from shell.models.mlp import MLP
 from shell.models.mlp_soft_lifelong_dynamic import MLPSoftLLDynamic
 from shell.learners.er_dynamic import CompositionalDynamicER
 from shell.learners.er_nocomponents import NoComponentsER
-from shell.datasets.datasets import CombinedDataset
 from copy import deepcopy
 
 
@@ -50,18 +49,7 @@ def setup_experiment(cfg: DictConfig):
     seed_everything(cfg.seed)
     dataset_cfg = process_dataset_cfg(cfg)
 
-    if dataset_cfg['dataset_name'] == "combined":
-        datasets = []
-        available_dataset_names = ['mnist', 'kmnist', 'fashionmnist']
-        # for each agent, randomly choose a dataset
-        for i in range(cfg.num_agents):
-            dataset_name = available_dataset_names[i % len(
-                available_dataset_names)]
-            agent_dataset_cfg = deepcopy(dataset_cfg)
-            agent_dataset_cfg['dataset_name'] = dataset_name
-            datasets.append(get_dataset(**agent_dataset_cfg))
-    else:
-        datasets = [get_dataset(**dataset_cfg) for _ in range(cfg.num_agents)]
+    datasets = [get_dataset(**dataset_cfg) for _ in range(cfg.num_agents)]
     net_cfg = dict(cfg.net)
     agent_cfg = dict(cfg.agent)
     train_cfg = dict(cfg.train)
@@ -79,29 +67,8 @@ def setup_experiment(cfg: DictConfig):
                 "use_contrastive": cfg.agent.use_contrastive, }
     agent_cfg |= {'dataset_name': cfg.dataset.dataset_name}
     print("net_cfg", net_cfg)
-
     tg = TopologyGenerator(num_nodes=cfg.num_agents)
-    # if we don't have cfg.topology default to fully_connected
-    if not hasattr(cfg, "topology"):
-        cfg.topology = "fully_connected"
-    if not hasattr(cfg, "edge_drop_prob"):
-        cfg.edge_drop_prob = 0.0
-
-    if cfg.topology == "fully_connected":
-        graph = tg.generate_fully_connected()
-    elif cfg.topology == "tree":
-        graph = tg.generate_tree()
-    elif cfg.topology == "ring":
-        graph = tg.generate_ring()
-    elif cfg.topology == "server":
-        graph = tg.generate_server()
-    elif cfg.topology == "random":
-        graph = tg.generate_connected_random(cfg.edge_drop_prob)
-    elif cfg.topology == "random_disconnect":
-        graph = tg.generate_random(cfg.edge_drop_prob)
-    else:
-        raise NotImplementedError(
-            f"Topology {cfg.topology} not implemented.")
+    graph = tg.generate_random()
 
     if cfg.algo == "modular":
         if cfg.net.name == "mlp":
@@ -114,7 +81,7 @@ def setup_experiment(cfg: DictConfig):
         elif cfg.net.name == "cnn":
             NetCls = CNN
     else:
-        raise NotImplementedError(f"Algorithm {cfg.algo} not implemented.")
+        raise NotImplementedError
 
     if cfg.algo == "modular":
         net_cfg |= {"num_tasks": cfg.dataset.num_tasks, }
@@ -130,18 +97,8 @@ def setup_experiment(cfg: DictConfig):
 
     # if cfg.sharing_strategy.name in REQUIRED_JOINT_TRAINING_STRAT:
     if getattr(cfg.sharing_strategy, 'sync_base', False):
-        fake_dataset = get_dataset(**process_dataset_cfg(cfg))
-        if dataset_cfg['dataset_name'] == "combined":
-            for i in range(fake_dataset.num_tasks):
-                chosen_d = datasets[i % len(datasets)]
-                task_id = chosen_d.class_sequence[i * chosen_d.num_classes_per_task: (
-                    i+1) * chosen_d.num_classes_per_task]
-                fake_dataset.testset.append(chosen_d.testset[i])
-                fake_dataset.trainset.append(chosen_d.trainset[i])
-                fake_dataset.valset.append(chosen_d.valset[i])
-                fake_dataset.class_sequence.extend(task_id)
-        fleet_additional_cfg['fake_dataset'] = fake_dataset
-
+        fleet_additional_cfg['fake_dataset'] = get_dataset(
+            **process_dataset_cfg(cfg))
     return graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg
 
 
@@ -192,15 +149,14 @@ def eval_net_task(net, task, testloader):
 
 
 @torch.inference_mode()
-def eval_net(net, testloaders, include_avg=False):
+def eval_net(net, testloaders):
     was_training = net.training
     net.eval()
     test_acc = {}
     for task, loader in testloaders.items():
         test_acc[task] = eval_net_task(net, task, loader)
 
-    if include_avg:
-        test_acc['avg'] = sum(test_acc.values()) / len(test_acc)
+    test_acc['avg'] = sum(test_acc.values()) / len(test_acc)
     if was_training:
         net.train()
     return test_acc
@@ -278,7 +234,6 @@ def run_experiment(config, strict=True):
 
     print(config)
     combs = get_all_combinations(config, strict=strict)
-    print('combs', combs)
     print("No. of experiments:", len(combs))
 
     for cfg in combs:

@@ -8,15 +8,12 @@ Copyright (c) 2023 Long Le
 '''
 from shell.fleet.fleet import Fleet, ParallelFleet, ParallelAgent, Agent
 from shell.fleet.grad.monograd import ModelSyncAgent, ParallelModelSyncAgent
-from shell.fleet.grad.fedprox import FedProxAgent, ParallelFedProxAgent, FedProxModAgent, ParallelFedProxModAgent
-from shell.fleet.grad.fedcurv import FedCurvAgent, ParallelFedCurvAgent, FedCurvModAgent, ParallelFedCurvModAgent
+from shell.fleet.grad.fedprox import FedProxAgent, ParallelFedProxAgent
 from shell.fleet.grad.gradient_fleet import SyncBaseFleet, ParallelSyncBaseFleet
 from shell.fleet.grad.modgrad import ModGrad, ParallelModGrad
 from shell.fleet.data.data_fleet import DataFleet, ParallelDataFleet
 from shell.fleet.data.recv import RecvDataAgent, ParallelRecvDataAgent
 from shell.fleet.mod.modmod import ModModAgent, ParallelModModAgent
-from shell.fleet.data.heuristic import HeuristicDataAgent, ParallelHeuristicDataAgent
-from shell.fleet.combine.combine_modes import CombineModesAgent, ParallelCombineModesAgent
 from shell.utils.experiment_utils import get_cfg
 
 
@@ -30,6 +27,40 @@ BASIC_FLEET_CLS = {
         False: Fleet,
     },
 }
+
+# FLEET_CLS = {
+#     "no_sharing": {
+#         True: ParallelFleet,
+#         False: Fleet,
+#     },
+#     # fedavg
+#     "gradient": {
+#         True: ParallelSyncBaseFleet,
+#         False: SyncBaseFleet,
+#     },
+#     "recv_data": {
+#         True: ParallelDataFleet,
+#         False: DataFleet,
+#     },
+#     # fedprox
+#     "fedprox": {
+#         True: ParallelSyncBaseFleet,
+#         False: SyncBaseFleet,
+#     },
+#     # "debug_joint":{
+#     #     True: ParallelGradFleet,
+#     #     False: GradFleet,
+#     # },
+#     "debug_joint": {
+#         True: ParallelFleet,
+#         False: Fleet,
+#     },
+#     # "sender_data": {},
+#     "modmod": {
+#         True: ParallelFleet,
+#         False: Fleet,
+#     },
+# }
 
 
 AGENT_CLS = {
@@ -59,20 +90,6 @@ AGENT_CLS = {
         "monolithic": {
             True: ParallelFedProxAgent,
             False: FedProxAgent,
-        },
-        "modular": {
-            True: ParallelFedProxModAgent,
-            False: FedProxModAgent,
-        },
-    },
-    "fedcurv": {
-        "monolithic": {
-            True: ParallelFedCurvAgent,
-            False: FedCurvAgent,
-        },
-        "modular": {
-            True: ParallelFedCurvModAgent,
-            False: FedCurvModAgent,
         },
     },
     "recv_data": {
@@ -105,26 +122,6 @@ AGENT_CLS = {
         'modular': {
             True: ParallelModModAgent,
             False: ModModAgent,
-        }
-    },
-    "heuristic_data": {
-        'monolithic': {
-            True: ParallelHeuristicDataAgent,
-            False: HeuristicDataAgent,
-        },
-        'modular': {
-            True: ParallelHeuristicDataAgent,
-            False: HeuristicDataAgent,
-        }
-    },
-    "combine_modes": {
-        'monolithic': {
-            True: ParallelCombineModesAgent,
-            False: CombineModesAgent,
-        },
-        'modular': {
-            True: ParallelCombineModesAgent,
-            False: CombineModesAgent,
         }
     },
 }
@@ -163,6 +160,4 @@ def setup_fleet(save_dir, task_id=None, parallel=None, modify_cfg=None):
     if task_id is not None:
         fleet.load_model_from_ckpoint(task_ids=task_id)
         fleet.update_replay_buffers(task_id)
-
-    fleet.load_records()
     return fleet

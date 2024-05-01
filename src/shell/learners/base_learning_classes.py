@@ -43,7 +43,8 @@ class Learner():
             self.sup_loss = SupConLoss(temperature=temperature)
 
         # self.loss = nn.BCEWithLogitsLoss() if net.binary else nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.Adam(self.net.parameters())
+        self.optimizer = torch.optim.Adam(self.net.parameters(),)
+        #   lr=0.005)
         self.improvement_threshold = improvement_threshold
         self.T = 0
         self.observed_tasks = set()
@@ -55,8 +56,8 @@ class Learner():
         self.sharing_data_record = Record(os.path.join(
             self.save_dir, "sharing_data_record.csv"))
 
-        # self.writer = SummaryWriter(
-        #     log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
+        self.writer = SummaryWriter(
+            log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
         self.init_trainloaders = None
 
         self.mode = "ce"
@@ -65,46 +66,60 @@ class Learner():
         self.fl_strategy = fl_strategy
         self.mu = self.global_model = None
 
-        self.use_aux = False
-        if fl_strategy == 'fedprox':
+        if fl_strategy is not None:
             self.global_model = None
             self.mu = mu
-            self.use_aux = True
-            self.excluded_params = set()
-        elif fl_strategy == 'fedcurv':
-            self.incoming_models = None
-            self.mu = mu
-            self.use_aux = True
-            self.incoming_fishers = None
+
+        self.use_ood_separation_loss = use_ood_separation_loss
+        self.lambda_ood = lambda_ood
+        self.delta_ood = delta_ood
+        self.ood_loss = OODSeparationLoss(lambda_ood=self.lambda_ood,
+                                          delta=self.delta_ood)
+        self.ood_data = {}
 
     def change_save_dir(self, save_dir):
         self.save_dir = create_dir_if_not_exist(save_dir)
         self.record = Record(os.path.join(self.save_dir, "record.csv"))
-        # self.dynamic_record = Record(os.path.join(
-        #     self.save_dir, "add_modules_record.csv"))
-        self.dynamic_record.path = os.path.join(
-            self.save_dir, "add_modules_record.csv")
+        self.dynamic_record = Record(os.path.join(
+            self.save_dir, "add_modules_record.csv"))
         self.sharing_data_record = Record(os.path.join(
             self.save_dir, "sharing_data_record.csv"))
-        # self.writer = SummaryWriter(
-        #     log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
+        self.writer = SummaryWriter(
+            log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
+
+    # def apply_transform(self, X):
+    #     # X: (batch_size, n_channels, height, width)
+    #     # apply self.transform to each image in X
+    #     # return: (batch_size, n_channels, height, width)
+    #     return self.train_transform(X)
+        # morally correct way but it's too slow
+        # return torch.stack([self.train_transform(x) for x in X])
 
     def record_shared_data_stats(self, train_task_id, epoch):
         for task_id, replay in sorted(self.shared_replay_buffers.items()):
-            if len(replay) == 0:
-                continue
-            X, y, _ = replay.get_tensors()
             self.sharing_data_record.write(
                 {
                     'train_task': train_task_id,
                     'task_id': task_id,
                     'epoch': epoch,
                     'num_samples': len(replay),
-                    'Y_dist': str(torch.unique(y, return_counts=True)),
                 }
             )
 
         self.sharing_data_record.save()
+
+    # def make_shared_memory_loaders(self, batch_size=32):
+    #     self.shared_memory_loaders = {}
+    #     for task_id in self.shared_replay_buffers.keys():
+    #         if len(self.shared_replay_buffers[task_id]) == 0:
+    #             continue
+    #         self.shared_memory_loaders[task_id] = (
+    #             torch.utils.data.DataLoader(self.shared_replay_buffers[task_id],
+    #                                         batch_size=batch_size,
+    #                                         shuffle=True,
+    #                                         num_workers=1,
+    #                                         pin_memory=True
+    #                                         ))
 
     def get_loss_reduction(self):
         if self.use_contrastive:
@@ -144,53 +159,65 @@ class Learner():
         if detach:
             X_encode = X_encode.detach()
         Y_hat = self.net.decoder[task_id](X_encode)
+        # check if Y is float if yes, raise error
+        if Y.dtype == torch.float32:
+            print('Y:', Y)
+            raise ValueError(
+                "?????????????/// Y is float32, make sure to convert to long before passing to compute_cross_entropy_loss")
+        # check that Y is either 0 or 1
+        # if Y.max() > 1 or Y.min() < 0:
+        #     print('Y:', Y)
+        #     raise ValueError(
+        #         "?????????????/// Y is not binary, make sure to convert to binary before passing to compute_cross_entropy_loss")
+
         ce = self.ce_loss(Y_hat, Y)
         return ce
-
-    def compute_fedcurv_loss(self):
-        loss = 0.0
-        for neighbor_id, model in self.incoming_models.items():
-            fisher = self.fisher[neighbor_id]
-            loss += self.compute_ewc_loss(fisher, model)
-        return loss
-
-    def compute_ewc_loss(self, fisher, model):
-        loss = 0.0
-        for n, p in self.net.named_parameters():
-            if n not in fisher or n not in model:
-                continue
-            _loss = fisher[n] * (p - model[n]) ** 2
-            loss += _loss.sum()
-        return loss
 
     def compute_auxillary_loss(self, X, Y, task_id):
         loss = 0.
         if self.fl_strategy is not None:
             if self.fl_strategy == "fedprox":
                 loss += compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model,
-                                                 mu=self.mu, excluded_params=self.excluded_params)
-            elif self.fl_strategy == "fedcurv":
-                loss += self.mu * self.compute_fedcurv_loss()
+                                                 mu=self.mu)
             else:
                 raise NotImplementedError(
                     "FL strategy %s not implemented" % self.fl_strategy)
 
-        # logging.info("aux loss %s", loss)
-        # print("aux loss %s", loss)
+        if self.use_ood_separation_loss:
+            if X.shape[0] != Y.shape[0]:
+                # using contrastive so we have two views
+                X, _ = torch.split(X, X.shape[0] // 2, dim=0)
+            X_encode = self.net.encode(X, task_id)
+            # task_id might be a one value tensor, convert to int
+            if isinstance(task_id, torch.Tensor):
+                task_id = task_id.item()
+            X_ood, *_ = self.ood_data[task_id]
+            X_ood = X_ood.to(self.net.device, non_blocking=True)
+            ood_encode = self.net.encode(X_ood, task_id)
+            loss += self.ood_loss(X_encode, ood_encode)
+
         return loss
 
-    def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=None):
+    def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=True):
         """
         Compute main loss + (optional aux loss for FL)
         """
-        # print("compute loss", task_id, mode, log, global_step, use_aux)
-        if use_aux is None:
-            use_aux = self.use_aux
         loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log)
+        self.writer.add_scalar(
+            f'loss/train_{self.T-1}/task_{task_id}/loss', loss, global_step)
+        # logging.info("before %s", loss)
+        # print("task_loss:", loss, "mu", self.mu)
         if use_aux:
             aux_loss = self.compute_auxillary_loss(X, Y, task_id)
+            self.writer.add_scalar(
+                f'aux_loss/train_{self.T-1}/task_{task_id}/loss', aux_loss, global_step)
             loss += aux_loss
 
+        # print("combined loss:", loss)
+
+        # save loss to self.log_file
+        # NOTE: DEBUG
+        # logging.info(loss.item())
         return loss
 
     def compute_task_loss(self, X, Y, task_id, mode=None, log=False):
@@ -231,17 +258,7 @@ class Learner():
             self.init_trainloaders = {}
         self.init_trainloaders[task_id] = trainloader
         if len(self.init_trainloaders) == self.net.num_init_tasks:
-            # print([(len(loader), len(loader.dataset))
-            #       for loader in self.init_trainloaders.values()])
             for i in range(start_epoch, num_epochs + start_epoch):
-                # print('epoch', i)
-                # for j in range(len(self.net.components)):
-                #     print('\t component', j)
-                #     print(
-                #         '\t', self.net.components[j].bias.mean(), self.net.components[j].weight.mean())
-                #     print('\t', self.net.structure[j])
-                #     print('\t', self.net.decoder[j].bias.mean(),
-                #           self.net.decoder[j].weight.mean())
                 for XY_all in zip_longest(*self.init_trainloaders.values()):
                     for task, XY in zip(self.init_trainloaders.keys(), XY_all):
                         if XY is not None:
@@ -249,35 +266,21 @@ class Learner():
                             if isinstance(X, list):
                                 # contrastive two views
                                 X = torch.cat([X[0], X[1]], dim=0)
-                            # print('BEFORE: comp[0]',
-                            #       self.net.components[0].bias)
                             X = X.to(self.net.device, non_blocking=True)
                             Y = Y.to(self.net.device, non_blocking=True)
                             self.gradient_step(X, Y, task, global_step=i)
-                            # print('AFTER: comp[0]',
-                            #       self.net.components[0].bias)
-                # exit(0)
                 if i % save_freq == 0:
                     self.save_data(i + 1, task_id, testloaders)
 
-            # if final:
-            #     self.save_data(num_epochs + start_epoch + 1, task_id,
-            #                    testloaders, final_save=final)
-
+            if final:
+                self.save_data(num_epochs + start_epoch + 1, task_id,
+                               testloaders, final_save=final)
                 # for task, loader in self.init_trainloaders.items():
                 #     self.update_multitask_cost(loader, task)
         else:
             self.save_data(start_epoch, task_id,
                            testloaders, final_save=final)
-        # print('DONE init train task', task_id, 'rand torch seed', int(torch.empty(
-        #     (), dtype=torch.int64).random_().item()))
-        if final:
-            self.save_data(num_epochs + start_epoch + 1, task_id,
-                           testloaders, final_save=final)
-            self.update_multitask_cost(
-                self.init_trainloaders[task_id], task_id)
-        # self.update_multitask_cost(
-        #     self.init_trainloaders[task_id], task_id)
+        self.update_multitask_cost(self.init_trainloaders[task_id], task_id)
 
     def evaluate(self, testloaders, mode=None, eval_no_update=True):
         was_training = self.net.training
@@ -314,22 +317,11 @@ class Learner():
         # Y_hat = self.net(X, task_id=task_id)
         X = X.to(self.net.device, non_blocking=True)
         Y = Y.to(self.net.device, non_blocking=True)
-        # print("task_id:", task_id, 'y', Y[:5])
         l = self.compute_loss(X, Y, task_id, mode=train_mode,
                               log=True, global_step=global_step)
-        # exit(0)
         self.optimizer.zero_grad()
         l.backward()
         self.optimizer.step()
-        # print(task_id, "LOSS:", l, 'exp_avg', list(
-        #     self.optimizer.state.values())[0]['exp_avg'].mean())
-
-        # for name, param in self.net.named_parameters():
-        #     if param.requires_grad:
-        #         print(
-        #             f"Gradient for {name}: {param.grad.mean() if param.grad is not None else 'No grad'}")
-
-        # exit(0)
 
     def save_data(self, epoch, task_id, testloaders, final_save=False, mode=None,
                   save_dir=None, record=None):
@@ -404,20 +396,12 @@ class CompositionalDynamicLearner(CompositionalLearner):
               component_update_freq=100, start_epoch=0, num_epochs=100, save_freq=1, testloaders=None,
               train_mode=None, num_candidate_modules=None, module_list=None,
               final=True,
-              train_candidate_module=True,
-              final_save=None,
-              fair_opt=False):
-        if final_save is None:
-            final_save = final
+              train_candidate_module=True,):
         # logging.info('task_id %s len(self.net.components) %s', task_id, len(self.net.components))
         if task_id not in self.observed_tasks:
             self.observed_tasks.add(task_id)
             self.T += 1
         if start_epoch == 0:
-            self.opt_steps_per_candidate = 0  # Tracks optimization steps per candidate
-            # Tracks optimization steps for the "no module" setting
-            self.no_module_opt_counter = 0
-
             # zeroshot
             self.save_data(start_epoch, task_id, testloaders, mode=train_mode)
 
@@ -446,40 +430,21 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 if module_list is None:
                     module_list = []
                 if num_candidate_modules is None:
-                    # num_candidate_modules = len(module_list) + 1
-                    num_candidate_modules = max(1, len(module_list))
+                    num_candidate_modules = len(module_list) + 1
 
-                logging.info("Train task {} NO. current components {} NUM_CANDIDATE_MODULES {} len(module_list) {}".format(task_id, len(self.net.components),
-                                                                                                                           num_candidate_modules,
-                                                                                                                           len(module_list)))
-                if len(module_list) > 0:
-                    assert len(
-                        module_list) == num_candidate_modules, f"len(module_list) {len(module_list)} != num_candidate_modules {num_candidate_modules}"
-                # print('rand torch seed', int(torch.empty(
-                #     (), dtype=torch.int64).random_().item()))
+                print("no. current components", len(self.net.components),
+                      "NUM_CANDIDATE_MODULES", num_candidate_modules,
+                      'len(module_list)', len(module_list))
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
                 self.net.receive_modules(task_id, module_list)
 
-                # self.optimizer = torch.optim.Adam(self.net.parameters(),)
-                # the last num_candidate_modules components
-                # for idx in range(-num_candidate_modules, 0, 1):
-
-                for idx in self.net.candidate_indices:
-                    # print('adding param group', idx)
-                    self.optimizer.add_param_group(
-                        {'params': self.net.components[idx].parameters()})
-
-                # print('new comps:', self.net.components[-1].bias)
-                # print('structure', self.net.structure[task_id])
-                # exit(0)
+                self.optimizer = torch.optim.Adam(self.net.parameters(),)
+                # for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
+                #     self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
 
             self.net.unfreeze_structure(task_id=task_id)
 
-            # updates_per_candidate = num_epochs // len(self.net.candidate_indices)
-
-            if task_id in self.shared_replay_buffers and len(self.shared_replay_buffers[task_id]) > 0:
-                # logging.info("!!NOTE: will be adding {} data to task {} epoch {}".format(len(self.shared_replay_buffers[task_id]),
-                #         task_id, start_epoch))
+            if task_id in self.shared_replay_buffers:
                 tmp_dataset = copy.deepcopy(trainloader.dataset)
                 X, y, _ = self.shared_replay_buffers[task_id].get_tensors()
                 mega_dataset = CustomConcatTensorDataset(
@@ -491,15 +456,13 @@ class CompositionalDynamicLearner(CompositionalLearner):
                                                           pin_memory=True
                                                           )
 
-            # logging.info('Training from epoch', start_epoch,
-            #       'to epoch', num_epochs + start_epoch)
             for i in range(start_epoch, num_epochs + start_epoch):
                 # print('num_epochs', num_epochs, 'start_epoch', start_epoch, 'i', i)
                 if (i + 1) % component_update_freq == 0:
                     # print('UPDATING MODULES')
                     self.update_modules(
-                        trainloader, task_id, train_mode=train_mode, global_step=i,)
-
+                        trainloader, task_id, train_mode=train_mode, global_step=i,
+                        use_aux=True)
                 else:
                     for X, Y in trainloader:
                         if isinstance(X, list):
@@ -510,18 +473,15 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
                         # with new module. Update struct + update the active
                         # candidate
-                        # if train_candidate_module:
-                        #     self.net.unfreeze_module(
-                        #         self.net.active_candidate_index)
-
-                        self.net.unfreeze_module(
-                            self.net.active_candidate_index)
-
+                        if train_candidate_module:
+                            self.net.unfreeze_module(
+                                self.net.active_candidate_index)
                         self.update_structure(
                             X, Y, task_id, train_mode=train_mode,
                             global_step=i)
                         # self.net.hide_tmp_module()
 
+                        # without new module
                         self.net.freeze_module(self.net.active_candidate_index)
                         self.net.hide_tmp_modulev2()
                         self.update_structure(
@@ -530,33 +490,18 @@ class CompositionalDynamicLearner(CompositionalLearner):
                         # self.net.recover_hidden_module()
                         self.net.recover_hidden_modulev2()
                         self.net.select_active_module()  # select the next module in round-robin
-
-                        # # without new module
-                        # # self.net.freeze_module(self.net.active_candidate_index)
-                        # if not fair_opt or i % len(self.net.candidate_indices) == 0:
-                        #     # logging.info(">> TRAINING NOMOD AT EPOCH {}".format(i))
-                        #     self.net.hide_tmp_modulev2()
-                        #     self.update_structure(
-                        #         X, Y, task_id, train_mode=train_mode,
-                        #         global_step=i)
-                        #     # self.net.recover_hidden_module()
-                        #     self.net.recover_hidden_modulev2()
-                        # self.net.select_active_module()  # select the next module in round-robin
                 if i % save_freq == 0:
                     self.save_data(i + 1, task_id, testloaders,
                                    mode=train_mode)
             if final:
-                perf, raw_perf, loss = self.conditionally_add_module(
-                    valloader, task_id)
+                self.conditionally_add_module(valloader, task_id)
                 self.save_data(num_epochs + start_epoch + 1, task_id,
-                               testloaders, final_save=final_save, mode=train_mode)
+                               testloaders, final_save=final, mode=train_mode)
                 self.update_multitask_cost(trainloader, task_id)
-                return raw_perf
 
     def conditionally_add_module(self, valloader, task_id):
         performances = {}  # relative improvement for each candidate
         losses = {}
-        raw_performances = {}
 
         # Set the active index to the first candidate module
         # reset active module to the first one
@@ -566,7 +511,6 @@ class CompositionalDynamicLearner(CompositionalLearner):
             self.test_loss, self.test_acc = self.evaluate({task_id: valloader})
             update_acc, no_update_acc = self.test_acc[task_id]
             performances[idx] = (update_acc - no_update_acc) / no_update_acc
-            raw_performances[idx] = update_acc
             logging.info(
                 'candidate {}: W/update: {}, WO/update: {}, improv {}'.format(idx, update_acc, no_update_acc,
                                                                               performances[idx]))
@@ -608,7 +552,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
         self.dynamic_record.save()
 
-        return performances, raw_performances, losses
+        return performances, losses
 
     def evaluate(self, testloaders, eval_no_update=True, mode=None):
         was_training = self.net.training

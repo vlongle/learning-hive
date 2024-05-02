@@ -28,9 +28,15 @@ class ReplayBufferBase(TensorDataset):
 
 
 class ReplayBufferReservoir(ReplayBufferBase):
-    def __init__(self, memory_size, task_id):
+    def __init__(self, memory_size, task_id, hash=False):
         super().__init__(memory_size)
         self.task_id = task_id
+        self.hash = hash
+        self.hash_set = set()
+
+    def _compute_hash(self, X):
+        # Compute a hash for a tensor. Here, we use a simple approach by hashing the byte representation.
+        return hashlib.sha256(X.numpy().tobytes()).hexdigest()
 
     def get_tensors(self):
         assert self.is_dataset_init, "Replay buffer is not initialized"
@@ -48,13 +54,28 @@ class ReplayBufferReservoir(ReplayBufferBase):
                 print(">>>>> WTF???? Y:", Y)
                 raise ValueError("WTF????")
             self.is_dataset_init = True
+
         for j, (x, y) in enumerate(zip(X, Y)):
-            if self.observed + j < self.memory_size:
-                self.tensors[0].data[self.observed + j] = x
-                self.tensors[1].data[self.observed + j] = y
+            # Only compute and manage hashes if deduplication is enabled x_hash = self._compute_hash(x)
+            if self.hash:
+                if x_hash in self.hash_set:
+                    continue
+
+            added = False
+            if self.observed < self.memory_size:
+                self.tensors[0].data[self.observed] = x
+                self.tensors[1].data[self.observed] = y
+                added = True
             else:
-                idx = np.random.randint(self.observed + j)
+                idx = np.random.randint(self.observed)
                 if idx < self.memory_size:
+                    added = True
+                    if self.hash:
+                        old_hash = self._compute_hash(self.tensors[0][idx])
+                        self.hash_set.remove(old_hash)
                     self.tensors[0].data[idx] = x
                     self.tensors[1].data[idx] = y
-        self.observed += len(X)
+
+            if self.hash and added:
+                self.hash_set.add(x_hash)
+            self.observed += 1

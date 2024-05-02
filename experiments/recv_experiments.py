@@ -51,7 +51,7 @@ if __name__ == "__main__":
     # === MLP experiments: MNIST, KMNIST, FashionMNIST ===
     num_init_tasks = 4
     num_tasks = 10
-    num_tasks = 5
+    # num_tasks = 5
     batch_size = 64
     num_epochs = 100
     memory_size = 32

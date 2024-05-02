@@ -15,7 +15,7 @@ import os
 import numpy as np
 import torch
 
-
+import logging
 import socket
 import os
 
@@ -41,6 +41,8 @@ def on_desktop():
 
 
 def seed_everything(seed: int) -> None:
+    logging.info(f"Setting seed {seed}")
+    # print(f"Setting seed {seed}")
     random.seed(seed)
     os.environ['PYTHONHASHSEED'] = str(seed)
     np.random.seed(seed)

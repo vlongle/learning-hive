@@ -34,9 +34,6 @@ class Agent:
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy,
                  agent=None):
 
-        self.seed = seed + SEED_SCALE * node_id
-        seed_everything(self.seed)
-
         self.root_save_dir = agent_kwargs["save_dir"]
         self.save_dir = os.path.join(
             agent_kwargs["save_dir"], f"agent_{str(node_id)}")
@@ -51,15 +48,16 @@ class Agent:
         self.batch_size = agent_kwargs.get("batch_size", 64)
         agent_kwargs.pop("batch_size", None)
 
-        logging.info(
-            f"Agent: node_id: {node_id}, seed: {self.seed}")
-
         if agent is not None:
             logging.info(f"~~~~ Loading agent from checkpoint {agent}")
             self.agent = agent
             self.net = agent.net
         else:
+            self.seed = seed + SEED_SCALE * node_id
+            seed_everything(self.seed)
             logging.info(f"~~~~ Creating agent from stratch")
+            logging.info(
+                f"Agent: node_id: {node_id}, seed: {self.seed}")
             self.net = NetCls(**net_kwargs)
             agent_kwargs["save_dir"] = self.save_dir
             self.agent = AgentCls(self.net, **agent_kwargs)

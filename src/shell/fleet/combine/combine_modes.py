@@ -39,7 +39,7 @@ class CombineModesAgent(Agent):
     def spawn_communicator(self, communicator=None):
         if communicator is None:
             communicator = self.sharing_strategy.communicator
-        communicator = communicator.split(",")
+        communicator = communicator.split("+")
         self.communicator = {}
         for comm in communicator:
             config = load_comm_config(comm)
@@ -49,7 +49,6 @@ class CombineModesAgent(Agent):
                     deepcopy(self.net_kwargs), a_kw, self.train_kwargs, config, self.agent)
 
             comm_cls = AGENT_CLS[config.name][self.algo][False]
-
             comm_agent = comm_cls(*args)
             comm_agent.add_neighbors(self.neighbors)
 

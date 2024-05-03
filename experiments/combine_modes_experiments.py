@@ -36,7 +36,7 @@ parser.add_argument('--topology', type=str, default='fully_connected')
 parser.add_argument('--edge_drop_prob', type=float, default=0.0)
 parser.add_argument('--algo', type=str, default="modular", choices=[
                     "modular", "monolithic"], help='Algorithm for the experiment.')
-
+parser.add_argument('--combine', type=str)
 args = parser.parse_args()
 
 
@@ -62,29 +62,28 @@ if __name__ == "__main__":
     # num_epochs = 10
     num_agents = 20 if args.dataset == "combined" else 8
 
-    combine = 'recv_data'
+    # combine = 'recv_data'
     # combine = 'modmod'
-    sync_base = "grad" in combine or "modmod" in combine
+    # combine = 'grad_sharing'
+    # sync_base = "grad" in combine or "modmod" in combine
 
     # NOTE: HACK: BUG::: min_task == 4 is going to be a problem
-    # with the combined data recv in this config..., also same_as_query for MNIST variants,
-    # and also somehow no_sparse_basis=False??
 
-    no_sparse_basis = False  # the same level
-    # no_sparse_basis = True  # this is actually much worse
-
+    sync_base = True
+    no_sparse_basis = True
     recv_mod_add_data_backward = True
     make_new_opt = True
 
     root_save_dir = prefix + \
-        f"combine_modes_results/{combine}_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
+        f"combine_modes_results/{args.combine}_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
     if args.dataset != "cifar100":
         config = {
 
             "algo": "modular",
-            "dataset": args.dataset,
-            "seed": args.seed,
-            # "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+            # "dataset": args.dataset,
+            "dataset": ['mnist', 'kmnist', 'fashionmnist'],
+            # "seed": args.seed,
+            "seed": [0, 1, 2, 3, 4, 5, 6, 7],
             "num_agents": num_agents,
             "agent.batch_size": batch_size,
             "topology": args.topology,
@@ -114,8 +113,7 @@ if __name__ == "__main__":
 
 
             "sharing_strategy": "combine_modes",
-            # "sharing_strategy.communicator": "'modmod,grad_sharing_prox,recv_data'",
-            "sharing_strategy.communicator": combine,
+            "sharing_strategy.communicator": args.combine,
             "sharing_strategy.sync_base": sync_base,
             "root_save_dir": root_save_dir,
 

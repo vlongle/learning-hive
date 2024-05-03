@@ -10,7 +10,7 @@ class FedProxAgent(ModelSyncAgent):
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
                          net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent)
 
-    def process_communicate(self, task_id, communication_round, final=False):
+    def process_communicate(self, task_id, communication_round, final=False, strategy=None):
         self.agent.global_model = copy.deepcopy(self.agent.net)
         self.agent.mu = self.sharing_strategy.mu
         self.agent.excluded_params = self.excluded_params
@@ -19,7 +19,7 @@ class FedProxAgent(ModelSyncAgent):
 
 @ray.remote
 class ParallelFedProxAgent(FedProxAgent):
-    def communicate(self, task_id, communication_round, final=False):
+    def communicate(self, task_id, communication_round, final=False, strategy=None):
         for neighbor in self.neighbors.values():
             ray.get(neighbor.receive.remote(
                 self.node_id, deepcopy(self.model), "model"))
@@ -36,7 +36,7 @@ class FedProxModAgent(FedProxAgent):
 
 @ray.remote
 class ParallelFedProxModAgent(FedProxModAgent):
-    def communicate(self, task_id, communication_round, final=False):
+    def communicate(self, task_id, communication_round, final=False, strategy=None):
         for neighbor in self.neighbors.values():
             ray.get(neighbor.receive.remote(
                 self.node_id, deepcopy(self.model), "model"))

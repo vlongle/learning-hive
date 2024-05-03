@@ -28,7 +28,7 @@ def handle_combine_modes(cfg):
     comm_freqs = {}
     num_coms_per_round = {}
     pre_or_post_comm = {}
-    for comm in cfg.sharing_strategy.communicator.split(','):
+    for comm in cfg.sharing_strategy.communicator.split('+'):
         config = load_comm_config(comm)
         if config['comm_freq'] == "None":
             config['comm_freq'] = None
@@ -69,9 +69,6 @@ def main(cfg: DictConfig) -> None:
 
     for task_id in range(cfg.dataset.num_tasks):
         fleet.train_and_comm(task_id)
-        if task_id == 4:
-            break
-
     end = time.time()
     logging.info(f"Run took {datetime.timedelta(seconds=end-start)}")
 

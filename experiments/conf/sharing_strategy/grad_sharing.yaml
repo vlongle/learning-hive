@@ -1,6 +1,6 @@
 name: gradient
 num_coms_per_round: 1
-comm_freq: 1
+comm_freq: 5
 mu: 1.0
 when_reoptimize_structure: never
 sync_base: True

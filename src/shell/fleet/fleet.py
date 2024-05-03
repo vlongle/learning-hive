@@ -34,9 +34,6 @@ class Agent:
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy,
                  agent=None):
 
-        self.seed = seed + SEED_SCALE * node_id
-        seed_everything(self.seed)
-
         self.root_save_dir = agent_kwargs["save_dir"]
         self.save_dir = os.path.join(
             agent_kwargs["save_dir"], f"agent_{str(node_id)}")
@@ -51,15 +48,16 @@ class Agent:
         self.batch_size = agent_kwargs.get("batch_size", 64)
         agent_kwargs.pop("batch_size", None)
 
-        logging.info(
-            f"Agent: node_id: {node_id}, seed: {self.seed}")
-
         if agent is not None:
             logging.info(f"~~~~ Loading agent from checkpoint {agent}")
             self.agent = agent
             self.net = agent.net
         else:
+            self.seed = seed + SEED_SCALE * node_id
+            seed_everything(self.seed)
             logging.info(f"~~~~ Creating agent from stratch")
+            logging.info(
+                f"Agent: node_id: {node_id}, seed: {self.seed}")
             self.net = NetCls(**net_kwargs)
             agent_kwargs["save_dir"] = self.save_dir
             self.agent = AgentCls(self.net, **agent_kwargs)
@@ -305,16 +303,15 @@ class Agent:
 
         logging.debug("Loading model from ckpoint {task_path}")
         agent_path = os.path.dirname(task_path)
-        get_num_components = self.get_num_components(
-            agent_path, task_id)
-        num_added_components = get_num_components - \
-            len(self.net.components)
-        # print('get_num_components', get_num_components, 'num_added_components',
-        #       num_added_components, 'len(self.net.components)', len(self.net.components))
-        # print(self.save_dir)
-        for _ in range(num_added_components):
-            self.net.add_tmp_modules(task_id=len(
-                self.net.components), num_modules=1)
+
+        if task_id >= self.net.num_init_tasks:
+            get_num_components = self.get_num_components(
+                agent_path, task_id)
+            num_added_components = get_num_components - \
+                len(self.net.components)
+            for _ in range(num_added_components):
+                self.net.add_tmp_modules(task_id=len(
+                    self.net.components), num_modules=1)
 
         self.net.load_state_dict(torch.load(os.path.join(
             task_path, "checkpoint.pt"))['model_state_dict'])

@@ -69,10 +69,24 @@ if __name__ == "__main__":
 
     # NOTE: HACK: BUG::: min_task == 4 is going to be a problem
 
+    # FOR COMBINE_MODES
     sync_base = True
     no_sparse_basis = True
     recv_mod_add_data_backward = True
     make_new_opt = True
+
+    # FOR recv_data
+    sync_base = False
+    no_sparse_basis = False
+    recv_mod_add_data_backward = True
+    make_new_opt = True
+
+    # FOR modmod
+    sync_base = True
+    no_sparse_basis = True
+    # make_new_opt = True  # -> false
+    make_new_opt = False
+    recv_mod_add_data_backward = True
 
     root_save_dir = prefix + \
         f"combine_modes_results/{args.combine}_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
@@ -80,10 +94,10 @@ if __name__ == "__main__":
         config = {
 
             "algo": "modular",
-            # "dataset": args.dataset,
-            "dataset": ['mnist', 'kmnist', 'fashionmnist'],
-            # "seed": args.seed,
-            "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+            "dataset": args.dataset,
+            # "dataset": ['mnist', 'kmnist', 'fashionmnist'],
+            "seed": args.seed,
+            # "seed": [0, 1, 2, 3, 4, 5, 6, 7],
             "num_agents": num_agents,
             "agent.batch_size": batch_size,
             "topology": args.topology,

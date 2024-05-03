@@ -722,6 +722,18 @@ class RecvDataAgent(Agent):
                     neighbor.receive(self.node_id, self.query, "query")
                     neighbor.receive(
                         self.node_id, self.query_extra_info, "query_extra_info")
+        elif communication_round % 2 == 1:
+            for neighbor_id, neighbor in self.neighbors.items():
+                if isinstance(neighbor, ray.actor.ActorHandle):
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.data[neighbor_id], "data"))
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.extra_info[neighbor_id], "extra_info"))
+                else:
+                    neighbor.receive(
+                        self.node_id, self.data[neighbor_id], "data")
+                    neighbor.receive(
+                        self.node_id, self.extra_info[neighbor_id], "extra_info")
 
     def process_communicate(self, task_id, communication_round, final=False, strategy=None):
         if task_id < self.agent.net.num_init_tasks - 1:
@@ -840,5 +852,3 @@ class ParallelRecvDataAgent(RecvDataAgent):
                     self.node_id, self.data[requester], "data"))
                 ray.get(requester_node.receive.remote(
                     self.node_id, self.extra_info[requester], "extra_info"))
-        else:
-            raise ValueError(f"Invalid round number {communication_round}")

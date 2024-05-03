@@ -8,6 +8,7 @@
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
 #SBATCH --array=0-6
+#SBATCH --array=0-6
 
 # Define combine options
 declare -a combine_options=("recv_data+modmod+grad_sharing" "modmod+grad_sharing" "modmod+recv_data" "recv_data+grad_sharing" "modmod" "recv_data" "grad_sharing")

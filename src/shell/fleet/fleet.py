@@ -305,16 +305,15 @@ class Agent:
 
         logging.debug("Loading model from ckpoint {task_path}")
         agent_path = os.path.dirname(task_path)
-        get_num_components = self.get_num_components(
-            agent_path, task_id)
-        num_added_components = get_num_components - \
-            len(self.net.components)
-        # print('get_num_components', get_num_components, 'num_added_components',
-        #       num_added_components, 'len(self.net.components)', len(self.net.components))
-        # print(self.save_dir)
-        for _ in range(num_added_components):
-            self.net.add_tmp_modules(task_id=len(
-                self.net.components), num_modules=1)
+
+        if task_id >= self.net.num_init_tasks:
+            get_num_components = self.get_num_components(
+                agent_path, task_id)
+            num_added_components = get_num_components - \
+                len(self.net.components)
+            for _ in range(num_added_components):
+                self.net.add_tmp_modules(task_id=len(
+                    self.net.components), num_modules=1)
 
         self.net.load_state_dict(torch.load(os.path.join(
             task_path, "checkpoint.pt"))['model_state_dict'])

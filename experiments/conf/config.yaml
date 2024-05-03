@@ -18,6 +18,8 @@ agent:
   use_ood_separation_loss: false
   lambda_ood: 2.0
   delta_ood: 1.0
+  make_new_opt: false
+  recv_mod_add_data_backward: false
 
 defaults:
   - train: monolithic 

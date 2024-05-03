@@ -116,11 +116,11 @@ class RecvDataAgent(Agent):
     """
 
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
-                 sharing_strategy):
+                 sharing_strategy, agent=None):
         # self.use_ood_separation_loss = sharing_strategy.use_ood_separation_loss
         # agent_kwargs['use_ood_separation_loss'] = self.use_ood_separation_loss
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent)
 
         self.scorer = SCORER_FN_LOOKUP[self.sharing_strategy.scorer]
         self.scorer_type = SCORER_TYPE_LOOKUP[self.sharing_strategy.scorer]
@@ -315,10 +315,11 @@ class RecvDataAgent(Agent):
         ret = torch.full(
             (q_global_Y.size(0), n_filter_neighbors), -1, dtype=torch.long)
 
+        min_task = getattr(self.sharing_strategy, 'min_task', 0)
         for i, task_ids in enumerate(task_ids_list):
             # Filter out task IDs that exceed the current time horizon
             valid_task_ids = [
-                task_id for task_id in task_ids if task_id < self.agent.T]
+                task_id for task_id in task_ids if task_id < self.agent.T and task_id >= min_task]
 
             n_valid_tasks = len(valid_task_ids)
             if n_valid_tasks == 0:
@@ -676,7 +677,7 @@ class RecvDataAgent(Agent):
                 y_t, [task] * len(y_t), self.dataset.class_sequence, self.dataset.num_classes_per_task)
         return ret
 
-    def prepare_communicate(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False,):
+    def prepare_communicate(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False, strategy=None):
         if communication_round % 2 == 0:
             self.incoming_query, self.incoming_data, self.incoming_extra_info, self.incoming_query_extra_info = {}, {}, {}, {}
         if task_id < self.agent.net.num_init_tasks - 1:
@@ -703,32 +704,26 @@ class RecvDataAgent(Agent):
         else:
             raise ValueError(f"Invalid round number {communication_round}")
 
-    # potentially parallelizable
-    def communicate(self, task_id, communication_round, final=False):
-        if task_id < self.agent.net.num_init_tasks - 1:
-            # NOTE: don't communicate for the first few tasks to
-            # allow agents some initital training to find their weakness
+    def communicate(self, task_id, communication_round, final=False, strategy=None):
+        # if task_id < self.agent.net.num_init_tasks:
+        # NOTE: HACK: TMP for mnist, fashionmnist, kmnist
+        if task_id < self.agent.net.num_init_tasks-1:
             return
         if communication_round % 2 == 0:
             # send query to neighbors
             for neighbor in self.neighbors.values():
-                neighbor.receive(self.node_id, self.query, "query")
-                neighbor.receive(
-                    self.node_id, self.query_extra_info, "query_extra_info")
-        elif communication_round % 2 == 1:
-            # send data to the requester
-            # for requester in self.incoming_query:
-            #     self.neighbors[requester].receive(
-            #         self.node_id, self.data[requester], "data")
-            for neighbor_id, neighbor in self.neighbors.items():
-                neighbor.receive(
-                    self.node_id, self.data[neighbor_id], "data")
-                neighbor.receive(
-                    self.node_id, self.extra_info[neighbor_id], "extra_info")
-        else:
-            raise ValueError(f"Invalid round number {communication_round}")
+                if isinstance(neighbor, ray.actor.ActorHandle):
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.query, "query"))
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.query_extra_info, "query_extra_info"
+                    ))
+                else:
+                    neighbor.receive(self.node_id, self.query, "query")
+                    neighbor.receive(
+                        self.node_id, self.query_extra_info, "query_extra_info")
 
-    def process_communicate(self, task_id, communication_round, final=False):
+    def process_communicate(self, task_id, communication_round, final=False, strategy=None):
         if task_id < self.agent.net.num_init_tasks - 1:
             return
         if communication_round % 2 == 0:
@@ -824,7 +819,7 @@ class RecvDataAgent(Agent):
 
 @ray.remote
 class ParallelRecvDataAgent(RecvDataAgent):
-    def communicate(self, task_id, communication_round, final=False):
+    def communicate(self, task_id, communication_round, final=False, strategy=None):
         if task_id < self.agent.net.num_init_tasks - 1:
             # NOTE: don't communicate for the first few tasks to
             # allow agents some initital training to find their weakness

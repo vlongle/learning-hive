@@ -143,6 +143,27 @@ def get_custom_tensordataset(tensors, name, use_contrastive=False):
         *tensors, transform=train_transform)
 
 
+class CombinedDataset():
+    def __init__(self, num_tasks, num_classes_per_task, with_replacement=False,
+                 normalize=True, num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
+                 num_init_tasks=None, labels=None, name=None, use_contrastive=False):
+        self.num_tasks = num_tasks
+        self.num_init_tasks = num_init_tasks
+        self.num_classes_per_task = num_classes_per_task
+        self.with_replacement = with_replacement
+        self.normalize = normalize
+        self.num_train_per_task = num_train_per_task
+        self.num_val_per_task = num_val_per_task
+        self.remap_labels = remap_labels
+        self.name = name
+        self.use_contrastive = use_contrastive
+
+        self.trainset = []
+        self.valset = []
+        self.testset = []
+        self.class_sequence = []
+
+
 class SplitDataset():
     def __init__(self, num_tasks, num_classes, num_classes_per_task, with_replacement=False,
                  normalize=True, num_train_per_task=-1, num_val_per_task=-1, remap_labels=False,
@@ -169,6 +190,7 @@ class SplitDataset():
         if labels is None:
             if not with_replacement:
                 labels = np.random.permutation(num_classes)
+                print('labels:', labels)
             else:
                 labels = np.array([np.random.choice(
                     num_classes, num_classes_per_task, replace=False) for t in range(self.num_tasks)])
@@ -181,19 +203,21 @@ class SplitDataset():
         #         num_classes, num_init_tasks*num_classes_per_task, replace=False)
 
         self.class_sequence = labels
+        self.class_sequence.setflags(write=False)
         logging.info(f"Class sequence: {self.class_sequence}")
         for task_id in range(self.num_tasks):
 
             Xb_train_t, yb_train_t, Xb_val_t, yb_val_t, Xb_test_t, yb_test_t = \
                 self.split_data(X_train, y_train, X_val, y_val, X_test, y_test, labels[np.arange(
                     task_id*num_classes_per_task, (task_id+1)*num_classes_per_task)], remap_labels=remap_labels)
-            if num_train_per_task != -1:
+            if num_train_per_task > 0:
                 Xb_train_t = Xb_train_t[:num_train_per_task]
                 yb_train_t = yb_train_t[:num_train_per_task]
-            if num_val_per_task != -1:
+            if num_val_per_task > 0:
                 Xb_val_t = Xb_val_t[:num_val_per_task]
                 yb_val_t = yb_val_t[:num_val_per_task]
-            logging.info(f"task {task_id} :{Xb_train_t.shape}")
+            logging.info(
+                f"task {task_id} :{Xb_train_t.shape} {Xb_val_t.shape} {Xb_test_t.shape}")
 
             yb_train_t = torch.from_numpy(yb_train_t).long().squeeze()
             yb_val_t = torch.from_numpy(yb_val_t).long().squeeze()
@@ -421,5 +445,7 @@ def get_dataset(**kwargs):
         return KMNIST(**kwargs)
     elif dataset_name == 'cifar100':
         return CIFAR100(**kwargs)
+    elif dataset_name == 'combined':
+        return CombinedDataset(**kwargs)
     else:
         raise ValueError('Unknown dataset: {}'.format(dataset_name))

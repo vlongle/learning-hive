@@ -23,7 +23,8 @@ class NoComponentsER(Learner):
                  mu=None,
                  use_ood_separation_loss=False,
                  lambda_ood=2.0,
-                 delta_ood=1.0,):
+                 delta_ood=1.0,
+                 **kwargs):
         super().__init__(net, save_dir,  improvement_threshold=improvement_threshold,
                          use_contrastive=use_contrastive, dataset_name=dataset_name,
                          fl_strategy=fl_strategy,
@@ -31,6 +32,7 @@ class NoComponentsER(Learner):
                          use_ood_separation_loss=use_ood_separation_loss,
                          lambda_ood=lambda_ood,
                          delta_ood=delta_ood,
+                         **kwargs
                          )
         self.replay_buffers = {}
         self.memory_size = memory_size

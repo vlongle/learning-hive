@@ -20,6 +20,7 @@ import time
 import datetime
 from shell.utils.experiment_utils import run_experiment
 import argparse
+from shell.utils.utils import on_desktop
 parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
 parser.add_argument('--seed', type=int, default=0,
@@ -45,6 +46,11 @@ parser.add_argument('--num_comms_per_task', type=int, default=5,
 args = parser.parse_args()
 
 
+if on_desktop():
+    prefix = ""
+else:
+    prefix = "/mnt/kostas-graid/datasets/vlongle/"
+
 if __name__ == "__main__":
     start = time.time()
 
@@ -58,6 +64,12 @@ if __name__ == "__main__":
 
     query_task_mode = 'current' if args.algo == 'modular' else 'all'
     comm_freq = num_epochs // (args.num_comms_per_task + 1)
+
+    recv_mod_add_data_backward = True
+    make_new_opt = True
+
+    root_save_dir = prefix + \
+        f"combine_modes_results/debug_recv_unroll_make_new_opt_{make_new_opt}_backward_{recv_mod_add_data_backward}"
 
     config = {
         "algo": args.algo,
@@ -82,8 +94,12 @@ if __name__ == "__main__":
         "train.save_freq": 10,
         "agent.use_contrastive": False,
         "agent.memory_size": memory_size,
+
+        'agent.recv_mod_add_data_backward': recv_mod_add_data_backward,
+        'agent.make_new_opt': make_new_opt,
+
         "dataset": args.dataset,
-        "root_save_dir": f"combine_modes_results/debug_recv_unroll",
+        "root_save_dir": root_save_dir,
         "sharing_strategy": "recv_data",
         "sharing_strategy.shared_memory_size": memory_size,
         "sharing_strategy.query_task_mode": query_task_mode,

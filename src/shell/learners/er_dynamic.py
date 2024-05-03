@@ -65,20 +65,22 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                  mu=None,
                  use_ood_separation_loss=False,
                  lambda_ood=2.0,
-                 delta_ood=1.0,):
+                 delta_ood=1.0,
+                 **kwargs):
         super().__init__(net, save_dir,  improvement_threshold=improvement_threshold,
                          use_contrastive=use_contrastive, dataset_name=dataset_name,
                          fl_strategy=fl_strategy,
                          mu=mu,
                          use_ood_separation_loss=use_ood_separation_loss,
                          lambda_ood=lambda_ood,
-                         delta_ood=delta_ood,)
+                         delta_ood=delta_ood,
+                         **kwargs)
         self.replay_buffers = {}
         # self.memory_loaders = {}
         self.memory_size = memory_size
 
     def update_modules(self, trainloader, task_id, train_mode=None, global_step=None,
-                       use_aux=True):
+                       ):
         """
         NOTE: for contrastive, during accommodation,
         we should also allow past decoders to change so that gradients can flow
@@ -94,13 +96,19 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         tmp_dataset.tensors = tmp_dataset.tensors + \
             (torch.full((len(tmp_dataset),), task_id, dtype=int),)
 
-        mega_dataset = ConcatDataset(
-            [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
-                                      use_contrastive=self.use_contrastive) for t, replay in self.replay_buffers.items()] + [tmp_dataset]
-            + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
-                                        use_contrastive=self.use_contrastive) for t, replay in self.shared_replay_buffers.items()
-               if t != task_id and len(replay) > 0]
-        )
+        if self.recv_mod_add_data_backward:
+            mega_dataset = ConcatDataset(
+                [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
+                                          use_contrastive=self.use_contrastive) for t, replay in self.replay_buffers.items()] + [tmp_dataset]
+                + [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
+                                            use_contrastive=self.use_contrastive) for t, replay in self.shared_replay_buffers.items()
+                   if t != task_id and len(replay) > 0]
+            )
+        else:
+            mega_dataset = ConcatDataset(
+                [get_custom_tensordataset(replay.get_tensors(), name=self.dataset_name,
+                                          use_contrastive=self.use_contrastive) for t, replay in self.replay_buffers.items()] + [tmp_dataset]
+            )
 
         batch_size = trainloader.batch_size
 
@@ -144,7 +152,6 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                                            Yt, task_id_tmp,
                                            mode=train_mode,
                                            global_step=global_step,
-                                           use_aux=use_aux,
                                            )
                 n = len(Y)
                 l /= n
@@ -169,7 +176,6 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
                                            Yt, task_id_tmp,
                                            mode=train_mode,
                                            global_step=global_step,
-                                           use_aux=use_aux,
                                            )
                 n = len(Y)
                 l /= n

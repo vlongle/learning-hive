@@ -29,7 +29,11 @@ class Learner():
                  improvement_threshold=0.05,
                  use_contrastive=False, dataset_name=None, fl_strategy=None,
                  mu=None, use_ood_separation_loss=False, lambda_ood=2.0,
-                 delta_ood=1.0):
+                 delta_ood=1.0, recv_mod_add_data_backward=False, make_new_opt=False):
+
+        self.make_new_opt = make_new_opt
+        self.recv_mod_add_data_backward = recv_mod_add_data_backward
+
         self.net = net
         self.shared_replay_buffers = {}  # received from neighbors
         self.ce_loss = nn.CrossEntropyLoss()
@@ -56,8 +60,6 @@ class Learner():
         self.sharing_data_record = Record(os.path.join(
             self.save_dir, "sharing_data_record.csv"))
 
-        self.writer = SummaryWriter(
-            log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
         self.init_trainloaders = None
 
         self.mode = "ce"
@@ -66,9 +68,18 @@ class Learner():
         self.fl_strategy = fl_strategy
         self.mu = self.global_model = None
 
-        if fl_strategy is not None:
+        self.use_aux = False
+        if fl_strategy == 'fedprox':
             self.global_model = None
             self.mu = mu
+            self.use_aux = True
+            self.excluded_params = set()
+
+        elif fl_strategy == 'fedcurv':
+            self.incoming_models = None
+            self.mu = mu
+            self.use_aux = True
+            self.incoming_fishers = None
 
         self.use_ood_separation_loss = use_ood_separation_loss
         self.lambda_ood = lambda_ood
@@ -84,42 +95,40 @@ class Learner():
             self.save_dir, "add_modules_record.csv"))
         self.sharing_data_record = Record(os.path.join(
             self.save_dir, "sharing_data_record.csv"))
-        self.writer = SummaryWriter(
-            log_dir=create_dir_if_not_exist(os.path.join(self.save_dir, "tensorboard/")))
-
-    # def apply_transform(self, X):
-    #     # X: (batch_size, n_channels, height, width)
-    #     # apply self.transform to each image in X
-    #     # return: (batch_size, n_channels, height, width)
-    #     return self.train_transform(X)
-        # morally correct way but it's too slow
-        # return torch.stack([self.train_transform(x) for x in X])
 
     def record_shared_data_stats(self, train_task_id, epoch):
         for task_id, replay in sorted(self.shared_replay_buffers.items()):
+            if len(replay) == 0:
+                continue
+
+            X, y, _ = replay.get_tensors()
             self.sharing_data_record.write(
                 {
                     'train_task': train_task_id,
                     'task_id': task_id,
                     'epoch': epoch,
                     'num_samples': len(replay),
+                    'Y_dist': str(torch.unique(y, return_counts=True)),
                 }
             )
 
         self.sharing_data_record.save()
 
-    # def make_shared_memory_loaders(self, batch_size=32):
-    #     self.shared_memory_loaders = {}
-    #     for task_id in self.shared_replay_buffers.keys():
-    #         if len(self.shared_replay_buffers[task_id]) == 0:
-    #             continue
-    #         self.shared_memory_loaders[task_id] = (
-    #             torch.utils.data.DataLoader(self.shared_replay_buffers[task_id],
-    #                                         batch_size=batch_size,
-    #                                         shuffle=True,
-    #                                         num_workers=1,
-    #                                         pin_memory=True
-    #                                         ))
+    def compute_fedcurv_loss(self):
+        loss = 0.0
+        for neighbor_id, model in self.incoming_models.items():
+            fisher = self.fisher[neighbor_id]
+            loss += self.compute_ewc_loss(fisher, model)
+        return loss
+
+    def compute_ewc_loss(self, fisher, model):
+        loss = 0.0
+        for n, p in self.net.named_parameters():
+            if n not in fisher or n not in model:
+                continue
+            _loss = fisher[n] * (p - model[n]) ** 2
+            loss += _loss.sum()
+        return loss
 
     def get_loss_reduction(self):
         if self.use_contrastive:
@@ -178,7 +187,10 @@ class Learner():
         if self.fl_strategy is not None:
             if self.fl_strategy == "fedprox":
                 loss += compute_fedprox_aux_loss(local_model=self.net, global_model=self.global_model,
-                                                 mu=self.mu)
+                                                 mu=self.mu, excluded_params=self.excluded_params)
+
+            elif self.fl_strategy == "fedcurv":
+                loss += self.mu * self.compute_fedcurv_loss()
             else:
                 raise NotImplementedError(
                     "FL strategy %s not implemented" % self.fl_strategy)
@@ -198,19 +210,15 @@ class Learner():
 
         return loss
 
-    def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=True):
+    def compute_loss(self, X, Y, task_id, mode=None, log=False, global_step=None, use_aux=None):
         """
         Compute main loss + (optional aux loss for FL)
         """
         loss = self.compute_task_loss(X, Y, task_id, mode=mode, log=log)
-        self.writer.add_scalar(
-            f'loss/train_{self.T-1}/task_{task_id}/loss', loss, global_step)
-        # logging.info("before %s", loss)
-        # print("task_loss:", loss, "mu", self.mu)
+        if use_aux is None:
+            use_aux = self.use_aux
         if use_aux:
             aux_loss = self.compute_auxillary_loss(X, Y, task_id)
-            self.writer.add_scalar(
-                f'aux_loss/train_{self.T-1}/task_{task_id}/loss', aux_loss, global_step)
             loss += aux_loss
 
         # print("combined loss:", loss)
@@ -275,8 +283,6 @@ class Learner():
             if final:
                 self.save_data(num_epochs + start_epoch + 1, task_id,
                                testloaders, final_save=final)
-                # for task, loader in self.init_trainloaders.items():
-                #     self.update_multitask_cost(loader, task)
         else:
             self.save_data(start_epoch, task_id,
                            testloaders, final_save=final)
@@ -438,9 +444,12 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
                 self.net.receive_modules(task_id, module_list)
 
-                self.optimizer = torch.optim.Adam(self.net.parameters(),)
-                # for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
-                #     self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
+                if self.make_new_opt:
+                    self.optimizer = torch.optim.Adam(self.net.parameters(),)
+                else:
+                    for idx in self.net.candidate_indices:
+                        self.optimizer.add_param_group(
+                            {'params': self.net.components[idx].parameters()})
 
             self.net.unfreeze_structure(task_id=task_id)
 
@@ -461,8 +470,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 if (i + 1) % component_update_freq == 0:
                     # print('UPDATING MODULES')
                     self.update_modules(
-                        trainloader, task_id, train_mode=train_mode, global_step=i,
-                        use_aux=True)
+                        trainloader, task_id, train_mode=train_mode, global_step=i,)
                 else:
                     for X, Y in trainloader:
                         if isinstance(X, list):

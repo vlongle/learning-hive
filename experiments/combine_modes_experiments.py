@@ -73,8 +73,11 @@ if __name__ == "__main__":
     no_sparse_basis = False  # the same level
     # no_sparse_basis = True  # this is actually much worse
 
+    recv_mod_add_data_backward = True
+    make_new_opt = True
+
     root_save_dir = prefix + \
-        f"combine_modes_results/{combine}_no_sparse_{no_sparse_basis}"
+        f"combine_modes_results/{combine}_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
     if args.dataset != "cifar100":
         config = {
 
@@ -95,6 +98,10 @@ if __name__ == "__main__":
             "net": "mlp",
             "net.depth": num_init_tasks,
             'net.no_sparse_basis': no_sparse_basis,
+
+            'agent.recv_mod_add_data_backward': recv_mod_add_data_backward,
+            'agent.make_new_opt': make_new_opt,
+
             "num_init_tasks": num_init_tasks,
             "net.dropout": 0.5,
             "train.num_epochs": num_epochs,

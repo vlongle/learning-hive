@@ -136,7 +136,6 @@ def load_data(get_save_dirs, seeds, datasets, modify_cfg, viz, tasks, agent_ids,
                     fleet = setup_fake_fleet(
                         save_dir, modify_cfg=modify_cfg, parallel=False)
                     fleet.load_records()
-                    print('save_dir', fleet.save_dir)
                     fleets[name] = fleet
                 except:
                     if strict:

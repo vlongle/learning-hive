@@ -71,9 +71,9 @@ if __name__ == "__main__":
 
     # FOR COMBINE_MODES
     sync_base = True
-    no_sparse_basis = False
+    no_sparse_basis = True
     recv_mod_add_data_backward = True
-    make_new_opt = True
+    make_new_opt = False
 
     # # FOR recv_data
     # sync_base = False
@@ -90,6 +90,7 @@ if __name__ == "__main__":
 
     root_save_dir = prefix + \
         f"combine_modes_results/{args.combine}_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
+        # f"combine_modes_results/debug_modmod_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
     if args.dataset != "cifar100":
         config = {
 

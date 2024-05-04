@@ -436,7 +436,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 if module_list is None:
                     module_list = []
                 if num_candidate_modules is None:
-                    num_candidate_modules = len(module_list) + 1
+                    num_candidate_modules = max(1, len(module_list))
 
                 print("no. current components", len(self.net.components),
                       "NUM_CANDIDATE_MODULES", num_candidate_modules,

@@ -433,9 +433,11 @@ class CompositionalDynamicLearner(CompositionalLearner):
                 self.net.add_tmp_modules(task_id, num_candidate_modules)
                 self.net.receive_modules(task_id, module_list)
 
-                self.optimizer = torch.optim.Adam(self.net.parameters(),)
-                # for idx in range(-num_candidate_modules, 0, 1): # the last num_candidate_modules components
-                #     self.optimizer.add_param_group({'params': self.net.components[idx].parameters()})
+                # self.optimizer = torch.optim.Adam(self.net.parameters(),)
+                # the last num_candidate_modules components
+                for idx in range(-num_candidate_modules, 0, 1):
+                    self.optimizer.add_param_group(
+                        {'params': self.net.components[idx].parameters()})
 
             self.net.unfreeze_structure(task_id=task_id)
 

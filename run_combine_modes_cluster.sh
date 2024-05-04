@@ -8,9 +8,10 @@
 #SBATCH --qos=ee-med
 #SBATCH --partition=eaton-compute
 #SBATCH --array=0-6
+#SBATCH --array=0-6
 
 # Define combine options
-declare -a combine_options=("recv_data+modmod+grad_sharing" "modmod+grad_sharing" "modmod+recv_data" "recv_data+modmod" "modmod" "recv_data" "grad_sharing")
+declare -a combine_options=("recv_data+modmod+grad_sharing" "modmod+grad_sharing" "modmod+recv_data" "recv_data+grad_sharing" "modmod" "recv_data" "grad_sharing")
 
 # Get the specific option for the current task
 COMBINE=${combine_options[$SLURM_ARRAY_TASK_ID]}

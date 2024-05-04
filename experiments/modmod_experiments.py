@@ -70,7 +70,7 @@ if __name__ == "__main__":
     make_new_opt = False
 
     root_save_dir = prefix + \
-        f"combine_modes_results/debug_modmod_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
+        f"debug_combine_modes_results/debug_modmod"
 
     if args.dataset != "cifar100":
         config = {

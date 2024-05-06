@@ -453,7 +453,7 @@ class CompositionalDynamicLearner(CompositionalLearner):
 
             self.net.unfreeze_structure(task_id=task_id)
 
-            if task_id in self.shared_replay_buffers:
+            if task_id in self.shared_replay_buffers and len(self.shared_replay_buffers[task_id]) > 0:
                 tmp_dataset = copy.deepcopy(trainloader.dataset)
                 X, y, _ = self.shared_replay_buffers[task_id].get_tensors()
                 mega_dataset = CustomConcatTensorDataset(

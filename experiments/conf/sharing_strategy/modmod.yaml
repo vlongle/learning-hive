@@ -2,12 +2,12 @@ name: modmod
 num_coms_per_round: 2
 module_selection: gt_most_similar
 pre_or_post_comm: pre
-opt_with_random: False
+opt_with_random: false
 comm_freq: 100
-sync_base: True
-freeze_candidate_module: False
-transfer_decoder: True
-transfer_structure: True
+sync_base: true
+freeze_candidate_module: false
+transfer_decoder: true
+transfer_structure: true
 ranker: label
 module_select: trust_sim
 num_shared_module: 1

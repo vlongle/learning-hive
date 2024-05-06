@@ -7,10 +7,10 @@ scorer: cross_entropy
 query_score_threshold: 0.0
 shared_memory_size: 32
 comm_freq: 16
-query_task_mode: current
+query_task_mode: all
 pre_or_post_comm: post
 sync_base: false
 prefilter_strategy: oracle
 add_data_prefilter_strategy: both
-assign_labels_strategy: same_as_query
+assign_labels_strategy: groundtruth
 min_task: 0

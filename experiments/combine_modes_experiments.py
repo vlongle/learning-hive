@@ -30,12 +30,12 @@ parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
 parser.add_argument('--seed', type=int, default=0,
                     help='Seed for the experiment.')
+parser.add_argument('--algo', type=str, default="modular", choices=[
+                    "modular", "monolithic"], help='Algorithm for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100", "combined"], help='Dataset for the experiment.')
 parser.add_argument('--topology', type=str, default='fully_connected')
 parser.add_argument('--edge_drop_prob', type=float, default=0.0)
-parser.add_argument('--algo', type=str, default="modular", choices=[
-                    "modular", "monolithic"], help='Algorithm for the experiment.')
 parser.add_argument('--combine', type=str)
 args = parser.parse_args()
 
@@ -60,7 +60,8 @@ if __name__ == "__main__":
     batch_size = 64
     num_epochs = 100
     # num_epochs = 10
-    num_agents = 20 if args.dataset == "combined" else 8
+    # num_agents = 20 if args.dataset == "combined" else 8
+    num_agents = 8
 
     # combine = 'recv_data'
     # combine = 'modmod'
@@ -89,16 +90,14 @@ if __name__ == "__main__":
     # recv_mod_add_data_backward = True
 
     root_save_dir = prefix + \
-        f"combine_modes_results/{args.combine}_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
+        f"monolithic_combine_modes_results/{args.combine}_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
         # f"combine_modes_results/debug_modmod_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
     if args.dataset != "cifar100":
         config = {
 
-            "algo": "modular",
-            # "dataset": args.dataset,
-            # "seed": args.seed,
-            "dataset": ['mnist', 'kmnist', 'fashionmnist'],
-            "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+            "algo": args.algo,
+            "dataset": args.dataset,
+            "seed": args.seed,
             "num_agents": num_agents,
             "agent.batch_size": batch_size,
             "topology": args.topology,
@@ -136,9 +135,8 @@ if __name__ == "__main__":
 
     else:
         config = {
-            "algo": "modular",
+            "algo": args.algo,
             "seed": args.seed,
-            # "seed": [0, 1, 2, 3, 4, 5, 6, 7],
             "num_agents": num_agents,
             "parallel": True,
 
@@ -163,15 +161,17 @@ if __name__ == "__main__":
             "agent.batch_size": 64,
             "train.save_freq": 10,
             "agent.use_contrastive": False,
-            'net.no_sparse_basis': True,
+
+            'net.no_sparse_basis': no_sparse_basis,
+            'agent.recv_mod_add_data_backward': recv_mod_add_data_backward,
+            'agent.make_new_opt': make_new_opt,
 
 
             "root_save_dir": root_save_dir,
 
 
             "sharing_strategy": "combine_modes",
-            # "sharing_strategy.communicator": "'modmod,grad_sharing_prox,recv_data'",
-            "sharing_strategy.communicator": combine,
+            "sharing_strategy.communicator": args.combine,
             "sharing_strategy.sync_base": sync_base,
             "root_save_dir": root_save_dir,
         }

@@ -200,7 +200,7 @@ def plot_agg_over_seeds(combined_agg_df, title_name=None, ax=None, std_scale=1.0
     ax.tick_params(axis='y', labelsize=16)
 
     ax.grid(True, which='major', linestyle='--', alpha=0.5)
-    # ax.set_ylim(0.5, 0.8)
+    ax.set_ylim(0.5, 0.8)
 
 
 def get_auc_stats(seed_aucs):

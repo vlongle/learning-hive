@@ -55,8 +55,8 @@ if __name__ == "__main__":
     recv_mod_add_data_backward = True
     make_new_opt = True
 
-    root_save_dir = prefix + \
-        f"combine_modes_results/debug_grad_sharing_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
+    root_save_dir = prefix + f"rerun_fedavg_results"
+        # f"combine_modes_results/debug_grad_sharing_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
 
     if args.dataset != "cifar100":
         config = {
@@ -96,7 +96,6 @@ if __name__ == "__main__":
             # ================================================
             # GRAD SHARING SETUP
             "sharing_strategy": "grad_sharing",
-            "sharing_strategy.num_coms_per_round": 1,
             "sharing_strategy.comm_freq": args.comm_freq,
             # "sharing_strategy.log_freq": 10,
 
@@ -106,7 +105,7 @@ if __name__ == "__main__":
     else:
         config = {
             "algo": args.algo,
-            "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+            "seed": args.seed,
             "num_agents": 8,
             "parallel": True,
 
@@ -134,10 +133,8 @@ if __name__ == "__main__":
             'net.no_sparse_basis': True,
 
             "sharing_strategy": "grad_sharing",
-            "sharing_strategy.num_coms_per_round": 1,
             "sharing_strategy.comm_freq": args.comm_freq,
-            # "root_save_dir": prefix + f"budget_experiment_results/jorge_setting_fedavg/comm_freq_{args.comm_freq}",
-            "root_save_dir": prefix + f"topology_experiment_results/jorge_setting_fedavg/comm_freq_{args.comm_freq}/topology_{args.topology}_edge_drop_{args.edge_drop_prob}",
+            "root_save_dir": root_save_dir,
         }
 
     run_experiment(config, strict=False)

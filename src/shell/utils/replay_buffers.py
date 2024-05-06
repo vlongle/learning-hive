@@ -11,6 +11,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import TensorDataset
+import hashlib
 
 
 class ReplayBufferBase(TensorDataset):
@@ -58,6 +59,7 @@ class ReplayBufferReservoir(ReplayBufferBase):
         for j, (x, y) in enumerate(zip(X, Y)):
             # Only compute and manage hashes if deduplication is enabled x_hash = self._compute_hash(x)
             if self.hash:
+                x_hash = self._compute_hash(x)
                 if x_hash in self.hash_set:
                     continue
 

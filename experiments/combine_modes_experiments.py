@@ -72,6 +72,10 @@ if __name__ == "__main__":
     sync_base = True
     no_sparse_basis = True
 
+    # backward test
+    sync_base = False
+    no_sparse_basis = True
+
     communicator = "recv_data"
 
     root_save_dir = f"debug_combine_modes_results/recv_data_no_sparse_False_recv_mod_add_data_backward_True_make_new_opt_True"

@@ -291,9 +291,11 @@ class RecvDataAgent(Agent):
 
         neighbor_dataset = self.incoming_query_extra_info[neighbor_id]['query_dataset']
         if neighbor_dataset != self.dataset.name:
-            res =  torch.full((query_global_y.size(0), n_filter_neighbors), -1, dtype=torch.long)
+            res = torch.full((query_global_y.size(
+                0), n_filter_neighbors), -1, dtype=torch.long)
         else:
-            res = self.prefilter_oracle_helper(qX, query_global_y, n_filter_neighbors)
+            res = self.prefilter_oracle_helper(
+                qX, query_global_y, n_filter_neighbors)
         return {
             "task_neighbors_prefilter": res
         }
@@ -596,7 +598,7 @@ class RecvDataAgent(Agent):
 
             self.data[requester] = structured_data['X_neighbors']
             self.extra_info[requester] = structured_data
-        
+
         if was_training:
             self.net.train()
 
@@ -690,7 +692,7 @@ class RecvDataAgent(Agent):
                 y_t, [task] * len(y_t), self.dataset.class_sequence, self.dataset.num_classes_per_task)
         return ret
 
-    def prepare_communicate(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False,):
+    def prepare_communicate(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False, strategy=None):
         if communication_round % 2 == 0:
             self.incoming_query, self.incoming_data, self.incoming_extra_info, self.incoming_query_extra_info = {}, {}, {}, {}
         if task_id < self.agent.net.num_init_tasks:
@@ -719,7 +721,7 @@ class RecvDataAgent(Agent):
             raise ValueError(f"Invalid round number {communication_round}")
 
     # potentially parallelizable
-    def communicate(self, task_id, communication_round, final=False):
+    def communicate(self, task_id, communication_round, final=False, strategy=None):
         if task_id < self.agent.net.num_init_tasks:
             # NOTE: don't communicate for the first few tasks to
             # allow agents some initital training to find their weakness
@@ -727,23 +729,36 @@ class RecvDataAgent(Agent):
         if communication_round % 2 == 0:
             # send query to neighbors
             for neighbor in self.neighbors.values():
-                neighbor.receive(self.node_id, self.query, "query")
-                neighbor.receive(
-                    self.node_id, self.query_extra_info, "query_extra_info")
+                if isinstance(neighbor, ray.actor.ActorHandle):
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.query, "query"))
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.query_extra_info, "query_extra_info"
+                    ))
+                else:
+                    neighbor.receive(self.node_id, self.query, "query")
+                    neighbor.receive(
+                        self.node_id, self.query_extra_info, "query_extra_info")
         elif communication_round % 2 == 1:
             # send data to the requester
             # for requester in self.incoming_query:
             #     self.neighbors[requester].receive(
             #         self.node_id, self.data[requester], "data")
             for neighbor_id, neighbor in self.neighbors.items():
-                neighbor.receive(
-                    self.node_id, self.data[neighbor_id], "data")
-                neighbor.receive(
-                    self.node_id, self.extra_info[neighbor_id], "extra_info")
+                if isinstance(neighbor, ray.actor.ActorHandle):
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.data[neighbor_id], "data"))
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.extra_info[neighbor_id], "extra_info"))
+                else:
+                    neighbor.receive(
+                        self.node_id, self.data[neighbor_id], "data")
+                    neighbor.receive(
+                        self.node_id, self.extra_info[neighbor_id], "extra_info")
         else:
             raise ValueError(f"Invalid round number {communication_round}")
 
-    def process_communicate(self, task_id, communication_round, final=False):
+    def process_communicate(self, task_id, communication_round, final=False, strategy=None):
         if task_id < self.agent.net.num_init_tasks:
             return
         if communication_round % 2 == 0:
@@ -839,7 +854,7 @@ class RecvDataAgent(Agent):
 
 @ray.remote
 class ParallelRecvDataAgent(RecvDataAgent):
-    def communicate(self, task_id, communication_round, final=False):
+    def communicate(self, task_id, communication_round, final=False, strategy=None):
         if task_id < self.agent.net.num_init_tasks:
             # NOTE: don't communicate for the first few tasks to
             # allow agents some initital training to find their weakness

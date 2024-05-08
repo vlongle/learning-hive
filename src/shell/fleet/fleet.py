@@ -21,16 +21,20 @@ import pandas as pd
 from shell.fleet.data.data_utilize import *
 from torch.utils.data.dataset import ConcatDataset, TensorDataset
 from shell.datasets.datasets import get_custom_tensordataset
+from omegaconf import DictConfig
+
+
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
+
 
 SEED_SCALE = 1000
 
 
 class Agent:
-    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
+    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy,
+                 agent=None):
 
-        self.seed = seed + SEED_SCALE * node_id
-        seed_everything(self.seed)
-
+        self.root_save_dir = agent_kwargs["save_dir"]
         self.save_dir = os.path.join(
             agent_kwargs["save_dir"], f"agent_{str(node_id)}")
         create_dir_if_not_exist(self.save_dir)
@@ -38,51 +42,29 @@ class Agent:
         logging.basicConfig(level=logging.INFO,
                             handlers=[logging.StreamHandler(),
                                       logging.FileHandler(os.path.join(self.save_dir, "log.txt"))])
-        logging.info(
-            f"Agent: node_id: {node_id}, seed: {self.seed}")
         self.num_coms = {}
         self.node_id = node_id
         self.dataset = dataset
         self.batch_size = agent_kwargs.get("batch_size", 64)
         agent_kwargs.pop("batch_size", None)
-        self.net = NetCls(**net_kwargs)
-        agent_kwargs["save_dir"] = self.save_dir
-        self.agent = AgentCls(self.net, **agent_kwargs)
+
+        if agent is not None:
+            logging.info(f"~~~~ Loading agent from checkpoint {agent}")
+            self.agent = agent
+            self.net = agent.net
+        else:
+            self.seed = seed + SEED_SCALE * node_id
+            seed_everything(self.seed)
+            logging.info(f"~~~~ Creating agent from stratch")
+            logging.info(
+                f"Agent: node_id: {node_id}, seed: {self.seed}")
+            self.net = NetCls(**net_kwargs)
+            agent_kwargs["save_dir"] = self.save_dir
+            self.agent = AgentCls(self.net, **agent_kwargs)
+
         self.train_kwargs = train_kwargs
 
         self.sharing_strategy = sharing_strategy
-
-    # def get_ood_data(self, task_id, mode='replay'):
-
-    #     if mode == 'replay':
-    #         # Gather data from replay buffers of all tasks except the current task
-    #         replay_buffers = {t: self.agent.replay_buffers[t] for t in range(self.agent.T)
-    #                           if t != task_id}
-    #         if len(replay_buffers) == 0:
-    #             return None, None, None, None
-
-    #         X_past = torch.cat([rb.tensors[0]
-    #                             for t, rb in replay_buffers.items()], dim=0)
-    #         y_past = torch.cat([torch.from_numpy(get_global_label(rb.tensors[1],
-    #                                                               t, self.dataset.class_sequence,
-    #                                                               self.dataset.num_classes_per_task))
-    #                             for t, rb in replay_buffers.items()], dim=0)
-    #     elif mode == 'training':
-    #         # Gather data from training sets of all tasks except the current task
-    #         X_past = torch.cat([self.dataset.trainset[t].tensors[0]
-    #                             for t in range(self.agent.T) if t != task_id], dim=0)
-    #         y_past = torch.cat([torch.from_numpy(get_global_label(self.dataset.trainset[t].tensors[1],
-    #                                                               t, self.dataset.class_sequence,
-    #                                                               self.dataset.num_classes_per_task))
-    #                             for t in range(self.agent.T) if t != task_id], dim=0)
-    #     mask = self.get_ood_data_helper(task_id, y_past)
-    #     X_ood_filtered = X_past[mask]
-    #     y_ood_filtered = y_past[mask]
-
-    #     X_iid_filtered = X_past[~mask]
-    #     y_iid_filtered = y_past[~mask]
-
-    #     return X_ood_filtered, y_ood_filtered, X_iid_filtered, y_iid_filtered
 
     def get_shared_replay_buffers(self):
         return self.agent.shared_replay_buffers
@@ -120,60 +102,35 @@ class Agent:
     def set_fl_strategy(self, fl_strategy):
         self.agent.fl_strategy = fl_strategy
 
+    def get_fl_strategy(self):
+        return self.agent.fl_strategy
+
     def add_neighbors(self, neighbors: Iterable[ray.actor.ActorHandle]):
         self.neighbors = neighbors
 
     def train(self, task_id, start_epoch=0, communication_frequency=None,
               final=True, **kwargs):
 
-        # if start_epoch == 0:
-        #     for t in range(task_id+1):
-        #         self.agent.ood_data[t] = self.get_ood_data(t)
-
         if task_id >= self.net.num_tasks:
             return
-
-        # dataset = deepcopy(self.dataset.trainset[task_id])
-
-        # self.agent.make_shared_memory_loaders(
-        #     batch_size=self.batch_size)
-
-        # if task_id in self.agent.shared_memory_loaders:
-        #     loader = self.agent.shared_memory_loaders[task_id]
-        #     shared_tensors = loader.dataset.get_tensors()  # X, y, t
-        #     # throw away the task id
-        #     shared_tensors = shared_tensors[:2]
-        #     dataset = CustomConcatDataset(
-        #         dataset.tensors, shared_tensors)
-        #     dataset = get_custom_tensordataset(dataset.tensors, name=self.dataset.name,
-        #                                        use_contrastive=self.agent.use_contrastive)
-
-        # trainloader = (
-        #     torch.utils.data.DataLoader(dataset,
-        #                                 batch_size=self.batch_size,
-        #                                 shuffle=True,
-        #                                 num_workers=4,
-        #                                 pin_memory=True,
-        #                                 ))
 
         trainloader = (
             torch.utils.data.DataLoader(self.dataset.trainset[task_id],
                                         batch_size=self.batch_size,
                                         shuffle=True,
-                                        # shuffle=False,
-                                        num_workers=4,
+                                        num_workers=2,
                                         pin_memory=True,
                                         ))
         testloaders = {task: torch.utils.data.DataLoader(testset,
                                                          batch_size=256,
                                                          shuffle=False,
-                                                         num_workers=4,
+                                                         num_workers=2,
                                                          pin_memory=True,
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
         valloader = torch.utils.data.DataLoader(self.dataset.valset[task_id],
                                                 batch_size=256,
                                                 shuffle=False,
-                                                num_workers=4,
+                                                num_workers=2,
                                                 pin_memory=True,
                                                 )
         train_kwargs = self.train_kwargs.copy()
@@ -204,20 +161,17 @@ class Agent:
 
         train_kwargs.update(kwargs)
 
-        # print('train task', task_id, 'rand torch seed', int(torch.empty(
-        #     (), dtype=torch.int64).random_().item()))
+        self.agent.train(trainloader, task_id, testloaders=testloaders,
+                         valloader=valloader, start_epoch=start_epoch, **train_kwargs)
 
-        return self.agent.train(trainloader, task_id, testloaders=testloaders,
-                                valloader=valloader, start_epoch=start_epoch, **train_kwargs)
-
-    def eval_test(self, task_id):
+    def eval_test(self, task_id, include_avg=False):
         testloaders = {task: torch.utils.data.DataLoader(testset,
                                                          batch_size=128,
                                                          shuffle=False,
                                                          num_workers=4,
                                                          pin_memory=True,
                                                          ) for task, testset in enumerate(self.dataset.testset[:(task_id+1)])}
-        return eval_net(self.net, testloaders)
+        return eval_net(self.net, testloaders, include_avg=include_avg)
 
     # def eval_val(self, task_id):
     #     valloaders = {task: torch.utils.data.DataLoader(valset,
@@ -349,16 +303,15 @@ class Agent:
 
         logging.debug("Loading model from ckpoint {task_path}")
         agent_path = os.path.dirname(task_path)
-        get_num_components = self.get_num_components(
-            agent_path, task_id)
-        num_added_components = get_num_components - \
-            len(self.net.components)
-        # print('get_num_components', get_num_components, 'num_added_components',
-        #       num_added_components, 'len(self.net.components)', len(self.net.components))
-        # print(self.save_dir)
-        for _ in range(num_added_components):
-            self.net.add_tmp_modules(task_id=len(
-                self.net.components), num_modules=1)
+
+        if task_id >= self.net.num_init_tasks:
+            get_num_components = self.get_num_components(
+                agent_path, task_id)
+            num_added_components = get_num_components - \
+                len(self.net.components)
+            for _ in range(num_added_components):
+                self.net.add_tmp_modules(task_id=len(
+                    self.net.components), num_modules=1)
 
         self.net.load_state_dict(torch.load(os.path.join(
             task_path, "checkpoint.pt"))['model_state_dict'])
@@ -410,7 +363,13 @@ class Fleet:
         self.num_init_tasks = net_kwargs["num_init_tasks"]
         self.num_tasks = net_kwargs["num_tasks"]
 
+        if sharing_strategy.name == "combine_modes":
+            self.spawn_communicator()
         logging.info("Fleet initialized")
+
+    def spawn_communicator(self):
+        for agent in self.agents:
+            agent.spawn_communicator()
 
     def eval_test(self, task_id=None):
         if task_id is None:
@@ -474,60 +433,77 @@ class Fleet:
             agent.add_neighbors(neighbors)
 
     def train_and_comm(self, task_id):
-
         if task_id < self.num_init_tasks:
             # init task
             num_epochs = self.init_num_epochs
         else:
             num_epochs = self.num_epochs
-        comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs + 1
 
-        # Number of times the loop will iterate
-        num_coms = math.ceil(num_epochs / comm_freq)
+        if isinstance(self.comm_freq, dict):
+            comm_freqs = self.comm_freq
+        else:
+            comm_freqs = {'default': self.comm_freq} if self.comm_freq is not None else {
+                'default': num_epochs + 1}
 
-        for start_epoch in range(0, num_epochs, comm_freq):
-            end_epoch = min(start_epoch + comm_freq, num_epochs)
-            final = start_epoch + comm_freq >= num_epochs
-            if self.sharing_strategy.pre_or_post_comm == "pre" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                # print('>>> COMM AT EPOCH', end_epoch)
-                self.communicate(task_id,
-                                 end_epoch,
-                                 comm_freq,
-                                 num_epochs,
-                                 start_com_round=(
-                                     start_epoch // comm_freq) * self.num_coms_per_round,
-                                 final=final)
+        # Create a combined list of all unique communication epochs, including the last epoch
+        unique_epochs = set()
+        for freq in comm_freqs.values():
+            unique_epochs.update(range(freq, num_epochs + 1, freq))
+        # Ensure the last epoch is always included
+        unique_epochs.add(num_epochs)
+        sorted_epochs = sorted(unique_epochs)
+
+        max_comm_freq = max(comm_freqs.values())
+        num_coms = math.ceil(num_epochs / max_comm_freq)
+
+        start_epoch = 0
+
+        for end_epoch in sorted_epochs:
+            final = end_epoch == num_epochs
+            print('from', start_epoch, 'to', end_epoch, 'final', final)
+
+            if self.sharing_strategy.pre_or_post_comm == "pre":
+                for strategy, freq in comm_freqs.items():
+                    if end_epoch % freq == 0 and freq <= num_epochs:
+                        logging.info(
+                            f'>>> {strategy.upper()} COMM AT EPOCH', end_epoch)
+                        self.communicate(
+                            task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
             for agent in self.agents:
-                # only remove modules for the last epoch
                 agent.set_num_coms(task_id, num_coms)
-                agent.train(task_id, start_epoch, comm_freq, final=final)
+                agent.train(task_id, start_epoch, end_epoch -
+                            start_epoch, final=final)
 
-            # print('>> TRAINING FROM', start_epoch,
-            #       'TO', end_epoch)
-            if self.sharing_strategy.pre_or_post_comm == "post" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                # print('>>> COMM AT EPOCH', end_epoch)
-                self.communicate(task_id,
-                                 end_epoch,
-                                 comm_freq,
-                                 num_epochs,
-                                 start_com_round=(
-                                     start_epoch // comm_freq) * self.num_coms_per_round,
-                                 final=final)
+            if self.sharing_strategy.pre_or_post_comm == "post":
+                for strategy, freq in comm_freqs.items():
+                    if end_epoch % freq == 0 and freq <= num_epochs:
+                        logging.info(
+                            f'>>> {strategy.upper()} COMM AT EPOCH', end_epoch)
+                        self.communicate(
+                            task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
-    def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False):
-        for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
+            start_epoch = end_epoch
+
+    def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False, strategy=None):
+        if strategy is not None:
+            num_coms_per_round = self.num_coms_per_round[strategy]
+        else:
+            num_coms_per_round = self.num_coms_per_round
+        for communication_round in range(start_com_round, num_coms_per_round + start_com_round):
             self.communicate_round(
-                task_id, end_epoch, comm_freq, num_epochs, communication_round, final=final)
+                task_id, end_epoch, comm_freq, num_epochs, communication_round, final=final, strategy=strategy)
 
-    def communicate_round(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False):
+    def communicate_round(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False, strategy=None):
         for agent in self.agents:
             agent.prepare_communicate(
-                task_id, end_epoch, comm_freq, num_epochs, communication_round, final)
+                task_id, end_epoch, comm_freq, num_epochs, communication_round, final, strategy=strategy)
         for agent in self.agents:
-            agent.communicate(task_id, communication_round, final)
+            agent.communicate(task_id, communication_round,
+                              final, strategy=strategy)
         for agent in self.agents:
-            agent.process_communicate(task_id, communication_round, final)
+            agent.process_communicate(
+                task_id, communication_round, final, strategy=strategy)
 
     def get_save_dir(self):
         return [agent.get_save_dir() for agent in self.agents]
@@ -550,7 +526,7 @@ class ParallelFleet:
         self.num_coms_per_round = self.sharing_strategy.num_coms_per_round
 
         self.remove_ood_neighbors = getattr(
-            self.sharing_strategy, 'remove_ood_neighbors', False)
+            self.sharing_strategy, 'remove_ood_neighbors', True)
 
         self.create_agents(seed, datasets, AgentCls, NetCls, LearnerCls,
                            net_kwargs, agent_kwargs, train_kwargs)
@@ -561,7 +537,13 @@ class ParallelFleet:
         self.comm_freq = sharing_strategy.get("comm_freq", None)
         self.num_init_tasks = net_kwargs["num_init_tasks"]
 
+        if sharing_strategy.name == "combine_modes":
+            self.spawn_communicator()
+
         logging.info("Fleet initialized")
+
+    def spawn_communicator(self):
+        ray.get([agent.spawn_communicator.remote() for agent in self.agents])
 
     def load_model_from_ckpoint(self, paths=None, task_ids=None):
         if paths is None:
@@ -584,7 +566,7 @@ class ParallelFleet:
         return ray.get([agent.eval_test.remote(task_id) for agent in self.agents])
 
     def create_agents(self, seed, datasets, AgentCls, NetCls, LearnerCls, net_kwargs, agent_kwargs, train_kwargs):
-        print('CREATING AGENTS...')
+        logging.info('CREATING AGENTS...')
         self.agents = [
             AgentCls.options(num_gpus=self.num_gpus_per_agent).remote(node_id, seed, datasets[node_id], NetCls,
                                                                       LearnerCls,
@@ -593,7 +575,7 @@ class ParallelFleet:
                 deepcopy(train_kwargs), deepcopy(self.sharing_strategy))
             for node_id in self.graph.nodes
         ]
-        print('DONE AGENTS...')
+        logging.info('DONE AGENTS...')
 
         # make sure that all agents share the same (random) preprocessing parameters in MNIST variants
         # check that self.agents[0].net has "random_linear_projection" layer, if yes, then share it
@@ -625,54 +607,95 @@ class ParallelFleet:
 
     def train_and_comm(self, task_id):
         if task_id < self.num_init_tasks:
-            # init task
+            # Initialization task
             num_epochs = self.init_num_epochs
         else:
             num_epochs = self.num_epochs
-        comm_freq = self.comm_freq if self.comm_freq is not None else num_epochs + 1
+
+        # Handling different communication frequencies
+        if isinstance(self.comm_freq, dict) or isinstance(self.comm_freq, DictConfig):
+            comm_freqs = self.comm_freq
+        else:
+            comm_freqs = {'default': self.comm_freq} if self.comm_freq is not None else {
+                'default': num_epochs + 1}
+
+        if not (isinstance(self.sharing_strategy.pre_or_post_comm, dict) or isinstance(self.sharing_strategy.pre_or_post_comm, DictConfig)):
+            logging.info(
+                f"pre_or_post_comm {self.sharing_strategy.pre_or_post_comm} type {type(self.sharing_strategy.pre_or_post_comm)} IS NOT DICT")
+            self.sharing_strategy.pre_or_post_comm = {
+                'default': self.sharing_strategy.pre_or_post_comm}
+
+        if not (isinstance(self.num_coms_per_round, dict) or isinstance(self.num_coms_per_round, DictConfig)):
+            self.num_coms_per_round = {
+                'default': self.num_coms_per_round}
+
+        # turn all None to num_epochs + 1
+        for key in comm_freqs:
+            if comm_freqs[key] is None:
+                comm_freqs[key] = num_epochs + 1
+
+        # Create a combined list of all unique communication epochs
+        unique_epochs = set()
+        for freq in comm_freqs.values():
+            unique_epochs.update(range(freq, num_epochs + 1, freq))
+        # Ensure the last epoch is always included
+        unique_epochs.add(num_epochs)
+        sorted_epochs = sorted(unique_epochs)
+
         # Number of times the loop will iterate
-        num_coms = math.ceil(num_epochs / comm_freq)
+        max_comm_freq = max(comm_freqs.values())
+        num_coms = math.ceil(num_epochs / max_comm_freq)
 
-        for start_epoch in range(0, num_epochs, comm_freq):
-            final = start_epoch + comm_freq >= num_epochs
-            end_epoch = min(start_epoch + comm_freq, num_epochs)
+        def should_communicate(freq, start_epoch, end_epoch):
+            if freq > num_epochs:
+                return False
+            if freq == num_epochs:
+                return start_epoch == 0
+            else:
+                return end_epoch % freq == 0
 
-            if self.sharing_strategy.pre_or_post_comm == "pre" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                logging.info('task {} comm at epoch {}'.format(
-                    task_id, start_epoch))
-                self.communicate(task_id,
-                                 end_epoch,
-                                 comm_freq,
-                                 num_epochs,
-                                 start_com_round=(
-                                     start_epoch // comm_freq) * self.num_coms_per_round,
-                                 final=final)
+        logging.info(
+            f"Task {task_id} comm_freqs: {comm_freqs} pre_or_post: {self.sharing_strategy.pre_or_post_comm} num_coms: {num_coms}")
+        logging.info(f"sorted_epochs: {sorted_epochs}")
+        start_epoch = 0
+        for end_epoch in sorted_epochs:
+            final = end_epoch == num_epochs
+            ray.get([agent.set_num_coms.remote(task_id, num_coms)
+                    for agent in self.agents])
 
-            logging.info('task {} training from {} to {}'.format(task_id,
-                                                                 start_epoch, end_epoch))
-            ray.get([agent.set_num_coms.remote(
-                task_id, num_coms) for agent in self.agents])
-            ray.get([agent.train.remote(task_id, start_epoch, comm_freq,
-                                        final=final) for agent in self.agents])
+            for strategy, freq in comm_freqs.items():
+                if should_communicate(freq, start_epoch, end_epoch) and self.sharing_strategy.pre_or_post_comm[strategy] == "pre":
+                    logging.info(
+                        f'Task {task_id} {strategy.upper()} COMM AT EPOCH {start_epoch}')
+                    self.communicate(
+                        task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
 
-            if self.sharing_strategy.pre_or_post_comm == "post" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
-                logging.info('task {} comm at epoch {}'.format(
-                    task_id, end_epoch))
-                self.communicate(task_id,
-                                 end_epoch,
-                                 comm_freq,
-                                 num_epochs,
-                                 start_com_round=(
-                                     start_epoch // comm_freq) * self.num_coms_per_round,
-                                 final=final)
+            logging.info(
+                f'Task {task_id} training from {start_epoch} to {end_epoch} final={final} for {end_epoch - start_epoch} epochs')
+            ray.get([agent.train.remote(task_id, start_epoch, end_epoch -
+                    start_epoch, final=final) for agent in self.agents])
 
-    def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False):
-        for communication_round in range(start_com_round, self.num_coms_per_round + start_com_round):
+            for strategy, freq in comm_freqs.items():
+                if should_communicate(freq, start_epoch, end_epoch) and freq <= num_epochs and self.sharing_strategy.pre_or_post_comm[strategy] == "post":
+                    logging.info(
+                        f'Task {task_id} {strategy.upper()} COMM AT EPOCH {end_epoch}')
+                    self.communicate(
+                        task_id, end_epoch, freq, num_epochs, strategy=strategy, final=final)
+
+            start_epoch = end_epoch
+
+    def communicate(self, task_id, end_epoch, comm_freq, num_epochs, start_com_round=0, final=False, strategy=None):
+        if strategy is not None:
+            num_coms_per_round = self.num_coms_per_round[strategy]
+        else:
+            num_coms_per_round = self.num_coms_per_round
+
+        for communication_round in range(start_com_round, num_coms_per_round + start_com_round):
             # parallelize preprocessing to prepare neccessary data
             # before the communication round.
             ray.get([agent.prepare_communicate.remote(task_id, end_epoch, comm_freq,
                                                       num_epochs,
-                                                      communication_round, final)
+                                                      communication_round, final, strategy)
                     for agent in self.agents])
             # NOTE: HACK: communicate in done in sequence to avoid dysnc issues,
             # if the sender sends something to the receiver but the receiver is not paying
@@ -682,9 +705,9 @@ class ParallelFleet:
                 # sequential, because ray.get is blocking to get the result from one
                 # agent before moving to the next.
                 ray.get(agent.communicate.remote(
-                    task_id, communication_round, final))
+                    task_id, communication_round, final, strategy))
 
-            ray.get([agent.process_communicate.remote(task_id, communication_round, final)
+            ray.get([agent.process_communicate.remote(task_id, communication_round, final, strategy)
                     for agent in self.agents])
 
     def get_save_dir(self):

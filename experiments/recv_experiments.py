@@ -18,8 +18,6 @@ Copyright (c) 2023 Long Le
 
 
 
-
-
 import time
 import datetime
 from shell.utils.experiment_utils import run_experiment
@@ -42,8 +40,6 @@ parser.add_argument('--seed', type=int, default=0,
                     help='Seed for the experiment.')
 parser.add_argument('--algo', type=str, default="modular", choices=[
                     "modular", "monolithic"], help='Algorithm for the experiment.')
-parser.add_argument('--dataset', type=str, default="mnist", choices=[
-                    "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
 parser.add_argument('--prefilter_strategy', type=str, default="oracle", choices=[
@@ -83,7 +79,7 @@ if __name__ == "__main__":
     query_task_mode = 'current' if args.algo == 'modular' else 'all'
     comm_freq = num_epochs // (args.num_comms_per_task + 1)
 
-    root_save_dir = f"debug_combine_modes_results/gt_recv_data_no_sparse_False_recv_mod_add_data_backward_True_make_new_opt_True"
+    root_save_dir = f"debug_combine_modes_results/recv_data_no_sparse_False_recv_mod_add_data_backward_True_make_new_opt_True"
 
     config = {
         "algo": args.algo,
@@ -93,7 +89,6 @@ if __name__ == "__main__":
         "parallel": True,
         "num_agents": 8,
         # "dataset": "combined",
-        "dataset": args.dataset,
         # "sharing_strategy.min_task": 4, ## !!!!NOTE: only for the combined dataset
         "dataset.num_trains_per_class": 64,
         "dataset.num_vals_per_class": 50,

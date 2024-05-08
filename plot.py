@@ -183,7 +183,6 @@ def plot_agg_over_seeds(combined_agg_df, title_name=None, ax=None, std_scale=1.0
         if remap_name is not None and name not in remap_name:
             continue
 
-        print('name', name)
         name_display = remap_name[name] if remap_name is not None else name
         mean_values = group[metric_mean]
         std_values = group[metric_std]

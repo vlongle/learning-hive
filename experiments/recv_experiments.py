@@ -18,6 +18,8 @@ Copyright (c) 2023 Long Le
 
 
 
+
+
 import time
 import datetime
 from shell.utils.experiment_utils import run_experiment
@@ -42,14 +44,14 @@ parser.add_argument('--algo', type=str, default="modular", choices=[
                     "modular", "monolithic"], help='Algorithm for the experiment.')
 parser.add_argument('--dataset', type=str, default="mnist", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
+parser.add_argument('--dataset', type=str, default="mnist", choices=[
+                    "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
 parser.add_argument('--prefilter_strategy', type=str, default="oracle", choices=[
                     "oracle", "raw_distance", "none"], help='Pre-filtering strategy for the experiment.')
 parser.add_argument('--scorer', type=str, default="cross_entropy", choices=[
     'cross_entropy', 'least_confidence', 'margin', 'entropy', 'random'], help='Scorer for the experiment.')
 parser.add_argument('--add_data_prefilter_strategy', type=str, default="both", choices=[
     'task_neighbors_prefilter', 'global_y_prefilter', 'both'], help='Add data prefilter strategy for the experiment.')
-# parser.add_argument('--assign_labels_strategy', type=str, default="same_as_query", choices=[
-#     'groundtruth', 'same_as_query'], help='Assign labels strategy for the experiment.')
 parser.add_argument('--assign_labels_strategy', type=str, default="groundtruth", choices=[
     'groundtruth', 'same_as_query'], help='Assign labels strategy for the experiment.')
 parser.add_argument('--num_data_neighbors', type=int, default=5,
@@ -87,7 +89,7 @@ if __name__ == "__main__":
         "algo": args.algo,
         "agent.batch_size": batch_size,
         "seed": args.seed,
-        # "seed": [0,1,2,3,4,5,6,7],
+        "dataset": args.dataset,
         "parallel": True,
         "num_agents": 8,
         # "dataset": "combined",

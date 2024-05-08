@@ -79,7 +79,7 @@ if __name__ == "__main__":
     query_task_mode = 'current' if args.algo == 'modular' else 'all'
     comm_freq = num_epochs // (args.num_comms_per_task + 1)
 
-    root_save_dir = f"debug_combine_modes_results/recv_data_no_sparse_False_recv_mod_add_data_backward_True_make_new_opt_True"
+    root_save_dir = f"debug_combine_modes_results/gt_recv_data_no_sparse_False_recv_mod_add_data_backward_True_make_new_opt_True"
 
     config = {
         "algo": args.algo,

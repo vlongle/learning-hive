@@ -16,6 +16,7 @@ from shell.fleet.data.recv import RecvDataAgent, ParallelRecvDataAgent
 from shell.fleet.mod.modmod import ModModAgent, ParallelModModAgent
 from shell.fleet.data.heuristic import HeuristicDataAgent, ParallelHeuristicDataAgent
 from shell.utils.experiment_utils import get_cfg
+from shell.fleet.combine.combine_modes import CombineModesAgent, ParallelCombineModesAgent
 
 
 BASIC_FLEET_CLS = {
@@ -133,6 +134,17 @@ AGENT_CLS = {
         'modular': {
             True: ParallelHeuristicDataAgent,
             False: HeuristicDataAgent,
+        }
+    },
+
+    "combine_modes": {
+        'monolithic': {
+            True: ParallelCombineModesAgent,
+            False: CombineModesAgent,
+        },
+        'modular': {
+            True: ParallelCombineModesAgent,
+            False: CombineModesAgent,
         }
     },
 }

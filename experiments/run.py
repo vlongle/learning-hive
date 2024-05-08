@@ -24,12 +24,6 @@ logging.basicConfig(level=logging.INFO)
 def main(cfg: DictConfig) -> None:
     start = time.time()
 
-    # save_dir = get_save_dirv2(cfg.root_save_dir, cfg.job_name, cfg.dataset.dataset_name,
-    #                           cfg.algo, cfg.seed)
-    # if os.path.exists(save_dir) and cfg.overwrite is False:
-    #     print(save_dir, "already exists")
-    #     return
-
     AgentCls = get_agent_cls(cfg.sharing_strategy, cfg.algo, cfg.parallel)
 
     graph, datasets, NetCls, LearnerCls, net_cfg, agent_cfg, train_cfg, fleet_additional_cfg = setup_experiment(
@@ -45,6 +39,8 @@ def main(cfg: DictConfig) -> None:
 
     for task_id in range(cfg.dataset.num_tasks):
         fleet.train_and_comm(task_id)
+        if task_id == 4:
+            break
 
     end = time.time()
     logging.info(f"Run took {datetime.timedelta(seconds=end-start)}")

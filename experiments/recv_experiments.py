@@ -16,14 +16,13 @@ Copyright (c) 2023 Long Le
 '''
 
 
+
+
 import time
 import datetime
 from shell.utils.experiment_utils import run_experiment
 import argparse
 from shell.utils.utils import on_desktop
-
-
-
 def str2bool(v):
     if isinstance(v, bool):
         return v
@@ -35,23 +34,20 @@ def str2bool(v):
         raise argparse.ArgumentTypeError('Boolean value expected.')
 
 
-
 parser = argparse.ArgumentParser(
     description='Run experiment with a specified seed.')
 parser.add_argument('--seed', type=int, default=0,
                     help='Seed for the experiment.')
 parser.add_argument('--algo', type=str, default="modular", choices=[
                     "modular", "monolithic"], help='Algorithm for the experiment.')
-# parser.add_argument('--dataset', type=str, default="mnist", choices=[
-#                     "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
+parser.add_argument('--dataset', type=str, default="mnist", choices=[
+                    "mnist", "kmnist", "fashionmnist", "cifar100"], help='Dataset for the experiment.')
 parser.add_argument('--prefilter_strategy', type=str, default="oracle", choices=[
                     "oracle", "raw_distance", "none"], help='Pre-filtering strategy for the experiment.')
 parser.add_argument('--scorer', type=str, default="cross_entropy", choices=[
     'cross_entropy', 'least_confidence', 'margin', 'entropy', 'random'], help='Scorer for the experiment.')
 parser.add_argument('--add_data_prefilter_strategy', type=str, default="both", choices=[
     'task_neighbors_prefilter', 'global_y_prefilter', 'both'], help='Add data prefilter strategy for the experiment.')
-# parser.add_argument('--assign_labels_strategy', type=str, default="same_as_query", choices=[
-#     'groundtruth', 'same_as_query'], help='Assign labels strategy for the experiment.')
 parser.add_argument('--assign_labels_strategy', type=str, default="groundtruth", choices=[
     'groundtruth', 'same_as_query'], help='Assign labels strategy for the experiment.')
 parser.add_argument('--num_data_neighbors', type=int, default=5,
@@ -83,15 +79,19 @@ if __name__ == "__main__":
     query_task_mode = 'current' if args.algo == 'modular' else 'all'
     comm_freq = num_epochs // (args.num_comms_per_task + 1)
 
+    num_agents = 20 if args.dataset == "combined" else 8
+    min_task = 4 if args.dataset == "combined" else 0
+
+    root_save_dir = "debug_combine_modes_results/gt_recv_data_no_sparse_False_recv_mod_add_data_backward_True_make_new_opt_True"
+
     config = {
         "algo": args.algo,
         "agent.batch_size": batch_size,
         "seed": args.seed,
-        # "seed": [0,1,2,3,4,5,6,7],
+        "dataset": args.dataset,
         "parallel": True,
-        "num_agents": 20,
-        "dataset": "combined",
-        "sharing_strategy.min_task": 4, ## !!!!NOTE: only for the combined dataset
+        "num_agents": num_agents,
+        "sharing_strategy.min_task": min_task,
         "dataset.num_trains_per_class": 64,
         "dataset.num_vals_per_class": 50,
         "dataset.remap_labels": True,
@@ -108,10 +108,9 @@ if __name__ == "__main__":
         "train.save_freq": 10,
         "agent.use_contrastive": False,
         "agent.memory_size": memory_size,
-        # "agent.use_ood_separation_loss": False,
-           "net.no_sparse_basis": True,
-        
-        "root_save_dir": prefix + f"debug_budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size_sync_base_{args.sync_base}/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
+        "net.no_sparse_basis": True,
+
+        "root_save_dir": root_save_dir,
         "sharing_strategy": "recv_data",
         "sharing_strategy.shared_memory_size": shared_memory_size,
         "sharing_strategy.query_task_mode": query_task_mode,
@@ -124,8 +123,6 @@ if __name__ == "__main__":
         "sharing_strategy.scorer": args.scorer,
         "sharing_strategy.sync_base": args.sync_base,
     }
-
-
 
     # config = {
 
@@ -155,8 +152,6 @@ if __name__ == "__main__":
     #     "agent.use_contrastive": False,
     #     "net.no_sparse_basis": True,
 
-
-
     #     # "agent.use_ood_separation_loss": False,
     #         "root_save_dir": prefix + f"budget_experiment_results/latest_main_no_init_tasks_no_backward_replay_jorge_setting_recv_variable_shared_memory_size_sync_base_{args.sync_base}/mem_size_{shared_memory_size}_comm_freq_{comm_freq}_num_queries_{args.num_queries}_assign_labels_{args.assign_labels_strategy}",
     #     "sharing_strategy": "recv_data",
@@ -171,7 +166,6 @@ if __name__ == "__main__":
     #     "sharing_strategy.scorer": args.scorer,
     # "sharing_strategy.sync_base": args.sync_base,
     # }
-
 
     run_experiment(config, strict=False)
     end = time.time()

@@ -31,7 +31,7 @@ class ModelSyncAgent(Agent):
                          net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent)
         self.incoming_models = {}
         self.excluded_params = set(
-            ["decoder", "structure", "projector"])
+            ["decoder", "structure", "projector", "random_linear_projection"])
 
         self.sharing_model_diff_record = Record(os.path.join(
             self.save_dir,

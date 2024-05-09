@@ -5,8 +5,8 @@
 #SBATCH --cpus-per-gpu=48
 #SBATCH --mem-per-cpu=2G
 #SBATCH --time=72:00:00
-#SBATCH --qos=normal
-#SBATCH --partition=batch
+#SBATCH --qos=ee-high
+#SBATCH --partition=eaton-compute
 #SBATCH --array=0-71 # Total of 72 tasks (8 seeds * 3 datasets * 3 combine options)
 
 # Define combine options

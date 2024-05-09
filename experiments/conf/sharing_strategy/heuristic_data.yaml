@@ -1,7 +1,7 @@
 name: heuristic_data
 num_coms_per_round: 2
 budget: 20
-enforce_balance: true
+enforce_balance: false
 shared_memory_size: 160
 comm_freq: 16
 query_task_mode: all

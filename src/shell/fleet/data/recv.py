@@ -608,7 +608,8 @@ class RecvDataAgent(Agent):
             'task_neighbors_prefilter'][task_id]
         valid_rows_mask = ~torch.all(
             task_neighbors_prefilter == -1, dim=1)
-        n_neighbor = task_neighbors_prefilter.shape[1]
+        # n_neighbor = task_neighbors_prefilter.shape[1]
+        n_neighbor = self.sharing_strategy.num_data_neighbors
         valid_mask = valid_rows_mask.unsqueeze(
             1).expand(-1, n_neighbor).reshape(-1)
         return valid_mask

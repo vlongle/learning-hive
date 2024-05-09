@@ -79,7 +79,8 @@ if __name__ == "__main__":
     # communicator = "grad_sharing"
 
     # root_save_dir = f"debug_combine_modes_results/recv_data_no_sparse_False_recv_mod_add_data_backward_True_make_new_opt_True"
-    root_save_dir = prefix + f"debug_combine_modes_results/{args.combine}"
+    root_save_dir = prefix + \
+        f"cifar100_monolithic_combine_modes_results/{args.combine}"
 
     if args.dataset != "cifar100":
         config = {

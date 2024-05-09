@@ -54,11 +54,15 @@ if __name__ == "__main__":
     seed = args.seed
 
     num_agents = 20 if args.dataset == "combined" else 8
+
+    no_sparse_basis = True
+    root_save_dir = prefix + \
+        f"debug_combine_modes_results/gt_fedavg_no_sparse_False_recv_mod_add_data_backward_True_make_new_opt_True"
+
     if args.dataset != "cifar100":
         config = {
             "algo": args.algo,
-            "seed": [1, 2, 3, 4, 5, 6, 7],
-            # "seed": args.seed,
+            "seed": args.seed,
             "dataset": args.dataset,
             "num_agents": num_agents,
             "parallel": True,
@@ -78,11 +82,11 @@ if __name__ == "__main__":
             "train.component_update_freq": num_epochs,
             "train.init_num_epochs": num_epochs,
             "train.init_component_update_freq": num_epochs,
-            'net.no_sparse_basis': True,
+            'net.no_sparse_basis': no_sparse_basis,
             "train.save_freq": 10,
             "agent.use_contrastive": False,
             "agent.memory_size": 32,
-            "root_save_dir": prefix + f"rerun_topology_experiment_results/jorge_setting_fedavg/comm_freq_{args.comm_freq}/topology_{args.topology}_edge_drop_{args.edge_drop_prob}",
+            "root_save_dir": root_save_dir,
             # ================================================
             # GRAD SHARING SETUP
             "sharing_strategy": "grad_sharing",
@@ -96,7 +100,7 @@ if __name__ == "__main__":
     else:
         config = {
             "algo": args.algo,
-            "seed": [0,1,2,3,4,5,6,7],
+            "seed": args.seed,
             "num_agents": 8,
             "parallel": True,
 

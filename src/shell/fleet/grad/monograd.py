@@ -25,9 +25,10 @@ Only sync modules
 
 
 class ModelSyncAgent(Agent):
-    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs, sharing_strategy):
+    def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
+                 sharing_strategy, agent=None):
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent)
         self.incoming_models = {}
         self.excluded_params = set(
             ["decoder", "structure", "projector"])
@@ -46,12 +47,16 @@ class ModelSyncAgent(Agent):
             deepcopy(self.net.state_dict()), self.excluded_params)
 
     def prepare_communicate(self, task_id, end_epoch, comm_freq, num_epochs,
-                            communication_round, final=False):
+                            communication_round, final=False, strategy=None):
         self.model = self.prepare_model()
 
-    def communicate(self, task_id, communication_round, final=False):
+    def communicate(self, task_id, communication_round, final=False, strategy=None):
         for neighbor in self.neighbors.values():
-            neighbor.receive(self.node_id, deepcopy(self.model), "model")
+            if isinstance(neighbor, ray.actor.ActorHandle):
+                ray.get(neighbor.receive.remote(
+                    self.node_id, deepcopy(self.model), "model"))
+            else:
+                neighbor.receive(self.node_id, deepcopy(self.model), "model")
 
     def receive(self, node_id, model, msg_type):
         self.incoming_models[node_id] = model
@@ -105,7 +110,7 @@ class ModelSyncAgent(Agent):
             # +1 because it includes the current model
             param.data /= stuff_added[name] + 1
 
-    def process_communicate(self, task_id, communication_round, final=False):
+    def process_communicate(self, task_id, communication_round, final=False, strategy=None):
         self.log(task_id, communication_round, info={'info': 'before'})
         self.aggregate_models()
         self.log(task_id, communication_round, info={'info': 'after'})
@@ -113,7 +118,7 @@ class ModelSyncAgent(Agent):
 
 @ray.remote
 class ParallelModelSyncAgent(ModelSyncAgent):
-    def communicate(self, task_id, communication_round, final=False):
+    def communicate(self, task_id, communication_round, final=False, strategy=None):
         for neighbor in self.neighbors.values():
             ray.get(neighbor.receive.remote(
                 self.node_id, deepcopy(self.model), "model"))

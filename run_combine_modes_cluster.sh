@@ -7,10 +7,10 @@
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-high
 #SBATCH --partition=eaton-compute
-#SBATCH --array=0-71 # Total of 72 tasks (8 seeds * 3 datasets * 3 combine options)
+#SBATCH --array=0-23 # Total of 72 tasks (8 seeds * 3 datasets * 3 combine options)
 
 # Define combine options
-declare -a combine_options=("recv_data+grad_sharing" "grad_sharing" "recv_data")
+declare -a combine_options=("recv_data+grad_sharing")
 declare -a seeds=("0" "1" "2" "3" "4" "5" "6" "7")  # 8 options
 declare -a datasets=("mnist" "kmnist" "fashionmnist")
 

@@ -69,13 +69,14 @@ if __name__ == "__main__":
     comm_freq = num_epochs // (args.num_comms_per_task + 1)
     num_agents = 20 if args.dataset == "combined" else 8
 
-    sync_base = False
+    # sync_base = False
+    sync_base = True
     no_sparse_basis = False
     recv_mod_add_data_backward = True
     make_new_opt = True
 
     root_save_dir = prefix + \
-        f"combine_modes_results/gt_recv_data_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
+        f"debug_combine_modes_results/gt_recv_data_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
 
     # config = {
     #     "algo": args.algo,
@@ -120,7 +121,7 @@ if __name__ == "__main__":
 
     config = {
 
-        "algo": "modular",
+        "algo": args.algo,
         "dataset": args.dataset,
         # "dataset": ['mnist', 'kmnist', 'fashionmnist'],
         "seed": args.seed,

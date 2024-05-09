@@ -37,7 +37,8 @@ def plot_agg_learning_curves(fleet, ax=None, name=None, tasks=None, agent_ids=No
         fig, ax = plt.subplots()
 
     if tasks is None:
-        tasks = range(fleet.num_init_tasks-1, fleet.num_tasks)
+        # tasks = range(fleet.num_init_tasks-1, fleet.num_tasks)
+        tasks = range(fleet.num_init_tasks, fleet.num_tasks)
 
     dfs = []
     for agent in fleet.agents:
@@ -200,7 +201,7 @@ def plot_agg_over_seeds(combined_agg_df, title_name=None, ax=None, std_scale=1.0
     ax.tick_params(axis='y', labelsize=16)
 
     ax.grid(True, which='major', linestyle='--', alpha=0.5)
-    ax.set_ylim(0.5, 0.8)
+    # ax.set_ylim(0.5, 0.8)
 
 
 def get_auc_stats(seed_aucs):
@@ -328,8 +329,8 @@ def plot_learning_curve_bars(seed_aucs, title_name=None, ax=None, remap_name=Non
 
 def plot_learning_curve_dataset(dataset_agg_dfs, remap_name=None, colormap=None,
                                 mode='avg', save_fig_path=None, error_type='std',
-                                metric='test_acc'):
-    fig, ax = plt.subplots(1, len(dataset_agg_dfs.keys()), figsize=(30, 10))
+                                metric='test_acc', figsize=(30, 10)):
+    fig, ax = plt.subplots(1, len(dataset_agg_dfs.keys()), figsize=figsize)
     handles, labels = [], []
 
     # Ensure ax is always iterable

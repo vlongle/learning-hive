@@ -76,10 +76,10 @@ if __name__ == "__main__":
     # sync_base = False
     # no_sparse_basis = True
 
-    communicator = "grad_sharing"
+    # communicator = "grad_sharing"
 
     # root_save_dir = f"debug_combine_modes_results/recv_data_no_sparse_False_recv_mod_add_data_backward_True_make_new_opt_True"
-    root_save_dir = f"debug_combine_modes_results/fedavg_data_no_sparse_False_recv_mod_add_data_backward_True_make_new_opt_True"
+    root_save_dir = f"debug_combine_modes_results/{args.combine}"
 
     if args.dataset != "cifar100":
         config = {
@@ -115,7 +115,7 @@ if __name__ == "__main__":
             "sharing_strategy": "combine_modes",
             "sharing_strategy.communicator": args.combine,
             "sharing_strategy.sync_base": sync_base,
-            "sharing_strategy.communicator": communicator,
+            "sharing_strategy.communicator": args.combine,
             "root_save_dir": root_save_dir,
 
         }

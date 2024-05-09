@@ -63,9 +63,6 @@ def main(cfg: DictConfig) -> None:
 
     for task_id in range(cfg.dataset.num_tasks):
         fleet.train_and_comm(task_id)
-        if task_id == 4:
-            break
-
     end = time.time()
     logging.info(f"Run took {datetime.timedelta(seconds=end-start)}")
 

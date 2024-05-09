@@ -134,7 +134,7 @@ if __name__ == "__main__":
             "net": "cnn",
             "net.depth": 4,
             "num_init_tasks": 4,
-            "dataset.num_tasks": 5,
+            "dataset.num_tasks": 20,
             "net.dropout": 0.5,
             "train.init_num_epochs": num_epochs,
             "train.init_component_update_freq": num_epochs,
@@ -150,13 +150,13 @@ if __name__ == "__main__":
 
             "root_save_dir": root_save_dir,
             "sharing_strategy": "heuristic_data",
-            "sharing_strategy.shared_memory_size": shared_memory_size,
-            "sharing_strategy.comm_freq": comm_freq,
+            # "sharing_strategy.shared_memory_size": shared_memory_size,
+            # "sharing_strategy.comm_freq": comm_freq,
             "sharing_strategy.sync_base": False,
-            "sharing_strategy.query_task_mode": query_task_mode,
-            "sharing_strategy.budget": args.budget,
-            "sharing_strategy.enforce_balance": args.enforce_balance,
-            "sharing_strategy.hash_data": args.hash_data,
+            # "sharing_strategy.query_task_mode": query_task_mode,
+            # "sharing_strategy.budget": args.budget,
+            # "sharing_strategy.enforce_balance": args.enforce_balance,
+            # "sharing_strategy.hash_data": args.hash_data,
         }
 
     run_experiment(config, strict=False)

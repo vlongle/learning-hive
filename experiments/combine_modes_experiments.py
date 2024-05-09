@@ -150,9 +150,6 @@ if __name__ == "__main__":
             "agent.use_contrastive": False,
 
             'net.no_sparse_basis': no_sparse_basis,
-            'agent.recv_mod_add_data_backward': recv_mod_add_data_backward,
-            'agent.make_new_opt': make_new_opt,
-
 
             "root_save_dir": root_save_dir,
 

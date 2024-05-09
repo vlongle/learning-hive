@@ -38,11 +38,11 @@ def adjust_allocation(query, budget):
 class HeuristicDataAgent(Agent):
 
     def __init__(self, node_id: int, seed: int, dataset, NetCls, AgentCls, net_kwargs, agent_kwargs, train_kwargs,
-                 sharing_strategy):
+                 sharing_strategy, agent=None):
         # self.use_ood_separation_loss = sharing_strategy.use_ood_separation_loss
         # agent_kwargs['use_ood_separation_loss'] = self.use_ood_separation_loss
         super().__init__(node_id, seed, dataset, NetCls, AgentCls,
-                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy)
+                         net_kwargs, agent_kwargs, train_kwargs, sharing_strategy, agent=agent)
 
         self.is_modular = isinstance(self.agent, CompositionalDynamicLearner)
         self.min_task = getattr(self.sharing_strategy, 'min_task', 0)
@@ -90,7 +90,7 @@ class HeuristicDataAgent(Agent):
 
         return data_worth
 
-    def prepare_communicate(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False,):
+    def prepare_communicate(self, task_id, end_epoch, comm_freq, num_epochs, communication_round, final=False, strategy=None):
         if task_id < self.agent.net.num_init_tasks:
             return
 
@@ -222,7 +222,7 @@ class HeuristicDataAgent(Agent):
                     continue
                 self.agent.shared_replay_buffers[t].push(X, Y)
 
-    def communicate(self, task_id, communication_round, final=False):
+    def communicate(self, task_id, communication_round, final=False, strategy=None):
         if task_id < self.agent.net.num_init_tasks:
             # NOTE: don't communicate for the first few tasks to
             # allow agents some initital training to find their weakness
@@ -230,15 +230,23 @@ class HeuristicDataAgent(Agent):
         if communication_round % 2 == 0:
             # send query to neighbors
             for neighbor in self.neighbors.values():
-                neighbor.receive(self.node_id, self.query, "query")
+                if isinstance(neighbor, ray.actor.ActorHandle):
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.query, "query"))
+                else:
+                    neighbor.receive(self.node_id, self.query, "query")
         else:
             # send data to the requester
             # for requester in self.incoming_query:
             #     self.neighbors[requester].receive(
             #         self.node_id, self.data[requester], "data")
             for neighbor_id, neighbor in self.neighbors.items():
-                neighbor.receive(
-                    self.node_id, self.data[neighbor_id], "data")
+                if isinstance(neighbor, ray.actor.ActorHandle):
+                    ray.get(neighbor.receive.remote(
+                        self.node_id, self.data[neighbor_id], "data"))
+                else:
+                    neighbor.receive(
+                        self.node_id, self.data[neighbor_id], "data")
 
     def receive(self, sender_id, data, data_type):
         if data_type == "query":
@@ -250,7 +258,7 @@ class HeuristicDataAgent(Agent):
         else:
             raise ValueError("Invalid data type")
 
-    def process_communicate(self, task_id, communication_round, final=False):
+    def process_communicate(self, task_id, communication_round, final=False, strategy=None):
         if task_id < self.agent.net.num_init_tasks:
             return
         if communication_round % 2 == 0:
@@ -261,7 +269,7 @@ class HeuristicDataAgent(Agent):
 
 @ray.remote
 class ParallelHeuristicDataAgent(HeuristicDataAgent):
-    def communicate(self, task_id, communication_round, final=False):
+    def communicate(self, task_id, communication_round, final=False, strategy=None):
         if task_id < self.agent.net.num_init_tasks:
             # NOTE: don't communicate for the first few tasks to
             # allow agents some initital training to find their weakness

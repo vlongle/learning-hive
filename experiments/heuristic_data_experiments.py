@@ -81,6 +81,8 @@ if __name__ == "__main__":
 
     min_task = 4 if args.dataset == "combined" else 0
 
+    root_save_dir = f"debug_combine_modes_results/gt_recv_data_no_sparse_False_recv_mod_add_data_backward_True_make_new_opt_True"
+
     if args.dataset != "cifar100":
         config = {
             "algo": args.algo,
@@ -124,7 +126,6 @@ if __name__ == "__main__":
             "seed": args.seed,
             "num_agents": 8,
             "parallel": True,
-            # "parallel": False,
             "dataset": "cifar100",
             "dataset.num_trains_per_class": 256,
             "dataset.num_vals_per_class": -1,
@@ -133,7 +134,6 @@ if __name__ == "__main__":
             "net": "cnn",
             "net.depth": 4,
             "num_init_tasks": 4,
-            # "dataset.num_tasks": 20,
             "dataset.num_tasks": 5,
             "net.dropout": 0.5,
             "train.init_num_epochs": num_epochs,
@@ -148,12 +148,11 @@ if __name__ == "__main__":
 
 
 
-            "root_save_dir": prefix + f"after_fix_vanilla_cifar_results/heuristic_budget_{args.budget}_enforce_balance_{args.enforce_balance}_mem_{shared_memory_size}_sync_base_{sync_base}_hash_{args.hash_data}",
+            "root_save_dir": root_save_dir,
             "sharing_strategy": "heuristic_data",
             "sharing_strategy.shared_memory_size": shared_memory_size,
             "sharing_strategy.comm_freq": comm_freq,
-            # "sharing_strategy.sync_base": sync_base,
-            "sharing_strategy.sync_base": True,
+            "sharing_strategy.sync_base": False,
             "sharing_strategy.query_task_mode": query_task_mode,
             "sharing_strategy.budget": args.budget,
             "sharing_strategy.enforce_balance": args.enforce_balance,

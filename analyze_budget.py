@@ -87,7 +87,7 @@ if __name__ == "__main__":
     #         record = analyze_multiple(result)
     #         record.save()
 
-    root_result_dir = "cluster_results/combine_modes_results"
+    root_result_dir = "combine_modes_results"
     record = analyze_multiple(root_result_dir)
     print(record.df)
     # get the final accuracy with respect to different algo and dataset

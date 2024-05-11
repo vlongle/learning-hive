@@ -201,7 +201,8 @@ def plot_agg_over_seeds(combined_agg_df, title_name=None, ax=None, std_scale=1.0
     ax.tick_params(axis='y', labelsize=16)
 
     ax.grid(True, which='major', linestyle='--', alpha=0.5)
-    # ax.set_ylim(0.5, 0.8)
+    # if title_name == "cifar100":
+    #     ax.set_ylim(0.5, 0.78)
 
 
 def get_auc_stats(seed_aucs):
@@ -268,10 +269,12 @@ def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='a
                   (len(algo_stats_global) - 1) / 2)
     ax.set_xticklabels(datasets, fontsize=14)
     ax.legend(frameon=True, loc='lower right', bbox_to_anchor=(1.1, 0.0))
-    ax.set_ylabel('Average AUC', fontsize=14)
+    ax.set_ylabel('AUC', fontsize=14)
     ax.set_xlabel('Dataset', fontsize=14)
+    # ax.set_title(
+    #     plot_prefix_name + r'$\mathsf{'+mode+'}$ AUC', fontsize=16, weight='bold')
     ax.set_title(
-        plot_prefix_name + r'$\mathsf{'+mode+'}$ AUC', fontsize=16, weight='bold')
+        plot_prefix_name, fontsize=16, weight='bold')
     ax.grid(True, which='major', linestyle='--', alpha=0.5)
     if max_y is None:
         max_y = 95 if mode == 'current' else 100
@@ -426,3 +429,41 @@ def make_table_v2(df, remap_name=None, error_type='std'):
     display(HTML(html))
 
     return pivot_mean_df
+
+
+
+def make_table_v3(df, df_err, remap_name=None):
+    if not remap_name:
+        remap_name = {}
+
+    # Define columns for the table display
+    columns = ['Base', 'Algorithm'] + [col for col in df.columns if col not in ('base', 'algorithm')]
+    max_values = df.max(numeric_only=True)  # Calculate max values for numeric columns to highlight best results
+    
+    # Start building the HTML table
+    html = '<table><tr><th>Base</th><th>Algorithm</th>'
+    for dataset in df.columns:
+        if dataset not in ('base', 'algorithm'):
+            html += f'<th>{dataset}</th>'
+    html += '</tr>'
+
+    for index, row in df.iterrows():
+        html += '<tr>'
+        html += f'<td>{row["base"]}</td>'
+        algo_name = remap_name.get(row['algorithm'], row['algorithm'])
+        html += f'<td>{algo_name}</td>'
+        for dataset in df.columns:
+            if dataset not in ('base', 'algorithm'):
+                mean_value = row[dataset]
+                error_value = df_err.loc[index, dataset]
+                # Bold the best value using HTML <b> tag
+                if mean_value == max_values[dataset]:
+                    html += f'<td><b>{mean_value:.5f} +/- {error_value:.2f}</b></td>'
+                else:
+                    html += f'<td>{mean_value:.5f} +/- {error_value:.2f}</td>'
+        html += '</tr>'
+    html += '</table>'
+
+    # Display the HTML table in Jupyter Notebook
+    display(HTML(html))
+

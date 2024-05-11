@@ -126,7 +126,7 @@ if __name__ == "__main__":
             "algo": args.algo,
             "seed": args.seed,
             # "algo": ["modular", "monolithic"],
-            "seed": [1, 2, 3, 4, 5, 6, 7],
+            # "seed": [1, 2, 3, 4, 5, 6, 7],
             "num_agents": 8,
             "parallel": True,
             # "parallel": False,
@@ -166,6 +166,6 @@ if __name__ == "__main__":
             "sharing_strategy.pre_or_post_comm": "post" if args.algo == "monolithic" else "pre",
         }
 
-    run_experiment(170949config, strict=False)
+    run_experiment(config, strict=False)
     end = time.time()
     print(f"Experiment runs took {datetime.timedelta(seconds=end-start)}")

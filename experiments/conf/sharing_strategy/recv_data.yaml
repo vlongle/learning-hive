@@ -13,4 +13,4 @@ sync_base: false
 prefilter_strategy: oracle
 add_data_prefilter_strategy: both
 assign_labels_strategy: groundtruth
-min_task: 0
+min_task: 4

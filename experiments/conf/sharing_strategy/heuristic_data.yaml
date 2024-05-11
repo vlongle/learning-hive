@@ -1,11 +1,11 @@
 name: heuristic_data
 num_coms_per_round: 2
 budget: 20
-enforce_balance: true
+enforce_balance: false
 shared_memory_size: 160
-comm_freq: 20
-query_task_mode: current
-pre_or_post_comm: pre
+comm_freq: 16
+query_task_mode: all
+pre_or_post_comm: post
 sync_base: true
 remove_ood_neighbors: true
 min_task: 0

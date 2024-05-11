@@ -5,22 +5,22 @@
 #SBATCH --cpus-per-gpu=48
 #SBATCH --mem-per-cpu=2G
 #SBATCH --time=72:00:00
-#SBATCH --qos=normal
-#SBATCH --partition=batch
-#SBATCH --array=0-20 # Total of 72 tasks (8 seeds * 3 datasets * 3 combine options)
+#SBATCH --qos=ee-high
+#SBATCH --partition=eaton-compute
+#SBATCH --array=0-23 # Total of 24 tasks (8 seeds * 1 dataset * 3 combine options)
 
 # Define combine options
-declare -a combine_options=("recv_data+grad_sharing" "grad_sharing" "recv_data")
+declare -a combine_options=("heuristic_data+grad_sharing" "grad_sharing" "heuristic_data")
 declare -a seeds=("0" "1" "2" "3" "4" "5" "6" "7")  # 8 options
-declare -a datasets=("mnist" "kmnist" "fashionmnist")
+declare -a datasets=("cifar100")  # Only one dataset
 
 ALGO="monolithic"
 
 # Calculate indices based on SLURM_ARRAY_TASK_ID
-task_per_option=$((8 * 3)) # 8 seeds * 3 datasets
+task_per_option=$((8 * 1)) # 8 seeds * 1 dataset
 combine_index=$(($SLURM_ARRAY_TASK_ID / $task_per_option))
 inner_index=$(($SLURM_ARRAY_TASK_ID % $task_per_option))
-dataset_index=$(($inner_index / 8))
+dataset_index=0  # Only one dataset, index is always 0
 seed_index=$(($inner_index % 8))
 
 # Get the specific combine option, dataset, and seed for the current task

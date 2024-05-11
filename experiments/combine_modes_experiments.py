@@ -60,8 +60,7 @@ if __name__ == "__main__":
     batch_size = 64
     num_epochs = 100
     # num_epochs = 10
-    # num_agents = 20 if args.dataset == "combined" else 8
-    num_agents = 8
+    num_agents = 20 if args.dataset == "combined" else 8
 
     # combine = 'recv_data'
     # combine = 'modmod'

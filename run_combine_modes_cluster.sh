@@ -7,14 +7,14 @@
 #SBATCH --time=72:00:00
 #SBATCH --qos=ee-high
 #SBATCH --partition=eaton-compute
-#SBATCH --array=0-23 # Total of 24 tasks (8 seeds * 1 dataset * 3 combine options)
+#SBATCH --array=0-7 # Total of 24 tasks (8 seeds * 1 dataset * 3 combine options)
 
 # Define combine options
-declare -a combine_options=("heuristic_data+grad_sharing" "grad_sharing" "heuristic_data")
+declare -a combine_options=("heuristic_data+grad_sharing")
 declare -a seeds=("0" "1" "2" "3" "4" "5" "6" "7")  # 8 options
 declare -a datasets=("cifar100")  # Only one dataset
 
-ALGO="monolithic"
+ALGO="modular"
 
 # Calculate indices based on SLURM_ARRAY_TASK_ID
 task_per_option=$((8 * 1)) # 8 seeds * 1 dataset

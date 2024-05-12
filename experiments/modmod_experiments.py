@@ -70,7 +70,7 @@ if __name__ == "__main__":
     make_new_opt = False
 
     root_save_dir = prefix + \
-        f"debug_combine_modes_results/debug_modmod"
+        f"rerun_modmod_no_adaptation_results"
 
     if args.dataset != "cifar100":
         config = {
@@ -94,9 +94,9 @@ if __name__ == "__main__":
             "num_init_tasks": num_init_tasks,
             "net.dropout": 0.5,
             "train.num_epochs": num_epochs,
-            "train.component_update_freq": num_epochs,
+            "train.component_update_freq": num_epochs + 1,
             "train.init_num_epochs": num_epochs,
-            "train.init_component_update_freq": num_epochs,
+            "train.init_component_update_freq": num_epochs + 1,
             "train.save_freq": 10,
             "agent.use_contrastive": False,
             "agent.memory_size": 32,
@@ -133,8 +133,8 @@ if __name__ == "__main__":
     else:
         config = {
             "algo": "modular",
-            # "seed": args.seed,
-            "seed": [0, 1, 2, 3, 4, 5, 6, 7],
+            "seed": args.seed,
+            # "seed": [0, 1, 2, 3, 4, 5, 6, 7],
             "num_agents": num_agents,
             "parallel": True,
 
@@ -152,9 +152,9 @@ if __name__ == "__main__":
             "dataset.num_tasks": 20,
             "net.dropout": 0.5,
             "train.init_num_epochs": num_epochs,
-            "train.init_component_update_freq": num_epochs,
+            "train.init_component_update_freq": num_epochs + 1,
             "train.num_epochs": num_epochs,
-            "train.component_update_freq": num_epochs,
+            "train.component_update_freq": num_epochs + 1,
             "agent.memory_size": 32,
             "agent.batch_size": 64,
             "train.save_freq": 10,
@@ -177,7 +177,7 @@ if __name__ == "__main__":
             "sharing_strategy.num_tryout_epochs": args.num_tryout_epochs,
             "sharing_strategy.max_num_modules_tryout": args.max_num_modules_tryout,
             # "root_save_dir": prefix + f"budget_experiment_results/modmod/tryout_epochs_{args.num_tryout_epochs}_max_modules_{args.max_num_modules_tryout}_num_shared_modules_{args.num_shared_module}_jorge_setting_lowest_task_id_wins_modmod_test_sync_base_{args.sync_base}_opt_with_random_{args.opt_with_random}_frozen_{args.freeze_candidate_module}_transfer_decoder_{args.transfer_decoder}_transfer_structure_{args.transfer_structure}_no_sparse_basis_{args.no_sparse_basis}",
-            "root_save_dir": prefix + f"topology_experiment_results/modmod/topology_{args.topology}_edge_drop_{args.edge_drop_prob}",
+            "root_save_dir": root_save_dir,
         }
 
     # print('args', args, type(args.sync_base), type(args.opt_with_random))

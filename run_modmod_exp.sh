@@ -18,7 +18,7 @@ TRANSFER_DECODER="1"
 TRANSFER_STRUCTURE="1"
 NO_SPARSE_BASIS="1"
 SYNC_BASE="1"
-DATASET="cifar100"
+DATASET="fashionmnist"
 
 SEED=${seeds[$seed_index]}
 

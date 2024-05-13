@@ -89,7 +89,7 @@ if __name__ == "__main__":
     # recv_mod_add_data_backward = True
 
     root_save_dir = prefix + \
-        f"monolithic_combine_modes_results/{args.combine}_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
+        f"rerun_combine_modes_no_adaptation_results/{args.combine}_no_sparse_{no_sparse_basis}_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
         # f"combine_modes_results/debug_modmod_recv_mod_add_data_backward_{recv_mod_add_data_backward}_make_new_opt_{make_new_opt}"
     if args.dataset != "cifar100":
         config = {
@@ -117,9 +117,9 @@ if __name__ == "__main__":
             "num_init_tasks": num_init_tasks,
             "net.dropout": 0.5,
             "train.num_epochs": num_epochs,
-            "train.component_update_freq": num_epochs,
+            "train.component_update_freq": num_epochs+1,
             "train.init_num_epochs": num_epochs,
-            "train.init_component_update_freq": num_epochs,
+            "train.init_component_update_freq": num_epochs+1,
             "train.save_freq": 10,
             "agent.use_contrastive": False,
             "agent.memory_size": 32,
@@ -153,9 +153,9 @@ if __name__ == "__main__":
             "dataset.num_tasks": 20,
             "net.dropout": 0.5,
             "train.init_num_epochs": num_epochs,
-            "train.init_component_update_freq": num_epochs,
+            "train.init_component_update_freq": num_epochs+1,
             "train.num_epochs": num_epochs,
-            "train.component_update_freq": num_epochs,
+            "train.component_update_freq": num_epochs+1,
             "agent.memory_size": 32,
             "agent.batch_size": 64,
             "train.save_freq": 10,

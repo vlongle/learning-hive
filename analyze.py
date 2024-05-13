@@ -71,8 +71,10 @@ if __name__ == "__main__":
     # vanilla_dir = "vanilla_jorge_setting_basis_no_sparse"
 
     root_save_dir = "."
-    vanilla_dir = "experiment_results/jorge_setting_lowest_task_id_wins_modmod_test_sync_base_True_opt_with_random_False_frozen_False_transfer_decoder_True_transfer_structure_True_no_sparse_basis_True"
+    # vanilla_dir = "rerun_mnist_bigger_dataset_results"
     # vanilla_dir = "rerun_combine_modes_no_adaptation_results/heuristic_data+grad_sharing_no_sparse_True_recv_mod_add_data_backward_True_make_new_opt_False"
+    vanilla_dir = "rerun_combine_modes_no_adaptation_results/heuristic_data+modmod+grad_sharing_no_sparse_True_recv_mod_add_data_backward_True_make_new_opt_False"
+    # vanilla_dir = "rerun_modmod_no_adaptation_results"
     result_dir = os.path.join(root_save_dir, vanilla_dir)
     record = analyze(result_dir)
     print("=====FINAL ACC======")

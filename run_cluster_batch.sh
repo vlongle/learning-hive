@@ -17,6 +17,6 @@ SEED=${seeds[$SLURM_ARRAY_TASK_ID]} # Directly use SLURM_ARRAY_TASK_ID
 SYNC_BASE="0"
 
 # Use srun to execute the job with the selected algorithm and any additional settings
-srun bash -c "python experiments/experiments.py --sync_base $SYNC_BASE --seed $SEED"
+srun bash -c "python experiments/experiments.py --sync_base $SYNC_BASE--seed $SEED"
 
 exit 3

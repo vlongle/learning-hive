@@ -42,7 +42,6 @@ parser.add_argument('--dataset', type=str, default="cifar100", choices=[
                     "mnist", "kmnist", "fashionmnist", "cifar100", "combined"], help='Dataset for the experiment.')
 parser.add_argument('--no_sparse_basis', type=str2bool, default=True)
 parser.add_argument('--algo', type=str, default="monolithic", choices=[
-parser.add_argument('--algo', type=str, default="monolithic", choices=[
                     "monolithic", "modular"], help='Algorithm for the experiment.')
 parser.add_argument('--dropout', type=float, default=0.5)
 parser.add_argument('--memory_size', type=int, default=128)
@@ -71,8 +70,8 @@ if __name__ == "__main__":
     num_tasks = 10
     batch_size = 64
 
-    num_trains_per_class = 256
-    root_save_dir = prefix + "rerun_mnist_bigger_dataset"
+    num_trains_per_class = -1
+    root_save_dir = prefix + "rerun_mnist_full_dataset"
 
     config = {
         "algo": args.algo,

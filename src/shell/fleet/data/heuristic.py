@@ -109,6 +109,7 @@ class HeuristicDataAgent(Agent):
 
             if self.sharing_strategy.always_query_all_final and final:
                 mode = "all"
+            print('preparing comm', task_id, end_epoch, final, 'mode', mode)
             self.query = self.compute_query(task_id, mode=mode)
         else:
             self.compute_data(task_id)

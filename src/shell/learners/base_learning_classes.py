@@ -101,6 +101,7 @@ class Learner():
             if len(replay) == 0:
                 continue
 
+            print('recording stats for task_id', task_id, len(replay))
             X, y, _ = replay.get_tensors()
             self.sharing_data_record.write(
                 {

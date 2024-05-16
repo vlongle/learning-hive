@@ -233,7 +233,9 @@ def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='a
     algo_stats_global = {}
 
     for dataset, seed_aucs in dataset_seed_aucs.items():
+        print('dataset', dataset)
         algo_stats = get_auc_stats(seed_aucs)
+        print('\n\n')
         for algo, stats in algo_stats.items():
             if algo not in algo_stats_global:
                 algo_stats_global[algo] = {'average_aucs': [], 'errors': []}
@@ -244,7 +246,6 @@ def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='a
 
     algos = [a for a, _ in sorted(algo_stats_global.items(
     ), key=lambda x: np.mean(x[1]['average_aucs']), reverse=True)]
-    print('algos', algos)
     algos = [a for a in algos if remap_name is None or a in remap_name]
     datasets = list(dataset_seed_aucs.keys())
 
@@ -253,7 +254,6 @@ def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='a
     else:
         if remap_name is not None:
             inverse_remap = {v: k for k, v in remap_name.items()}
-            print('inverse map', inverse_remap)
             custom_algo_order = [inverse_remap[a] for a in custom_algo_order]
     for i, algo in enumerate(custom_algo_order):
         if remap_name and algo not in remap_name:

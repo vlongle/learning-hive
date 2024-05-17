@@ -78,7 +78,7 @@ class CompositionalDynamicER(CompositionalDynamicLearner):
         self.memory_size = memory_size
 
     def update_modules(self, trainloader, task_id, train_mode=None, global_step=None,
-                       use_aux=True):
+                       use_aux=None):
         """
         NOTE: for contrastive, during accommodation,
         we should also allow past decoders to change so that gradients can flow

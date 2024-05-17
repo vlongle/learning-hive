@@ -125,8 +125,6 @@ def setup_experiment(cfg: DictConfig):
     print(LearnerCls)
     fleet_additional_cfg = {}
 
-    # REQUIRED_JOINT_TRAINING_STRAT = ["fedprox", "gradient", "debug_joint"]
-    REQUIRED_JOINT_TRAINING_STRAT = ["fedprox", "gradient"]
 
     # if cfg.sharing_strategy.name in REQUIRED_JOINT_TRAINING_STRAT:
     if getattr(cfg.sharing_strategy, 'sync_base', False):

@@ -10,6 +10,7 @@ from shell.fleet.fleet import Fleet, ParallelFleet, ParallelAgent, Agent
 from shell.fleet.grad.monograd import ModelSyncAgent, ParallelModelSyncAgent
 from shell.fleet.grad.fedprox import FedProxAgent, ParallelFedProxAgent, FedProxModAgent, ParallelFedProxModAgent
 from shell.fleet.grad.fedcurv import FedCurvAgent, ParallelFedCurvAgent, FedCurvModAgent, ParallelFedCurvModAgent
+from shell.fleet.grad.fedfish import FedFishAgent, ParallelFedFishAgent, FedFishModAgent, ParallelFedFishModAgent
 from shell.fleet.grad.gradient_fleet import SyncBaseFleet, ParallelSyncBaseFleet
 from shell.fleet.grad.modgrad import ModGrad, ParallelModGrad
 from shell.fleet.data.data_fleet import DataFleet, ParallelDataFleet
@@ -117,6 +118,17 @@ AGENT_CLS = {
             False: HeuristicDataAgent,
         }
     },
+
+    "fedfish": {
+        "monolithic": {
+            True: ParallelFedFishAgent,
+            False: FedFishAgent,
+        },
+        "modular": {
+            True: ParallelFedFishModAgent,
+            False: FedFishModAgent,
+        },
+    }
 }
 
 

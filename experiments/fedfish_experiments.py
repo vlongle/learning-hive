@@ -44,6 +44,7 @@ if __name__ == "__main__":
     num_init_tasks = 4
     num_tasks = 10
     num_epochs = 100
+    # num_epochs = 10
 
     batch_size = 64
     save_freq = 1
@@ -51,6 +52,7 @@ if __name__ == "__main__":
     seed = args.seed
     root_save_dir= prefix + f"tune_temp_fedfish_results/comm_freq_{args.comm_freq}_temp_{args.temperature}"
     num_agents = 20 if args.dataset == "combined" else 8
+    # num_agents = 2
     if args.dataset != "cifar100":
         config = {
             "algo": args.algo,

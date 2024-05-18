@@ -10,7 +10,7 @@
 #SBATCH --array=0-47 # 48 jobs (1 algo * 1 dataset * 8 seeds * 6 temperatures)
 
 declare -a seeds=("0" "1" "2" "3" "4" "5" "6" "7")
-declare -a temperatures=("1.0" "0.1" "0.01" "2.0" "4.0" "8.0")
+declare -a temperatures=("0.1" "0.01" "2.0" "10.0" "100.0")
 declare -a datasets=("kmnist")
 declare -a algos=("monolithic")
 

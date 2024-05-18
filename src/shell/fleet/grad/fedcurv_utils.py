@@ -79,17 +79,20 @@ class EWC(object):
     def _normalize_importances(self, importances):
         # Flatten all importances into a single tensor
         all_importances = torch.cat([imp.view(-1) for imp in importances.values()])
+        # print('>> TEMP:', self.temperature)
         # print('>>> MIN:', torch.min(all_importances), 'MAX:', torch.max(all_importances), 'MEAN:', torch.mean(all_importances), 'std:', torch.std(all_importances))
-
         # Normalize the importances before applying softmax
-        mean_importances = torch.mean(all_importances)
-        std_importances = torch.std(all_importances)
-        normalized_importances = (all_importances - mean_importances) / std_importances
+        # mean_importances = torch.mean(all_importances)
+        # std_importances = torch.std(all_importances)
+        # normalized_importances = (all_importances - mean_importances) / std_importances
 
         # Apply softmax to the normalized tensor
-        softmax_importances = torch.softmax(normalized_importances / self.temperature, dim=0)
+        # softmax_importances = torch.softmax(normalized_importances / self.temperature, dim=0)
+        softmax_importances = torch.softmax(all_importances / self.temperature, dim=0)
+        # softmax_importances = torch.exp(all_importances / self.temperature)
 
         # print('>>> AFTERWARDS  MIN:', torch.min(softmax_importances), 'MAX:', torch.max(softmax_importances), 'MEAN:', torch.mean(softmax_importances), 'std:', torch.std(softmax_importances))
+        # exit(0)
         # Assign the normalized values back to their original shape
         start = 0
         for k, imp in importances.items():

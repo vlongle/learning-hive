@@ -81,7 +81,8 @@ if __name__ == "__main__":
     # root_result_dir = "modular_backward_cifar_heuristic_results_small_mem_32/budget"
     # root_result_dir = "new_topology_experiment_results/modmod"
     # root_result_dir = "budget_fedprox_results"
-    root_result_dir = "new_topology_experiment_results/data"
+    # root_result_dir = "new_topology_experiment_results/data"
+    root_result_dir = "/mnt/kostas-graid/datasets/vlongle/tune_temp_fedfish_results"
     record = analyze_multiple(root_result_dir)
     print(record.df)
     # get the final accuracy with respect to different algo and dataset

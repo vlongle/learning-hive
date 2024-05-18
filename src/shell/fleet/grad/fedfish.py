@@ -28,7 +28,7 @@ class FedFishAgent(ModelSyncAgent):
         )
         mega_loader = torch.utils.data.DataLoader(mega_dataset, batch_size=self.batch_size, shuffle=True, num_workers=2, pin_memory=True)
 
-        self.fisher = EWC(self.agent, mega_loader, normalize=True).fisher
+        self.fisher = EWC(self.agent, mega_loader, normalize=True, temperature=self.sharing_strategy.temperature).fisher
 
     def communicate(self, task_id, communication_round, final=False):
         for neighbor in self.neighbors.values():

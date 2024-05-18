@@ -72,6 +72,7 @@ class ModelSyncAgent(Agent):
 
         # Calculate overall average of these differences
         avg_diffs['avg_params'] = sum(avg_diffs.values()) / len(avg_diffs)
+        logging.info("Average diffs: %s", avg_diffs)
 
         # Record the diffs with task info
         record = {"task_id": task_id,
@@ -91,7 +92,7 @@ class ModelSyncAgent(Agent):
         # average all the models together!
         if len(self.incoming_models.values()) == 0:
             return
-        logging.info("AGGREGATING MODELS...no_components %s",
+        logging.info("FedAvg AGGREGATING MODELS...no_components %s",
                      len(self.net.components))
         stuff_added = defaultdict(int)
         for model in self.incoming_models.values():
@@ -104,6 +105,7 @@ class ModelSyncAgent(Agent):
         for name, param in self.net.state_dict().items():
             # +1 because it includes the current model
             param.data /= stuff_added[name] + 1
+            logging.info("Name: %s, Added: %s", name, param)
 
     def process_communicate(self, task_id, communication_round, final=False):
         self.log(task_id, communication_round, info={'info': 'before'})

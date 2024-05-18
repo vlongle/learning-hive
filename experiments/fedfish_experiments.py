@@ -50,7 +50,8 @@ if __name__ == "__main__":
     save_freq = 1
 
     seed = args.seed
-    root_save_dir= prefix + f"tune_temp_fedfish_results/comm_freq_{args.comm_freq}_temp_{args.temperature}"
+    # root_save_dir= prefix + f"tune_temp_fedfish_results/comm_freq_{args.comm_freq}_temp_{args.temperature}"
+    root_save_dir= prefix + f"fedfish_results"
     num_agents = 20 if args.dataset == "combined" else 8
     # num_agents = 2
     if args.dataset != "cifar100":

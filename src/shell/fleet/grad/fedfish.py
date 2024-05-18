@@ -28,7 +28,8 @@ class FedFishAgent(ModelSyncAgent):
         )
         mega_loader = torch.utils.data.DataLoader(mega_dataset, batch_size=self.batch_size, shuffle=True, num_workers=2, pin_memory=True)
 
-        self.fisher = EWC(self.agent, mega_loader, normalize=True, temperature=self.sharing_strategy.temperature).fisher
+        temperature = getattr(self.sharing_strategy, "temperature", 1.0)
+        self.fisher = EWC(self.agent, mega_loader, normalize=True, temperature=temperature).fisher
 
     def communicate(self, task_id, communication_round, final=False):
         for neighbor in self.neighbors.values():
@@ -48,7 +49,7 @@ class FedFishAgent(ModelSyncAgent):
     def aggregate_models(self):
         if len(self.incoming_models.values()) == 0:
             return
-        logging.info("AGGREGATING MODELS...no_components %s", len(self.net.components))
+        logging.info("Fedfish AGGREGATING MODELS...no_components %s", len(self.net.components))
         # Compute the average of the incoming models including the current node's model
         avg_model = {name: torch.zeros_like(param) for name, param in self.model.items()}
         num_models = len(self.incoming_models) + 1  # +1 for the current node's model
@@ -62,11 +63,13 @@ class FedFishAgent(ModelSyncAgent):
             avg_model[name] += param.data
         for name, param in avg_model.items():
             avg_model[name] /= num_models
+            # logging.info("avg_model %s %s", name, param)
 
         # Apply the FedFish aggregation
         for name, param in self.model.items():
             diag_fisher = self.fisher[name].clamp(0, 1)  # Ensure Fisher diagonal is between 0 and 1
-            self.net.state_dict()[name].data = diag_fisher * param.data + (1 - diag_fisher) * avg_model[name]
+            self.net.state_dict()[name].data.copy_(diag_fisher * param.data + (1 - diag_fisher) * avg_model[name])
+            # self.net.state_dict()[name].data.copy_(avg_model[name])
 
 @ray.remote
 class ParallelFedFishAgent(FedFishAgent):

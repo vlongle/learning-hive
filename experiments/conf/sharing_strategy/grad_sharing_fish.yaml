@@ -5,3 +5,4 @@ mu: 1.0
 when_reoptimize_structure: never
 sync_base: True
 pre_or_post_comm: pre
+temperature: 1.0

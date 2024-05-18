@@ -26,6 +26,7 @@ parser.add_argument('--algo', type=str, default="modular", choices=[
                     "monolithic", "modular"], help='Algorithm for the experiment.')
 parser.add_argument('--topology', type=str, default='fully_connected')
 parser.add_argument('--edge_drop_prob', type=float, default=0.0)
+parser.add_argument('--temperature', type=float, default=1.0)
 
 args = parser.parse_args()
 
@@ -48,7 +49,7 @@ if __name__ == "__main__":
     save_freq = 1
 
     seed = args.seed
-    root_save_dir= prefix + f"fedfish_results/comm_freq_{args.comm_freq}"
+    root_save_dir= prefix + f"tune_temp_fedfish_results/comm_freq_{args.comm_freq}_temp_{args.temperature}"
     num_agents = 20 if args.dataset == "combined" else 8
     if args.dataset != "cifar100":
         config = {
@@ -85,6 +86,7 @@ if __name__ == "__main__":
             "sharing_strategy": "grad_sharing_fish",
             "sharing_strategy.num_coms_per_round": 1,
             "sharing_strategy.comm_freq": args.comm_freq,
+            "sharing_strategy.temperature": args.temperature,
 
             # ================================================
         }
@@ -123,6 +125,8 @@ if __name__ == "__main__":
             "sharing_strategy": "grad_sharing_fish",
             "sharing_strategy.num_coms_per_round": 1,
             "sharing_strategy.comm_freq": args.comm_freq,
+            "sharing_strategy.temperature": args.temperature,
+
             "root_save_dir": root_save_dir,
         }
 

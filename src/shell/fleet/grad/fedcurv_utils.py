@@ -9,12 +9,13 @@ from torch.nn import Linear, Module
 
 
 class EWC(object):
-    def __init__(self, model: nn.Module, dataloader, normalize=False):
+    def __init__(self, model: nn.Module, dataloader, normalize=False, temperature=1.0):
 
         self.model = model
         self.dataloader = dataloader
         self._means = {}
         self.normalize_fisher = normalize
+        self.temperature = temperature
         self.fisher = self._diag_fisher()
 
     def _diag_fisher(self):
@@ -75,7 +76,7 @@ class EWC(object):
         return importances
 
 
-    def _normalize_importances(self, importances, temperature=1.0):
+    def _normalize_importances(self, importances):
         # Flatten all importances into a single tensor
         all_importances = torch.cat([imp.view(-1) for imp in importances.values()])
         # print('>>> MIN:', torch.min(all_importances), 'MAX:', torch.max(all_importances), 'MEAN:', torch.mean(all_importances), 'std:', torch.std(all_importances))
@@ -86,7 +87,7 @@ class EWC(object):
         normalized_importances = (all_importances - mean_importances) / std_importances
 
         # Apply softmax to the normalized tensor
-        softmax_importances = torch.softmax(normalized_importances / temperature, dim=0)
+        softmax_importances = torch.softmax(normalized_importances / self.temperature, dim=0)
 
         # print('>>> AFTERWARDS  MIN:', torch.min(softmax_importances), 'MAX:', torch.max(softmax_importances), 'MEAN:', torch.mean(softmax_importances), 'std:', torch.std(softmax_importances))
         # Assign the normalized values back to their original shape

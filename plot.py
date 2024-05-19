@@ -194,12 +194,12 @@ def plot_agg_over_seeds(combined_agg_df, title_name=None, ax=None, std_scale=1.0
 
     # ax.set_xlabel('Epoch', fontsize=14)
     # ax.set_ylabel('Test Accuracy', fontsize=14)
-    ax.set_title(title_name, fontsize=20)
+    ax.set_title(title_name, fontsize=30, weight='bold')
     # Setting legend font size
     # ax.legend(frameon=True, loc='lower right', fontsize=12)
     # Setting x and y ticks font size
-    ax.tick_params(axis='x', labelsize=16)
-    ax.tick_params(axis='y', labelsize=16)
+    ax.tick_params(axis='x', labelsize=30)
+    ax.tick_params(axis='y', labelsize=30)
 
     ax.grid(True, which='major', linestyle='--', alpha=0.5)
     # ax.set_ylim(0.5, 0.8)
@@ -349,17 +349,17 @@ def plot_learning_curve_dataset(dataset_agg_dfs, remap_name=None, colormap=None,
                 labels.append(label)
 
     # After plotting is done, you set common labels and a super title like so:
-    fig.suptitle(
-        r'Test $\mathsf{'+mode+'}$ Accuracy Learning Curves', fontsize=30, weight='bold')
+    # fig.suptitle(
+    #     r'Test $\mathsf{'+mode+'}$ Accuracy Learning Curves', fontsize=30, weight='bold')
 
     fig.text(0.5, 0.02, 'Epoch', ha='center',
-             va='center', fontsize=20, weight='bold')
+             va='center', fontsize=30, weight='bold')
     fig.text(0.02, 0.5, 'Test Accuracy', ha='center', va='center',
-             rotation='vertical', fontsize=20, weight='bold')
-    fig.legend(handles, labels, loc='lower right', fontsize=20,
-               frameon=True, bbox_to_anchor=(1.1, 0.0))
-
-    # Adjust the rect to make space for the common title and labels
+             rotation='vertical', fontsize=30, weight='bold')
+    # fig.legend(handles, labels, loc='lower right', fontsize=30,
+    #            frameon=True, bbox_to_anchor=(1.1, 0.0))
+    fig.legend(handles, labels, loc='lower center', fontsize=30,
+           frameon=True, ncol=4, bbox_to_anchor=(0.5, -0.16), markerscale=3)    # Adjust the rect to make space for the common title and labels
     plt.tight_layout(rect=[0.03, 0.03, 1, 0.95])
     if save_fig_path is not None:
         plt.savefig(save_fig_path, bbox_inches='tight')

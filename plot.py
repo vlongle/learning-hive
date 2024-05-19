@@ -37,8 +37,9 @@ def plot_agg_learning_curves(fleet, ax=None, name=None, tasks=None, agent_ids=No
         fig, ax = plt.subplots()
 
     if tasks is None:
-        # tasks = range(fleet.num_init_tasks-1, fleet.num_tasks)
         tasks = range(fleet.num_init_tasks, fleet.num_tasks)
+    if tasks == "last":
+        tasks = [fleet.num_tasks - 1]
 
     dfs = []
     for agent in fleet.agents:
@@ -193,16 +194,15 @@ def plot_agg_over_seeds(combined_agg_df, title_name=None, ax=None, std_scale=1.0
 
     # ax.set_xlabel('Epoch', fontsize=14)
     # ax.set_ylabel('Test Accuracy', fontsize=14)
-    ax.set_title(title_name, fontsize=20)
+    ax.set_title(title_name, fontsize=30, weight='bold')
     # Setting legend font size
     # ax.legend(frameon=True, loc='lower right', fontsize=12)
     # Setting x and y ticks font size
-    ax.tick_params(axis='x', labelsize=16)
-    ax.tick_params(axis='y', labelsize=16)
+    ax.tick_params(axis='x', labelsize=30)
+    ax.tick_params(axis='y', labelsize=30)
 
     ax.grid(True, which='major', linestyle='--', alpha=0.5)
-    # if title_name == "cifar100":
-    #     ax.set_ylim(0.5, 0.78)
+    # ax.set_ylim(0.5, 0.8)
 
 
 def get_auc_stats(seed_aucs):
@@ -233,9 +233,7 @@ def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='a
     algo_stats_global = {}
 
     for dataset, seed_aucs in dataset_seed_aucs.items():
-        print('dataset', dataset)
         algo_stats = get_auc_stats(seed_aucs)
-        print('\n\n')
         for algo, stats in algo_stats.items():
             if algo not in algo_stats_global:
                 algo_stats_global[algo] = {'average_aucs': [], 'errors': []}
@@ -246,6 +244,7 @@ def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='a
 
     algos = [a for a, _ in sorted(algo_stats_global.items(
     ), key=lambda x: np.mean(x[1]['average_aucs']), reverse=True)]
+    print('algos', algos)
     algos = [a for a in algos if remap_name is None or a in remap_name]
     datasets = list(dataset_seed_aucs.keys())
 
@@ -254,6 +253,7 @@ def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='a
     else:
         if remap_name is not None:
             inverse_remap = {v: k for k, v in remap_name.items()}
+            print('inverse map', inverse_remap)
             custom_algo_order = [inverse_remap[a] for a in custom_algo_order]
     for i, algo in enumerate(custom_algo_order):
         if remap_name and algo not in remap_name:
@@ -269,12 +269,10 @@ def plot_auc_combined(dataset_seed_aucs, remap_name=None, colormap=None, mode='a
                   (len(algo_stats_global) - 1) / 2)
     ax.set_xticklabels(datasets, fontsize=14)
     ax.legend(frameon=True, loc='lower right', bbox_to_anchor=(1.1, 0.0))
-    ax.set_ylabel('AUC', fontsize=14)
+    ax.set_ylabel('Average AUC', fontsize=14)
     ax.set_xlabel('Dataset', fontsize=14)
-    # ax.set_title(
-    #     plot_prefix_name + r'$\mathsf{'+mode+'}$ AUC', fontsize=16, weight='bold')
     ax.set_title(
-        plot_prefix_name, fontsize=16, weight='bold')
+        plot_prefix_name + r'$\mathsf{'+mode+'}$ AUC', fontsize=16, weight='bold')
     ax.grid(True, which='major', linestyle='--', alpha=0.5)
     if max_y is None:
         max_y = 95 if mode == 'current' else 100
@@ -332,8 +330,8 @@ def plot_learning_curve_bars(seed_aucs, title_name=None, ax=None, remap_name=Non
 
 def plot_learning_curve_dataset(dataset_agg_dfs, remap_name=None, colormap=None,
                                 mode='avg', save_fig_path=None, error_type='std',
-                                metric='test_acc', figsize=(30, 10)):
-    fig, ax = plt.subplots(1, len(dataset_agg_dfs.keys()), figsize=figsize)
+                                metric='test_acc'):
+    fig, ax = plt.subplots(1, len(dataset_agg_dfs.keys()), figsize=(30, 10))
     handles, labels = [], []
 
     # Ensure ax is always iterable
@@ -351,17 +349,17 @@ def plot_learning_curve_dataset(dataset_agg_dfs, remap_name=None, colormap=None,
                 labels.append(label)
 
     # After plotting is done, you set common labels and a super title like so:
-    fig.suptitle(
-        r'Test $\mathsf{'+mode+'}$ Accuracy Learning Curves', fontsize=30, weight='bold')
+    # fig.suptitle(
+    #     r'Test $\mathsf{'+mode+'}$ Accuracy Learning Curves', fontsize=30, weight='bold')
 
     fig.text(0.5, 0.02, 'Epoch', ha='center',
-             va='center', fontsize=20, weight='bold')
+             va='center', fontsize=30, weight='bold')
     fig.text(0.02, 0.5, 'Test Accuracy', ha='center', va='center',
-             rotation='vertical', fontsize=20, weight='bold')
-    fig.legend(handles, labels, loc='lower right', fontsize=20,
-               frameon=True, bbox_to_anchor=(1.1, 0.0))
-
-    # Adjust the rect to make space for the common title and labels
+             rotation='vertical', fontsize=30, weight='bold')
+    # fig.legend(handles, labels, loc='lower right', fontsize=30,
+    #            frameon=True, bbox_to_anchor=(1.1, 0.0))
+    fig.legend(handles, labels, loc='lower center', fontsize=30,
+           frameon=True, ncol=5, bbox_to_anchor=(0.5, -0.1), markerscale=3)    # Adjust the rect to make space for the common title and labels
     plt.tight_layout(rect=[0.03, 0.03, 1, 0.95])
     if save_fig_path is not None:
         plt.savefig(save_fig_path, bbox_inches='tight')
@@ -429,41 +427,3 @@ def make_table_v2(df, remap_name=None, error_type='std'):
     display(HTML(html))
 
     return pivot_mean_df
-
-
-
-def make_table_v3(df, df_err, remap_name=None):
-    if not remap_name:
-        remap_name = {}
-
-    # Define columns for the table display
-    columns = ['Base', 'Algorithm'] + [col for col in df.columns if col not in ('base', 'algorithm')]
-    max_values = df.max(numeric_only=True)  # Calculate max values for numeric columns to highlight best results
-    
-    # Start building the HTML table
-    html = '<table><tr><th>Base</th><th>Algorithm</th>'
-    for dataset in df.columns:
-        if dataset not in ('base', 'algorithm'):
-            html += f'<th>{dataset}</th>'
-    html += '</tr>'
-
-    for index, row in df.iterrows():
-        html += '<tr>'
-        html += f'<td>{row["base"]}</td>'
-        algo_name = remap_name.get(row['algorithm'], row['algorithm'])
-        html += f'<td>{algo_name}</td>'
-        for dataset in df.columns:
-            if dataset not in ('base', 'algorithm'):
-                mean_value = row[dataset]
-                error_value = df_err.loc[index, dataset]
-                # Bold the best value using HTML <b> tag
-                if mean_value == max_values[dataset]:
-                    html += f'<td><b>{mean_value:.5f} +/- {error_value:.2f}</b></td>'
-                else:
-                    html += f'<td>{mean_value:.5f} +/- {error_value:.2f}</td>'
-        html += '</tr>'
-    html += '</table>'
-
-    # Display the HTML table in Jupyter Notebook
-    display(HTML(html))
-

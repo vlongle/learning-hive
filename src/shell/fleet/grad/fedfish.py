@@ -68,8 +68,8 @@ class FedFishAgent(ModelSyncAgent):
         # Apply the FedFish aggregation
         for name, param in self.model.items():
             diag_fisher = self.fisher[name].clamp(0, 1)  # Ensure Fisher diagonal is between 0 and 1
-            self.net.state_dict()[name].data.copy_(diag_fisher * param.data + (1 - diag_fisher) * avg_model[name])
-            # self.net.state_dict()[name].data.copy_(avg_model[name])
+            # self.net.state_dict()[name].data.copy_(diag_fisher * param.data + (1 - diag_fisher) * avg_model[name])
+            self.net.state_dict()[name].data.copy_(avg_model[name])
 
 @ray.remote
 class ParallelFedFishAgent(FedFishAgent):

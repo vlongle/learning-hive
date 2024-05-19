@@ -88,6 +88,7 @@ class EWC(object):
 
         # Apply softmax to the normalized tensor
         # softmax_importances = torch.softmax(normalized_importances / self.temperature, dim=0)
+        print('temp:', self.temperature)
         softmax_importances = torch.softmax(all_importances / self.temperature, dim=0)
         # softmax_importances = torch.exp(all_importances / self.temperature)
 

@@ -359,7 +359,7 @@ def plot_learning_curve_dataset(dataset_agg_dfs, remap_name=None, colormap=None,
     # fig.legend(handles, labels, loc='lower right', fontsize=30,
     #            frameon=True, bbox_to_anchor=(1.1, 0.0))
     fig.legend(handles, labels, loc='lower center', fontsize=30,
-           frameon=True, ncol=5, bbox_to_anchor=(0.5, -0.1), markerscale=3)    # Adjust the rect to make space for the common title and labels
+           frameon=True, ncol=4, bbox_to_anchor=(0.5, -0.16), markerscale=3)    # Adjust the rect to make space for the common title and labels
     plt.tight_layout(rect=[0.03, 0.03, 1, 0.95])
     if save_fig_path is not None:
         plt.savefig(save_fig_path, bbox_inches='tight')

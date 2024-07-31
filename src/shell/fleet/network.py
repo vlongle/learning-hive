@@ -91,50 +91,6 @@ class TopologyGenerator:
             G = pickle.load(f)
         return G
 
-    @staticmethod
-    def plot_graph(G: nx.Graph,
-                   node_color="#1f78b4", edge_color="#bfbfbf",
-                   node_size=500, font_size=16,
-                   font_family="sans-serif",
-                   layout="spring", draw_labels=False,
-                   node_color_attr=None,  # Existing parameter for node color attribute
-                   save_path=None,
-                   edge_widths=1,
-                   ax=None):  # Optional matplotlib axis
-        if ax is None:
-            fig, ax = plt.subplots()  # Create a new figure and axis if none is provided
-
-        if layout == "spring":
-            pos = nx.spring_layout(G)
-        elif layout == "circular":
-            pos = nx.circular_layout(G)
-        else:
-            pos = nx.random_layout(G)
-
-        # Determine node colors based on the attribute
-        if node_color_attr and nx.get_node_attributes(G, node_color_attr):
-            node_colors = [G.nodes[n].get(
-                node_color_attr, node_color) for n in G.nodes()]
-        else:
-            node_colors = node_color
-
-        # Draw nodes and edges using the specified ax
-        nx.draw_networkx_nodes(
-            G, pos, node_color=node_colors, node_size=node_size, ax=ax)
-
-        nx.draw_networkx_edges(
-            G, pos, edge_color=edge_color, width=edge_widths, ax=ax)
-
-        if draw_labels:
-            nx.draw_networkx_labels(
-                G, pos, font_size=font_size, font_family=font_family, ax=ax)
-
-        ax.set_axis_off()  # Use ax method to turn off the axis
-
-        # Handle save_path to save the figure
-        if save_path:
-            plt.savefig(save_path)
-
 
 def set_color(fleet):
     # Create a mapping from agent id to dataset name
@@ -189,8 +145,8 @@ def set_weight(fleet, communication):
         # Assuming u, v are indices in the communication matrix
         if u < len(communication) and v < len(communication):
             d['weight'] = communication[u, v]
-        else:
-            d['weight'] = 1  # Default width
+        # else:
+        #     d['weight'] = 1  # Default width
 
     edge_widths = [d['weight'] for _, _, d in G.edges(data=True)]
     return edge_widths

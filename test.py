@@ -380,3 +380,39 @@
 # for idx in range(-num_candidate_modules, 0, 1):
 #     print(idx)
 
+
+num_epochs = 100
+comm_freq = 5
+pre_or_post_comm = "pre"
+
+for start_epoch in range(0, num_epochs, comm_freq):
+    end_epoch = min(start_epoch + comm_freq, num_epochs)
+    final = start_epoch + comm_freq >= num_epochs
+    print('from', start_epoch, 'to', end_epoch, 'final', final)
+    if pre_or_post_comm == "pre" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
+        print('>>> COMM AT EPOCH', start_epoch)
+        # communicate(task_id,
+        #                  end_epoch,
+        #                  comm_freq,
+        #                  num_epochs,
+        #                  start_com_round=(
+        #                      start_epoch // comm_freq) * self.num_coms_per_round,
+        #                  final=final)
+
+    # for agent in self.agents:
+        # only remove modules for the last epoch
+        # agent.set_num_coms(task_id, num_coms)
+        # agent.train(task_id, start_epoch, comm_freq, final=final)
+        pass
+
+    print('\t \t @@ TRAINING FROM', start_epoch,
+          'TO', end_epoch)
+    if pre_or_post_comm == "post" and comm_freq <= num_epochs and (end_epoch % comm_freq == 0):
+        print('>>> COMM AT EPOCH', end_epoch)
+        # self.communicate(task_id,
+        #                  end_epoch,
+        #                  comm_freq,
+        #                  num_epochs,
+        #                  start_com_round=(
+        #                      start_epoch // comm_freq) * self.num_coms_per_round,
+        #                  final=final)
